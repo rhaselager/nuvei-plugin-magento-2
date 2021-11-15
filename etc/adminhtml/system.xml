@@ -1,0 +1,307 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Nuvei Payments adminhtml system config.
+ *
+ * @category Nuvei
+ * @package  Nuvei_Payments
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="payment">
+            <group id="nuvei"
+                   translate="label"
+                   type="text"
+                   sortOrder="40"
+                   showInDefault="1"
+                   showInWebsite="1"
+                   showInStore="1">
+                <label>Nuvei</label>
+                
+				<field id="active"
+					   translate="label"
+					   type="select"
+					   sortOrder="10"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0" >
+					<label>Enabled</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+					<config_path>payment/nuvei/active</config_path>
+				</field>
+
+				<field id="title"
+					   translate="label"
+					   type="text"
+					   sortOrder="20"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0"
+					   canRestore="1" >
+					<label>Title</label>
+					<config_path>payment/nuvei/title</config_path>
+				</field>
+
+				<field id="mode"
+					   translate="label"
+					   type="select"
+					   sortOrder="30"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0" >
+					<label>Mode</label>
+					<source_model>Nuvei\Payments\Model\Adminhtml\Source\Mode</source_model>
+					<config_path>payment/nuvei/mode</config_path>
+					<validate>required-entry</validate>
+				</field>
+
+				<field id="hash"
+					   translate="label"
+					   type="select"
+					   sortOrder="40"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0" >
+					<label>Merchant Hash</label>
+					<source_model>Nuvei\Payments\Model\Adminhtml\Source\Hash</source_model>
+					<config_path>payment/nuvei/hash</config_path>
+					<validate>required-entry</validate>
+				</field>
+				
+				<field id="payment_action"
+					   translate="label"
+					   type="select"
+					   sortOrder="45"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0" >
+					<label>Payment Action</label>
+					<source_model>Nuvei\Payments\Model\Adminhtml\Source\PaymentAction</source_model>
+					<config_path>payment/nuvei/payment_action</config_path>
+					<validate>required-entry</validate>
+				</field>
+				
+				<field id="use_upos"
+					   translate="label"
+					   type="select"
+					   sortOrder="47"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0" 
+					   canRestore="1">
+					<label>Use UPOs</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+					<config_path>payment/nuvei/use_upos</config_path>
+				</field>
+				
+				<field id="allow_guests_subscr"
+					   translate="label"
+					   type="select"
+					   sortOrder="47"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0" 
+					   canRestore="1">
+					<label>Allow Subscriptions for Guests</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+					<config_path>payment/nuvei/allow_guests_subscr</config_path>
+				</field>
+
+				<field id="merchant_id"
+					   translate="label"
+					   type="obscure"
+					   sortOrder="50"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0">
+					<label>Merchant ID</label>
+					<backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+					<comment>Value provided by Nuvei.</comment>
+					<config_path>payment/nuvei/merchant_id</config_path>
+				</field>
+
+				<field id="merchant_site_id"
+					   translate="label"
+					   type="text"
+					   sortOrder="60"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0">
+					<label>Merchant Site Id</label>
+					<comment>Value provided by Nuvei.</comment>
+					<config_path>payment/nuvei/merchant_site_id</config_path>
+				</field>
+
+				<field id="merchant_secret_key"
+					   translate="label"
+					   type="obscure"
+					   sortOrder="70"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0">
+					<label>Merchant Secret Key</label>
+					<backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+					<comment>Value provided by Nuvei.</comment>
+					<config_path>payment/nuvei/merchant_secret_key</config_path>
+				</field>
+
+				<field id="sandbox_merchant_id"
+					   translate="label"
+					   type="obscure"
+					   sortOrder="80"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0">
+					<label>Sandbox Merchant ID</label>
+					<backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+					<comment>Value provided by Nuvei.</comment>
+					<config_path>payment/nuvei/sandbox_merchant_id</config_path>
+				</field>
+
+				<field id="sandbox_merchant_site_id"
+					   translate="label"
+					   type="text"
+					   sortOrder="90"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0">
+					<label>Sandbox Merchant Site Id</label>
+					<comment>Value provided by Nuvei.</comment>
+					<config_path>payment/nuvei/sandbox_merchant_site_id</config_path>
+				</field>
+
+				<field id="sandbox_merchant_secret_key"
+					   translate="label"
+					   type="obscure"
+					   sortOrder="100"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0">
+					<label>Sandbox Merchant Secret Key</label>
+					<backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+					<comment>Value provided by Nuvei.</comment>
+					<config_path>payment/nuvei/sandbox_merchant_secret_key</config_path>
+				</field>
+				
+				<field id="apple_pay_label"
+					   translate="label"
+					   type="text"
+					   sortOrder="105"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0">
+					<label>Apple Pay Label</label>
+				</field>
+				
+<!--				<field id="save_order_before_success"
+					   translate="label"
+					   type="select"
+					   sortOrder="105"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0"
+					   canRestore="1">
+					<label>Save Order before Success page</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+					<config_path>payment/nuvei/save_order_before_success</config_path>
+				</field>-->
+				
+				<field id="debug"
+					   translate="label"
+					   type="select"
+					   sortOrder="110"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0" >
+					<label>Save Debug log</label>
+					<source_model>Nuvei\Payments\Model\Adminhtml\Source\Debug</source_model>
+					<config_path>payment/nuvei/debug</config_path>
+				</field>
+
+				<field id="min_order_total"
+					   translate="label"
+					   type="text"
+					   sortOrder="120"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0" >
+					<label>Minimum Order Total</label>
+					<config_path>payment/nuvei/min_order_total</config_path>
+				</field>
+
+				<field id="max_order_total"
+					   translate="label"
+					   type="text"
+					   sortOrder="130"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0" >
+					<label>Maximum Order Total</label>
+					<config_path>payment/nuvei/max_order_total</config_path>
+				</field>
+
+				<field id="sort_order"
+					   translate="label"
+					   type="text"
+					   sortOrder="140"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0" >
+					<label>Sort Order</label>
+					<frontend_class>validate-number</frontend_class>
+					<config_path>payment/nuvei/sort_order</config_path>
+				</field>
+
+				<field id="allowspecific"
+					   translate="label"
+					   type="allowspecific"
+					   sortOrder="150"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0"
+					   canRestore="1">
+					<label>Payment from Applicable Countries</label>
+					<source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
+					<config_path>payment/nuvei/allowspecific</config_path>
+				</field>
+
+				<field id="specificcountry"
+					   translate="label"
+					   type="multiselect"
+					   sortOrder="160"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0" >
+					<label>Payment from Specific Countries</label>
+					<source_model>Magento\Directory\Model\Config\Source\Country</source_model>
+					<config_path>payment/nuvei/specificcountry</config_path>
+				</field>
+				
+				<field id="notifyURL"
+					   translate="label"
+					   type="label"
+					   sortOrder="165"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0" >
+					<label>Site Notify URL</label>
+					<comment model="Nuvei\Payments\Block\System\Config\GetNotifyUrl" />
+				</field>
+				
+				<field id="getPlans"
+					   translate="label"
+					   type="button"
+					   sortOrder="170"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="0" >
+					<label>Get Payment Plans</label>
+					<frontend_model>Nuvei\Payments\Block\System\Config\Button</frontend_model>
+					<comment model="Nuvei\Payments\Block\System\Config\ShowLastDownloadTime" />
+				</field>
+            </group>
+        </section>
+    </system>
+</config>

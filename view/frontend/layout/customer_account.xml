@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!-- Add custom Nuvei menu in My Account section -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	  xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+	<body>
+		<referenceBlock name="customer_account_navigation">
+			<block class="Magento\Framework\View\Element\Html\Link\Current" name="customer-nuvei-subscr">
+				<arguments>
+					<argument name="path" xsi:type="string">nuvei_payments/frontend/order_subscriptionshistory</argument>
+					<argument name="label" xsi:type="string">Nuvei Subscriptions</argument>
+					<argument name="sortOrder" xsi:type="number">1</argument>
+				</arguments>
+			</block>
+		</referenceBlock>
+	</body>
+</page>

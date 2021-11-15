@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Nuvei Payments config config.
+ *
+ * @category Nuvei
+ * @package  Nuvei_Payments
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <payment>
+            <!-- Payment Method Configuration. -->
+            <nuvei>
+                <!-- Basic Configuration. -->
+                <active>1</active>
+                <title>Nuvei</title>
+                <mode></mode>
+                <hash></hash>
+				<payment_action></payment_action>
+				<use_upos>0</use_upos>
+				<allow_guests_subscr>0</allow_guests_subscr>
+                <merchant_id backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
+                <merchant_site_id/>
+                <merchant_secret_key backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
+                <sandbox_merchant_id backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
+                <sandbox_merchant_site_id/>
+                <sandbox_merchant_secret_key backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
+
+                <!-- Advanced Configuration. -->
+                <save_order_before_success>0</save_order_before_success>
+                <debug>3</debug>
+                <min_order_total/>
+                <max_order_total/>
+                <sort_order/>
+                <allowspecific>0</allowspecific>
+                <specificcountry/>
+                <!-- this option is mandatory, but we do not show it in the admin because all cards payments use Nuvei WebSDK -->
+                <cctypes>AE,VI,MC,MI,DN</cctypes>
+                
+                <payment_solution>external</payment_solution>
+                <order_status>nuvei_processing</order_status>
+                <can_use_checkout>1</can_use_checkout>
+                
+                <!-- Gateway Configuration. -->
+                <model>Nuvei\Payments\Model\Payment</model>
+                <privateInfoKeys>payment_solution,external_payment_method,authorization_code,transaction_id,nuvei_order_id,transaction_request_id</privateInfoKeys>
+                
+				<paymentInfoKeys>payment_solution,external_payment_method,authorization_code,transaction_id,nuvei_order_id,transaction_request_id</paymentInfoKeys>
+            </nuvei>
+        </payment>
+    </default>
+</config>

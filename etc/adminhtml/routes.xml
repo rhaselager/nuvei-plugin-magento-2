@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Nuvei Payments adminhtml routes config.
+ *
+ * @category Nuvei
+ * @package  Nuvei_Payments
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <router id="admin">
+        <route id="nuvei" frontName="nuvei_payments">
+            <module name="Nuvei_Payments" before="Magento_Backend" />
+        </route>
+    </router>
+</config>

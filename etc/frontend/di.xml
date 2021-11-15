@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Nuvei Payments frontend di config.
+ *
+ * @category Nuvei
+ * @package  Nuvei_Payments
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Payment\Model\CcGenericConfigProvider">
+        <arguments>
+            <argument name="methodCodes"
+                      xsi:type="array">
+                <item name="nuvei"
+                      xsi:type="const">Nuvei\Payments\Model\Payment::METHOD_CODE</item>
+            </argument>
+        </arguments>
+    </type>
+    
+    <type name="Magento\Checkout\Model\CompositeConfigProvider">
+        <arguments>
+            <argument name="configProviders"
+                      xsi:type="array">
+                <item name="nuvei_config_provider"
+                      xsi:type="object">Nuvei\Payments\Model\ConfigProvider</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

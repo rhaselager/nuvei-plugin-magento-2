@@ -1,0 +1,125 @@
+<?php if (1 == $block->isProductWithPlan()):
+    $nuvei_texts = $block->getTexts(); ?>
+
+    <div id="nuvei_plan_details" style="display: none;">
+        <h4><?= $block->escapeHtml($nuvei_texts['table_title']); ?></h4>
+        <table border="1">
+            <tr>
+                <td><?= $block->escapeHtml($nuvei_texts['rec_length']); ?></td>
+                <td id="nuvei_rec_length">&nbsp;</td>
+            </tr>
+            <tr>
+                <td><?= $block->escapeHtml($nuvei_texts['rec_period']); ?></td>
+                <td id="nuvei_rec_period">&nbsp;</td>
+            </tr>
+            <tr>
+                <td><?= $block->escapeHtml($nuvei_texts['rec_amount']); ?></td>
+                <td id="nuvei_rec_amount">&nbsp;</td>
+            </tr>
+            <tr>
+                <td><?= $block->escapeHtml($nuvei_texts['trial_period']); ?></td>
+                <td id="nuvei_trial_period">&nbsp;</td>
+            </tr>
+        </table>
+    </div>
+    
+    <script>
+        require([
+            'jquery'
+        ], function($){
+            var prodOptions = {};
+            
+            function nuveiShowPlanDetails(params) {
+                var strParams = '';
+                
+                if(typeof params != 'undefined' && '' != params) {
+                    console.log('nuveiShowPlanDetails params', params);
+                    strParams = params;
+                }
+                else {
+                    strParams = window.location.hash.replace('#', '');
+                }
+                
+                $.ajax({
+                    dataType: "json",
+                    type: 'post',
+                    url: '<?= $block->escapeUrl($nuvei_texts['nuvei_ajax_url']); ?>',
+                    data: {
+                        prodId      : '<?= /* @noEscape */ $nuvei_texts['nuvei_prod_id']; ?>',
+                        params      : strParams
+                    },
+                    cache: false,
+                    showLoader: true
+                })
+                    .done(function(resp){
+                        console.log(resp);
+
+                        if(typeof resp != 'undefined' && '' != resp) {
+                            var respObj = JSON.parse(resp);
+
+                            if(!respObj.hasOwnProperty('rec_amount')) {
+                                $('#nuvei_plan_details').css('display', 'none');
+                                return;
+                            }
+
+                            if(respObj.hasOwnProperty('rec_len')) {
+                                $('#nuvei_rec_length').html(respObj.rec_len);
+                            }
+                            if(respObj.hasOwnProperty('rec_period')) {
+                                $('#nuvei_rec_period').html(respObj.rec_period);
+                            }
+                            if(respObj.hasOwnProperty('rec_amount')) {
+                                $('#nuvei_rec_amount').html(respObj.rec_amount);
+                            }
+                            if(respObj.hasOwnProperty('trial_period')) {
+                                $('#nuvei_trial_period').html(respObj.trial_period);
+                            }
+
+                            $('#nuvei_plan_details').css('display', 'block');
+                        }
+                    });
+            }
+            
+            function nuveiCheckForSelectedPlanOnLoad() {
+                if('' != window.location.hash) {
+                    nuveiShowPlanDetails(window.location.hash.replace('#', ''));
+                }
+            }
+            
+            $(function() {
+                console.log('nuvei script')
+            
+                // on load check if some attribute was selected
+                nuveiCheckForSelectedPlanOnLoad();
+            
+                // on change of the attribute
+                $('select.super-attribute-select').on('change', function() {
+                    console.log('nuvei change option');
+                    
+                    var _self       = $(this);
+                    var attrId      = _self.attr('id').replace('attribute', '');
+                    var attrVal     = _self.val();
+                    
+                    if(<?= $block->escapeHtml($nuvei_texts['nuvei_attr_id']); ?> == attrId
+                        && '' != attrVal
+                    ) {
+                        nuveiShowPlanDetails(attrId + '=' + attrVal);
+                    }
+                });
+                
+                // on change nuvei_subscription_options
+                $('body').on('change', '.nuvei_subscription_options', function(event) {
+                    console.log('change nuvei_subscription_options')
+                    
+                    var _self   = $(this);
+                    
+                    if(_self.val() != 0 && _self.val() != '') {
+                        nuveiShowPlanDetails(<?= $block->escapeHtml($nuvei_texts['nuvei_attr_id']); ?> + '=' + _self.val());
+                    }
+                    
+                    event.stopPropagation();
+                });
+            });
+        });
+    </script>
+<?php endif; ?>

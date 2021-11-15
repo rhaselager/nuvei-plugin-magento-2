@@ -1,0 +1,38 @@
+{
+    "name": "nuvei/module-payments",
+    "description": "Nuvei Payments For Magento 2",
+	"minimum-stability": "beta",
+	"prefer-stable": true,
+    "require": {
+        "php": ">=5.5"
+    },
+    "type": "magento2-module",
+    "version": "3.1.7",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "authors": [{
+        "name": "Nuvei",
+        "role": "Developer"
+    }],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Nuvei\\Payments\\": ""
+        }
+    },
+    "require-dev": {
+        "magento/magento-coding-standard": "^5.0"
+    },
+	"scripts": {
+		"post-install-cmd": [
+		  "([ $COMPOSER_DEV_MODE -eq 0 ] || vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/)"
+		],
+		"post-update-cmd": [
+		  "([ $COMPOSER_DEV_MODE -eq 0 ] || vendor/bin/phpcs --config-set installed_paths ../../magento/magento-coding-standard/)"
+		]
+	}
+}

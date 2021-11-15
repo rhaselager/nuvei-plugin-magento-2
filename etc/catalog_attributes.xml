@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Catalog:etc/catalog_attributes.xsd">
+    <group name="quote_item">
+        <attribute name="nuvei_sub_enabled"/>
+        <attribute name="nuvei_payment_plans"/>
+        <attribute name="nuvei_sub_rec_amount"/>
+        <attribute name="nuvei_sub_recurr_units"/>
+        <attribute name="nuvei_sub_recurr_period"/>
+        <attribute name="nuvei_sub_trial_units"/>
+        <attribute name="nuvei_sub_trial_period"/>
+        <attribute name="nuvei_sub_end_after_units"/>
+        <attribute name="nuvei_sub_end_after_period"/>
+    </group>
+</config>

@@ -1,0 +1,92 @@
+<script>
+    require([
+        'jquery'
+    ], function($){
+        var nuveiPaymentPlans   = <?= /* @noEscape */ $block->getPaymentPlans(); ?>;
+        
+        function nuveiGetUnitsPeriodData(incomingObj) {
+            var data = {
+                units   : '',
+                period  : 0
+            };
+            
+            if(incomingObj.hasOwnProperty('day') && parseInt(incomingObj.day) > 0) {
+                data.units   = 'day';
+                data.period  = parseInt(incomingObj.day);
+                
+                if(incomingObj.hasOwnProperty('month') && parseInt(incomingObj.month) > 0) {
+                    data.period += parseInt(incomingObj.month) * 30;
+                }
+                
+                if(incomingObj.hasOwnProperty('year') && parseInt(incomingObj.year) > 0) {
+                    data.period += parseInt(incomingObj.year) * 365;
+                }
+            }
+            else if(incomingObj.hasOwnProperty('month') && parseInt(incomingObj.month) > 0) {
+                data.units   = 'month';
+                data.period  = parseInt(incomingObj.month);
+                
+                if(incomingObj.hasOwnProperty('year') && parseInt(incomingObj.year) > 0) {
+                    data.period += parseInt(incomingObj.year) * 12;
+                }
+            }
+            else if(incomingObj.hasOwnProperty('year') && parseInt(incomingObj.year) > 0) {
+                data.units   = 'year';
+                data.period  = parseInt(incomingObj.year);
+            }
+            
+            return data;
+        }
+        
+        $(function() {
+            $('body').on('change', 'select[name="product[nuvei_payment_plans]"]', function(){
+                $val = $('select[name="product\\[nuvei_payment_plans\\]"]').val();
+
+                if(!nuveiPaymentPlans.hasOwnProperty($val)) {
+                    console.log('There is no Nuvei plan with ID ' + $val);
+                    return;
+                }
+
+                // set recurring amount
+                if(nuveiPaymentPlans[$val].hasOwnProperty('recurringAmount')) {
+                    $('input[name="product\\[nuvei_sub_rec_amount\\]"]')
+                        .val(nuveiPaymentPlans[$val].recurringAmount);
+                    $('input[name="product[nuvei_sub_rec_amount]"').trigger('change');
+                }
+
+                // set recurring units and period
+                if(nuveiPaymentPlans[$val].hasOwnProperty('recurringPeriod')) {
+                    var data = nuveiGetUnitsPeriodData(nuveiPaymentPlans[$val].recurringPeriod);
+                    
+                    $('select[name="product\\[nuvei_sub_recurr_units\\]"]').val(data.units);
+                    $('select[name="product[nuvei_sub_recurr_units]"').trigger('change');
+                    
+                    $('input[name="product\\[nuvei_sub_recurr_period\\]"]').val(data.period);
+                    $('input[name="product[nuvei_sub_recurr_period]"').trigger('change');
+                }
+
+                // set trail units and period
+                if(nuveiPaymentPlans[$val].hasOwnProperty('startAfter')) {
+                    var data = nuveiGetUnitsPeriodData(nuveiPaymentPlans[$val].startAfter);
+                    
+                    $('select[name="product\\[nuvei_sub_trial_units\\]"]').val(data.units);
+                    $('select[name="product[nuvei_sub_trial_units]"').trigger('change');
+                    
+                    $('input[name="product\\[nuvei_sub_trial_period\\]"]').val(data.period);
+                    $('input[name="product[nuvei_sub_trial_period]"').trigger('change');
+                }
+                
+                // set end-after units and period
+                if(nuveiPaymentPlans[$val].hasOwnProperty('endAfter')) {
+                    var data = nuveiGetUnitsPeriodData(nuveiPaymentPlans[$val].endAfter);
+                    
+                    $('select[name="product\\[nuvei_sub_end_after_units\\]"]').val(data.units);
+                    $('select[name="product[nuvei_sub_end_after_units]"').trigger('change');
+                    
+                    $('input[name="product\\[nuvei_sub_end_after_period\\]"]').val(data.period);
+                    $('input[name="product[nuvei_sub_end_after_period]"').trigger('change');
+                }
+            });
+        });
+    });
+</script>

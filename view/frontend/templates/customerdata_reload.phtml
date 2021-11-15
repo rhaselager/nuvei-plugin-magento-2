@@ -1,0 +1,14 @@
+<!-- Nuvei - Reload customerData cart -->
+<script>
+    (function  () {
+        require([
+            "Magento_Customer/js/customer-data"
+        ],function(customerData) {
+			console.log('nuvei customerdata_reload');
+			
+            customerData.invalidate(['cart']);
+            customerData.reload(['cart'], true);
+        });
+    })();
+</script>
+<!--/ Nuvei - Reload customerData cart -->
