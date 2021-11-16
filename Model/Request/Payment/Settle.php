@@ -1,16 +1,16 @@
 <?php
 
-namespace Nuvei\Payments\Model\Request\Payment;
+namespace Nuvei\Checkout\Model\Request\Payment;
 
 use Magento\Framework\Exception\PaymentException;
-use Nuvei\Payments\Model\AbstractRequest;
-use Nuvei\Payments\Model\AbstractResponse;
-use Nuvei\Payments\Model\Payment;
-use Nuvei\Payments\Model\Request\AbstractPayment;
-use Nuvei\Payments\Model\RequestInterface;
+use Nuvei\Checkout\Model\AbstractRequest;
+use Nuvei\Checkout\Model\AbstractResponse;
+use Nuvei\Checkout\Model\Payment;
+use Nuvei\Checkout\Model\Request\AbstractPayment;
+use Nuvei\Checkout\Model\RequestInterface;
 
 /**
- * Nuvei Payments settle payment request model.
+ * Nuvei Checkout settle payment request model.
  */
 class Settle extends AbstractPayment implements RequestInterface
 {

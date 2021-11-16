@@ -1,16 +1,16 @@
 <?php
 
-namespace Nuvei\Payments\Ui\DataProvider;
+namespace Nuvei\Checkout\Ui\DataProvider;
 
-use Nuvei\Payments\Model\ResourceModel\RequestLog\CollectionFactory;
-use Nuvei\Payments\Model\ResourceModel\RequestLog\Collection;
+use Nuvei\Checkout\Model\ResourceModel\RequestLog\CollectionFactory;
+use Nuvei\Checkout\Model\ResourceModel\RequestLog\Collection;
 use Magento\Ui\DataProvider\AbstractDataProvider;
 use Magento\Ui\DataProvider\AddFieldToCollectionInterface;
 use Magento\Ui\DataProvider\AddFilterToCollectionInterface;
 use Magento\Framework\Api\Filter;
 
 /**
- * Nuvei Payments request log ui data provider.
+ * Nuvei Checkout request log ui data provider.
  */
 class RequestLogDataProvider extends AbstractDataProvider
 {

@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Nuvei Payments frontend routes config.
+ * Nuvei Checkout frontend routes config.
  *
  * @category Nuvei
- * @package  Nuvei_Payments
+ * @package  Nuvei_Checkout
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
     <router id="standard">
-        <route id="nuvei" frontName="nuvei_payments">
-            <module name="Nuvei_Payments"/>
+        <route id="nuvei" frontName="nuvei_checkout">
+            <module name="Nuvei_Checkout"/>
         </route>
     </router>
 </config>

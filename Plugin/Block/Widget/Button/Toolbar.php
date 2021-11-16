@@ -1,8 +1,8 @@
 <?php
 
-namespace Nuvei\Payments\Plugin\Block\Widget\Button;
+namespace Nuvei\Checkout\Plugin\Block\Widget\Button;
 
-use Nuvei\Payments\Model\Payment;
+use Nuvei\Checkout\Model\Payment;
 
 class Toolbar
 {
@@ -11,7 +11,7 @@ class Toolbar
     private $request;
     
     public function __construct(
-        \Nuvei\Payments\Model\Config $config,
+        \Nuvei\Checkout\Model\Config $config,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
         \Magento\Framework\App\RequestInterface $request
     ) {

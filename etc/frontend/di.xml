@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Nuvei Payments frontend di config.
+ * Nuvei Checkout frontend di config.
  *
  * @category Nuvei
- * @package  Nuvei_Payments
+ * @package  Nuvei_Checkout
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -14,7 +14,7 @@
             <argument name="methodCodes"
                       xsi:type="array">
                 <item name="nuvei"
-                      xsi:type="const">Nuvei\Payments\Model\Payment::METHOD_CODE</item>
+                      xsi:type="const">Nuvei\Checkout\Model\Payment::METHOD_CODE</item>
             </argument>
         </arguments>
     </type>
@@ -24,7 +24,7 @@
             <argument name="configProviders"
                       xsi:type="array">
                 <item name="nuvei_config_provider"
-                      xsi:type="object">Nuvei\Payments\Model\ConfigProvider</item>
+                      xsi:type="object">Nuvei\Checkout\Model\ConfigProvider</item>
             </argument>
         </arguments>
     </type>

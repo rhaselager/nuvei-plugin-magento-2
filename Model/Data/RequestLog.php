@@ -1,12 +1,12 @@
 <?php
 
-namespace Nuvei\Payments\Model\Data;
+namespace Nuvei\Checkout\Model\Data;
 
-use Nuvei\Payments\Api\Data\RequestLogInterface;
+use Nuvei\Checkout\Api\Data\RequestLogInterface;
 use Magento\Framework\Api\AbstractSimpleObject;
 
 /**
- * Nuvei Payments request log data object.
+ * Nuvei Checkout request log data object.
  */
 class RequestLog extends AbstractSimpleObject implements RequestLogInterface
 {

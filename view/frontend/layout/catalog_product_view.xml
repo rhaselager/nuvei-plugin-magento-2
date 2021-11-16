@@ -5,9 +5,9 @@
     
 	<body>
 		<referenceBlock name="product.info.options.wrapper.bottom">
-            <block class="Nuvei\Payments\Block\Frontend\Product\NuveiPlanDetails" 
+            <block class="Nuvei\Checkout\Block\Frontend\Product\NuveiPlanDetails" 
 				   name="nuvei-plan-details" 
-				   template="Nuvei_Payments::product_plan_details.phtml" 
+				   template="Nuvei_Checkout::product_plan_details.phtml" 
 				   before="product.info.addtocart">
             </block>
         </referenceBlock>

@@ -1,13 +1,13 @@
 <?php
 
-namespace Nuvei\Payments\Model\Response\Payment;
+namespace Nuvei\Checkout\Model\Response\Payment;
 
-use Nuvei\Payments\Model\Payment;
-use Nuvei\Payments\Model\Response\AbstractPayment;
-use Nuvei\Payments\Model\ResponseInterface;
+use Nuvei\Checkout\Model\Payment;
+use Nuvei\Checkout\Model\Response\AbstractPayment;
+use Nuvei\Checkout\Model\ResponseInterface;
 
 /**
- * Nuvei Payments payment settle response model.
+ * Nuvei Checkout payment settle response model.
  */
 class Settle extends AbstractPayment implements ResponseInterface
 {

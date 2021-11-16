@@ -1,9 +1,9 @@
 <?php
 
-namespace Nuvei\Payments\Model\Request;
+namespace Nuvei\Checkout\Model\Request;
 
-use Nuvei\Payments\Model\AbstractRequest;
-use Nuvei\Payments\Model\RequestInterface;
+use Nuvei\Checkout\Model\AbstractRequest;
+use Nuvei\Checkout\Model\RequestInterface;
 
 class GetPlansList extends AbstractRequest implements RequestInterface
 {
@@ -11,11 +11,11 @@ class GetPlansList extends AbstractRequest implements RequestInterface
     protected $config;
     
     public function __construct(
-        \Nuvei\Payments\Model\Logger $logger,
-        \Nuvei\Payments\Model\Config $config,
-        \Nuvei\Payments\Lib\Http\Client\Curl $curl,
-        \Nuvei\Payments\Model\Response\Factory $responseFactory,
-        \Nuvei\Payments\Model\Request\Factory $requestFactory
+        \Nuvei\Checkout\Model\Logger $logger,
+        \Nuvei\Checkout\Model\Config $config,
+        \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
+        \Nuvei\Checkout\Model\Response\Factory $responseFactory,
+        \Nuvei\Checkout\Model\Request\Factory $requestFactory
     ) {
         parent::__construct(
             $logger,
@@ -98,7 +98,7 @@ class GetPlansList extends AbstractRequest implements RequestInterface
             }
 
             file_put_contents(
-                $tempPath. DIRECTORY_SEPARATOR . \Nuvei\Payments\Model\Config::PAYMENT_PLANS_FILE_NAME,
+                $tempPath. DIRECTORY_SEPARATOR . \Nuvei\Checkout\Model\Config::PAYMENT_PLANS_FILE_NAME,
                 json_encode($plans)
             );
         } catch (Exception $e) {

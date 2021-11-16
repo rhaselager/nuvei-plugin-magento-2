@@ -1,11 +1,11 @@
 <?php
 
-namespace Nuvei\Payments\Model\Logger;
+namespace Nuvei\Checkout\Model\Logger;
 
 use Magento\Framework\Logger\Handler\Base;
 
 /**
- * Nuvei Payments logger handler model.
+ * Nuvei Checkout logger handler model.
  */
 class Handler extends Base
 {

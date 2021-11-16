@@ -1,9 +1,9 @@
 <?php
 
-namespace Nuvei\Payments\Model;
+namespace Nuvei\Checkout\Model;
 
 /**
- * Nuvei Payments private data keys provider model.
+ * Nuvei Checkout private data keys provider model.
  */
 class PrivateDataKeysProvider
 {

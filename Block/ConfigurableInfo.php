@@ -1,14 +1,14 @@
 <?php
 
-namespace Nuvei\Payments\Block;
+namespace Nuvei\Checkout\Block;
 
-use Nuvei\Payments\Model\Payment;
+use Nuvei\Checkout\Model\Payment;
 use Magento\Framework\Phrase;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Payment\Gateway\ConfigInterface;
 
 /**
- * Nuvei Payments configurable info block.
+ * Nuvei Checkout configurable info block.
  */
 class ConfigurableInfo extends \Magento\Payment\Block\ConfigurableInfo
 {

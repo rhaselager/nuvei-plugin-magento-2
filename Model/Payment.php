@@ -1,6 +1,6 @@
 <?php
 
-namespace Nuvei\Payments\Model;
+namespace Nuvei\Checkout\Model;
 
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Model\Session as CustomerSession;
@@ -21,11 +21,11 @@ use Magento\Payment\Model\Method\Cc;
 use Magento\Payment\Model\Method\Logger as PaymentLogger;
 use Magento\Payment\Model\Method\TransparentInterface;
 use Magento\Quote\Api\Data\PaymentInterface;
-use Nuvei\Payments\Model\Config as ModuleConfig;
-use Nuvei\Payments\Model\Request\Payment\Factory as PaymentRequestFactory;
+use Nuvei\Checkout\Model\Config as ModuleConfig;
+use Nuvei\Checkout\Model\Request\Payment\Factory as PaymentRequestFactory;
 
 /**
- * Nuvei Payments payment model.
+ * Nuvei Checkout payment model.
  *
  * * TODO - Cc class is deprecated. Use \Magento\Payment\Model\MethodInterface instead.
  */
@@ -98,7 +98,7 @@ class Payment extends Cc implements TransparentInterface
      *
      * @var string
      */
-    protected $_infoBlockType = \Nuvei\Payments\Block\ConfigurableInfo::class;
+    protected $_infoBlockType = \Nuvei\Checkout\Block\ConfigurableInfo::class;
 
     /**
      * Payment Method feature.

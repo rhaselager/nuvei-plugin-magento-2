@@ -1,17 +1,17 @@
 <?php
 
-namespace Nuvei\Payments\Model;
+namespace Nuvei\Checkout\Model;
 
 use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Helper\Data as PaymentHelper;
 use Magento\Payment\Model\CcConfig;
 use Magento\Payment\Model\CcGenericConfigProvider;
-use Nuvei\Payments\Model\Config as ModuleConfig;
-use Nuvei\Payments\Model\Request\Factory as RequestFactory;
+use Nuvei\Checkout\Model\Config as ModuleConfig;
+use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
 
 /**
- * Nuvei Payments config provider model.
+ * Nuvei Checkout config provider model.
  */
 class ConfigProvider extends CcGenericConfigProvider
 {
@@ -114,8 +114,8 @@ class ConfigProvider extends CcGenericConfigProvider
                     'getUPOsUrl'                => $this->urlBuilder->getUrl('nuvei_payments/payment/GetUpos'),
                     'getUpdateOrderUrl'         => $this->urlBuilder->getUrl('nuvei_payments/payment/OpenOrder'),
                     'getRemoveUpoUrl'           => $this->urlBuilder->getUrl('nuvei_payments/payment/DeleteUpo'),
-                    'checkoutLogoUrl'           => $this->assetRepo->getUrl("Nuvei_Payments::images/nuvei.png"),
-                    'checkoutApplePayBtn'       => $this->assetRepo->getUrl("Nuvei_Payments::images/ApplePay-Button.png"),
+                    'checkoutLogoUrl'           => $this->assetRepo->getUrl("Nuvei_Checkout::images/nuvei.png"),
+                    'checkoutApplePayBtn'       => $this->assetRepo->getUrl("Nuvei_Checkout::images/ApplePay-Button.png"),
                     
                     'countryId'                 => $this->moduleConfig->getQuoteCountryCode(),
                     'updateQuotePM'             => $this->urlBuilder->getUrl('nuvei_payments/payment/UpdateQuotePaymentMethod'),

@@ -1,8 +1,8 @@
 <?php
 
-namespace Nuvei\Payments\Plugin\Block\Adminhtml\Order\Invoice;
+namespace Nuvei\Checkout\Plugin\Block\Adminhtml\Order\Invoice;
 
-use Nuvei\Payments\Model\Payment;
+use Nuvei\Checkout\Model\Payment;
 use Magento\Sales\Model\Order\Invoice;
 
 class View extends \Magento\Backend\Block\Widget\Form\Container
@@ -16,7 +16,7 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
     public function __construct(
         \Magento\Framework\App\RequestInterface $request,
         Invoice $invoice,
-        \Nuvei\Payments\Model\Config $config,
+        \Nuvei\Checkout\Model\Config $config,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepo,
         \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder
     ) {

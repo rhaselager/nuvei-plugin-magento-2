@@ -1,16 +1,16 @@
 <?php
 
-namespace Nuvei\Payments\Controller\Payment\Callback;
+namespace Nuvei\Checkout\Controller\Payment\Callback;
 
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Controller\ResultInterface;
-use Nuvei\Payments\Model\Config as ModuleConfig;
-use Nuvei\Payments\Model\Logger as Logger;
+use Nuvei\Checkout\Model\Config as ModuleConfig;
+use Nuvei\Checkout\Model\Logger as Logger;
 
 /**
- * Nuvei Payments payment place controller.
+ * Nuvei Checkout payment place controller.
  */
 class ErrorOld extends Action
 {

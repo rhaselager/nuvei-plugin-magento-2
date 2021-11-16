@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Nuvei Payments config config.
+ * Nuvei Checkout config config.
  *
  * @category Nuvei
- * @package  Nuvei_Payments
+ * @package  Nuvei_Checkout
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -44,7 +44,7 @@
                 <can_use_checkout>1</can_use_checkout>
                 
                 <!-- Gateway Configuration. -->
-                <model>Nuvei\Payments\Model\Payment</model>
+                <model>Nuvei\Checkout\Model\Payment</model>
                 <privateInfoKeys>payment_solution,external_payment_method,authorization_code,transaction_id,nuvei_order_id,transaction_request_id</privateInfoKeys>
                 
 				<paymentInfoKeys>payment_solution,external_payment_method,authorization_code,transaction_id,nuvei_order_id,transaction_request_id</paymentInfoKeys>

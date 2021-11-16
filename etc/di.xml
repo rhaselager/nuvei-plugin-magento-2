@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Nuvei Payments di config.
+ * Nuvei Checkout di config.
  *
  * @category Nuvei
- * @package  Nuvei_Payments
+ * @package  Nuvei_Checkout
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <!-- Grid configuration. -->
-    <virtualType name="NuveiPaymentsRequestGridFilterPool"
+    <virtualType name="NuveiCheckoutRequestGridFilterPool"
                  type="Magento\Framework\View\Element\UiComponent\DataProvider\FilterPool">
         <arguments>
             <argument name="appliers"
@@ -23,28 +23,28 @@
         </arguments>
     </virtualType>
     
-    <virtualType name="NuveiPaymentsRequestDataProvider"
+    <virtualType name="NuveiCheckoutRequestDataProvider"
                  type="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
         <arguments>
             <argument name="collection"
                       xsi:type="object"
-                      shared="false">Nuvei\Payments\Model\ResourceModel\Request\Collection</argument>
+                      shared="false">Nuvei\Checkout\Model\ResourceModel\Request\Collection</argument>
             <argument name="filterPool"
                       xsi:type="object"
-                      shared="false">NuveiPaymentsRequestGridFilterPool</argument>
+                      shared="false">NuveiCheckoutRequestGridFilterPool</argument>
         </arguments>
     </virtualType>
     
-    <type name="Nuvei\Payments\Model\ResourceModel\Request\Grid\Collection">
+    <type name="Nuvei\Checkout\Model\ResourceModel\Request\Grid\Collection">
         <arguments>
             <argument name="mainTable"
-                      xsi:type="string">nuvei_payments_api_request_log</argument>
+                      xsi:type="string">nuvei_checkout_api_request_log</argument>
             <argument name="eventPrefix"
-                      xsi:type="string">nuvei_payments_api_request_log_grid_collection</argument>
+                      xsi:type="string">nuvei_checkout_api_request_log_grid_collection</argument>
             <argument name="eventObject"
                       xsi:type="string">api_request_grid_collection</argument>
             <argument name="resourceModel"
-                      xsi:type="string">Nuvei\Payments\Model\ResourceModel\Request</argument>
+                      xsi:type="string">Nuvei\Checkout\Model\ResourceModel\Request</argument>
         </arguments>
     </type>
     
@@ -52,46 +52,46 @@
         <arguments>
             <argument name="collections"
                       xsi:type="array">
-                <item name="nuvei_payments_api_request_log_listing_data_source"
-                      xsi:type="string">Nuvei\HelloWorld\Payments\ResourceModel\Request\Grid\Collection</item>
+                <item name="nuvei_checkout_api_request_log_listing_data_source"
+                      xsi:type="string">Nuvei\HelloWorld\Checkout\ResourceModel\Request\Grid\Collection</item>
             </argument>
         </arguments>
     </type>-->
 
     <!-- Logger configuration. -->
-    <type name="Nuvei\Payments\Model\Logger\Handler">
+    <type name="Nuvei\Checkout\Model\Logger\Handler">
         <arguments>
             <argument name="filesystem"
                       xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
         </arguments>
     </type>
     
-    <type name="Nuvei\Payments\Model\Logger">
+    <type name="Nuvei\Checkout\Model\Logger">
         <arguments>
             <argument name="name"
                       xsi:type="string">logger</argument>
             <argument name="handlers"
                       xsi:type="array">
                 <item name="system"
-                      xsi:type="object">Nuvei\Payments\Model\Logger\Handler</item>
+                      xsi:type="object">Nuvei\Checkout\Model\Logger\Handler</item>
             </argument>
         </arguments>
     </type>
 	
 	<type name="Magento\Checkout\Model\Cart">
         <plugin name="prevent_add_to" 
-				type="Nuvei\Payments\Plugin\PreventAddToCart"/>
+				type="Nuvei\Checkout\Plugin\PreventAddToCart"/>
     </type>
 	
 	<type name="Magento\Payment\Model\Checks\ZeroTotal">
 		<plugin name="nuvei_zero_total" 
-				type="Nuvei\Payments\Plugin\ZeroTotal" />
+				type="Nuvei\Checkout\Plugin\ZeroTotal" />
 	</type>
 	
     <!-- Interface preferences. -->
-    <preference for="Nuvei\Payments\Api\RequestLogRepositoryInterface"
-                type="Nuvei\Payments\Model\ResourceModel\RequestLogRepository"/>
+    <preference for="Nuvei\Checkout\Api\RequestLogRepositoryInterface"
+                type="Nuvei\Checkout\Model\ResourceModel\RequestLogRepository"/>
     
-    <preference for="Nuvei\Payments\Api\Data\RequestLogInterface"
-                type="Nuvei\Payments\Model\Data\RequestLog"/>
+    <preference for="Nuvei\Checkout\Api\Data\RequestLogInterface"
+                type="Nuvei\Checkout\Model\Data\RequestLog"/>
 </config>

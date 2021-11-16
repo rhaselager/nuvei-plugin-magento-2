@@ -1,14 +1,14 @@
 <?php
 
-namespace Nuvei\Payments\Model\ResourceModel;
+namespace Nuvei\Checkout\Model\ResourceModel;
 
-use Nuvei\Payments\Api\Data\RequestLogInterface;
-use Nuvei\Payments\Api\RequestLogRepositoryInterface;
-use Nuvei\Payments\Model\RequestLogFactory;
+use Nuvei\Checkout\Api\Data\RequestLogInterface;
+use Nuvei\Checkout\Api\RequestLogRepositoryInterface;
+use Nuvei\Checkout\Model\RequestLogFactory;
 use Magento\Framework\Event\ManagerInterface;
 
 /**
- * Nuvei Payments request log repository model.
+ * Nuvei Checkout request log repository model.
  */
 class RequestLogRepository implements RequestLogRepositoryInterface
 {

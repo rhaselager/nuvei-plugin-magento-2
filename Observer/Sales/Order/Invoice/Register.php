@@ -1,8 +1,8 @@
 <?php
 
-namespace Nuvei\Payments\Observer\Sales\Order\Invoice;
+namespace Nuvei\Checkout\Observer\Sales\Order\Invoice;
 
-use Nuvei\Payments\Model\Payment;
+use Nuvei\Checkout\Model\Payment;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Event\Observer;
 use Magento\Sales\Model\Order;
@@ -10,7 +10,7 @@ use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Order\Payment as OrderPayment;
 
 /**
- * Nuvei Payments sales order invoice register observer.
+ * Nuvei Checkout sales order invoice register observer.
  *
  * Here we just set status to pending, and will wait for the DMN to confirm the payment.
  *
@@ -19,7 +19,7 @@ class Register implements ObserverInterface
 {
     private $config;
     
-    public function __construct(\Nuvei\Payments\Model\Config $config)
+    public function __construct(\Nuvei\Checkout\Model\Config $config)
     {
         $this->config = $config;
     }

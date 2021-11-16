@@ -1,6 +1,6 @@
 <?php
 
-namespace Nuvei\Payments\Model\System\Message;
+namespace Nuvei\Checkout\Model\System\Message;
 
 /**
  * Show System message if there is new version of the plugin,
@@ -16,7 +16,7 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
     
     public function __construct(
         \Magento\Framework\Filesystem\DirectoryList $directory,
-        \Nuvei\Payments\Model\Config $modulConfig
+        \Nuvei\Checkout\Model\Config $modulConfig
     ) {
         $this->directory    = $directory;
         $this->modulConfig  = $modulConfig;

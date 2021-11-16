@@ -1,13 +1,13 @@
 <?php
 
-namespace Nuvei\Payments\Model\Redirect;
+namespace Nuvei\Checkout\Model\Redirect;
 
 use Magento\Checkout\Model\Session as CheckoutSession;
-use Nuvei\Payments\Model\Config as ModuleConfig;
+use Nuvei\Checkout\Model\Config as ModuleConfig;
 use Magento\Framework\App\Request\Http as Http;
 
 /**
- * Nuvei Payments config provider model.
+ * Nuvei Checkout config provider model.
  */
 class Url
 {

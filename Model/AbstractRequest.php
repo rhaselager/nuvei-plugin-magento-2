@@ -1,15 +1,15 @@
 <?php
 
-namespace Nuvei\Payments\Model;
+namespace Nuvei\Checkout\Model;
 
 use Magento\Framework\Exception\PaymentException;
 use Magento\Quote\Model\Quote;
-use Nuvei\Payments\Lib\Http\Client\Curl;
-use Nuvei\Payments\Model\Logger as Logger;
-use Nuvei\Payments\Model\Response\Factory as ResponseFactory;
+use Nuvei\Checkout\Lib\Http\Client\Curl;
+use Nuvei\Checkout\Model\Logger as Logger;
+use Nuvei\Checkout\Model\Response\Factory as ResponseFactory;
 
 /**
- * Nuvei Payments abstract request model.
+ * Nuvei Checkout abstract request model.
  */
 abstract class AbstractRequest extends AbstractApi
 {
@@ -628,44 +628,44 @@ abstract class AbstractRequest extends AbstractApi
 
 
                 // if subscription is not enabled continue witht the next product
-                if ($item->getProduct()->getData(\Nuvei\Payments\Model\Config::PAYMENT_SUBS_ENABLE) != 1) {
+                if ($item->getProduct()->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_ENABLE) != 1) {
                     continue;
                 }
 
                 // mandatory data
                 $subs_data[$product->getId()] = [
-                    'planId' => $item->getProduct()->getData(\Nuvei\Payments\Model\Config::PAYMENT_PLANS_ATTR_NAME),
+                    'planId' => $item->getProduct()->getData(\Nuvei\Checkout\Model\Config::PAYMENT_PLANS_ATTR_NAME),
 
 //                    'initialAmount' => number_format($item->getProduct()
-//                        ->getData(\Nuvei\Payments\Model\Config::PAYMENT_SUBS_INTIT_AMOUNT), 2, '.', ''),
+//                        ->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_INTIT_AMOUNT), 2, '.', ''),
                     'initialAmount' => 0,
 
                     'recurringAmount' => number_format($item->getProduct()
-                        ->getData(\Nuvei\Payments\Model\Config::PAYMENT_SUBS_REC_AMOUNT), 2, '.', ''),
+                        ->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_REC_AMOUNT), 2, '.', ''),
                 ];
 
                 # optional data
                 $recurr_unit    = $item->getProduct()
-                    ->getData(\Nuvei\Payments\Model\Config::PAYMENT_SUBS_RECURR_UNITS);
+                    ->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_RECURR_UNITS);
                 
                 $recurr_period  = $item->getProduct()
-                    ->getData(\Nuvei\Payments\Model\Config::PAYMENT_SUBS_RECURR_PERIOD);
+                    ->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_RECURR_PERIOD);
                 
                 $subs_data[$product->getId()]['recurringPeriod'][strtolower($recurr_unit)] = $recurr_period;
 
                 $trial_unit     = $item->getProduct()
-                    ->getData(\Nuvei\Payments\Model\Config::PAYMENT_SUBS_TRIAL_UNITS);
+                    ->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_TRIAL_UNITS);
                 
                 $trial_period   = $item->getProduct()
-                    ->getData(\Nuvei\Payments\Model\Config::PAYMENT_SUBS_TRIAL_PERIOD);
+                    ->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_TRIAL_PERIOD);
                 
                 $subs_data[$product->getId()]['startAfter'][strtolower($trial_unit)] = $trial_period;
 
                 $end_after_unit = $item->getProduct()
-                    ->getData(\Nuvei\Payments\Model\Config::PAYMENT_SUBS_END_AFTER_UNITS);
+                    ->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_END_AFTER_UNITS);
                 
                 $end_after_period = $item->getProduct()
-                    ->getData(\Nuvei\Payments\Model\Config::PAYMENT_SUBS_END_AFTER_PERIOD);
+                    ->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_END_AFTER_PERIOD);
 
                 $subs_data[$product->getId()]['endAfter'][strtolower($end_after_unit)] = $end_after_period;
                 # optional data END

@@ -3,8 +3,8 @@
 		 xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
     <columns name="sales_order_columns">
 		<column name="status" 
-				component="Nuvei_Payments/js/grid/columns/markNuveiSubscriptions" 
-				class="Nuvei\Payments\Ui\Component\Listing\Column\Status">
+				component="Nuvei_Checkout/js/grid/columns/markNuveiSubscriptions" 
+				class="Nuvei\Checkout\Ui\Component\Listing\Column\Status">
 			<settings>
                 <filter>select</filter>
                 <options class="Magento\Sales\Ui\Component\Listing\Column\Status\Options"/>

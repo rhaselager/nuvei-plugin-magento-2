@@ -1,8 +1,8 @@
 <?php
 
-namespace Nuvei\Payments\Block\Frontend\Product;
+namespace Nuvei\Checkout\Block\Frontend\Product;
 
-use Nuvei\Payments\Model\Config;
+use Nuvei\Checkout\Model\Config;
 
 class NuveiPlanDetails extends \Magento\Catalog\Block\Product\View
 {
@@ -85,7 +85,7 @@ class NuveiPlanDetails extends \Magento\Catalog\Block\Product\View
      */
     public function getTexts()
     {
-        $nuvei_prod_attr_code   = \Nuvei\Payments\Model\Config::STORE_SUBS_DROPDOWN_NAME;
+        $nuvei_prod_attr_code   = \Nuvei\Checkout\Model\Config::STORE_SUBS_DROPDOWN_NAME;
         $nuvei_prod_attr_id     = $this->eavAttribute->getIdByCode('catalog_product', $nuvei_prod_attr_code);
         
         return [

@@ -1,11 +1,11 @@
 <?php
 
-namespace Nuvei\Payments\Model\ResourceModel\RequestLog;
+namespace Nuvei\Checkout\Model\ResourceModel\RequestLog;
 
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 
 /**
- * Nuvei Payments request log collection model.
+ * Nuvei Checkout request log collection model.
  */
 class Collection extends AbstractCollection
 {
@@ -19,8 +19,8 @@ class Collection extends AbstractCollection
         parent::_construct();
 
         $this->_init(
-            \Nuvei\Payments\Model\RequestLog::class,
-            \Nuvei\Payments\Model\ResourceModel\RequestLog::class
+            \Nuvei\Checkout\Model\RequestLog::class,
+            \Nuvei\Checkout\Model\ResourceModel\RequestLog::class
         );
     }
 }

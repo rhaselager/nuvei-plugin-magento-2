@@ -1,6 +1,6 @@
 var config = {
     paths: {
-        'jquery.redirect': "Nuvei_Payments/js/jquery.redirect"
+        'jquery.redirect': "Nuvei_Checkout/js/jquery.redirect"
     },
     shim: {
         'jquery.redirect': {
@@ -10,7 +10,7 @@ var config = {
 	'config': {
 		'mixins': {
 			'Magento_Checkout/js/action/set-shipping-information': {
-                'Nuvei_Payments/js/scShippingHook': true
+                'Nuvei_Checkout/js/scShippingHook': true
             }
 		}
 	}

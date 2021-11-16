@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Nuvei Payments adminhtml system config.
+ * Nuvei Checkout adminhtml system config.
  *
  * @category Nuvei
- * @package  Nuvei_Payments
+ * @package  Nuvei_Checkout
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -52,7 +52,7 @@
 					   showInWebsite="1"
 					   showInStore="0" >
 					<label>Mode</label>
-					<source_model>Nuvei\Payments\Model\Adminhtml\Source\Mode</source_model>
+					<source_model>Nuvei\Checkout\Model\Adminhtml\Source\Mode</source_model>
 					<config_path>payment/nuvei/mode</config_path>
 					<validate>required-entry</validate>
 				</field>
@@ -65,7 +65,7 @@
 					   showInWebsite="1"
 					   showInStore="0" >
 					<label>Merchant Hash</label>
-					<source_model>Nuvei\Payments\Model\Adminhtml\Source\Hash</source_model>
+					<source_model>Nuvei\Checkout\Model\Adminhtml\Source\Hash</source_model>
 					<config_path>payment/nuvei/hash</config_path>
 					<validate>required-entry</validate>
 				</field>
@@ -78,7 +78,7 @@
 					   showInWebsite="1"
 					   showInStore="0" >
 					<label>Payment Action</label>
-					<source_model>Nuvei\Payments\Model\Adminhtml\Source\PaymentAction</source_model>
+					<source_model>Nuvei\Checkout\Model\Adminhtml\Source\PaymentAction</source_model>
 					<config_path>payment/nuvei/payment_action</config_path>
 					<validate>required-entry</validate>
 				</field>
@@ -216,7 +216,7 @@
 					   showInWebsite="1"
 					   showInStore="0" >
 					<label>Save Debug log</label>
-					<source_model>Nuvei\Payments\Model\Adminhtml\Source\Debug</source_model>
+					<source_model>Nuvei\Checkout\Model\Adminhtml\Source\Debug</source_model>
 					<config_path>payment/nuvei/debug</config_path>
 				</field>
 
@@ -287,7 +287,7 @@
 					   showInWebsite="1"
 					   showInStore="0" >
 					<label>Site Notify URL</label>
-					<comment model="Nuvei\Payments\Block\System\Config\GetNotifyUrl" />
+					<comment model="Nuvei\Checkout\Block\System\Config\GetNotifyUrl" />
 				</field>
 				
 				<field id="getPlans"
@@ -298,8 +298,8 @@
 					   showInWebsite="1"
 					   showInStore="0" >
 					<label>Get Payment Plans</label>
-					<frontend_model>Nuvei\Payments\Block\System\Config\Button</frontend_model>
-					<comment model="Nuvei\Payments\Block\System\Config\ShowLastDownloadTime" />
+					<frontend_model>Nuvei\Checkout\Block\System\Config\Button</frontend_model>
+					<comment model="Nuvei\Checkout\Block\System\Config\ShowLastDownloadTime" />
 				</field>
             </group>
         </section>

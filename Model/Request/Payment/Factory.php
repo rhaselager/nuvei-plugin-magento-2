@@ -1,14 +1,14 @@
 <?php
 
-namespace Nuvei\Payments\Model\Request\Payment;
+namespace Nuvei\Checkout\Model\Request\Payment;
 
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\ObjectManagerInterface;
-use Nuvei\Payments\Model\AbstractRequest;
-use Nuvei\Payments\Model\RequestInterface;
+use Nuvei\Checkout\Model\AbstractRequest;
+use Nuvei\Checkout\Model\RequestInterface;
 
 /**
- * Nuvei Payments payment request factory model.
+ * Nuvei Checkout payment request factory model.
  */
 class Factory
 {
@@ -18,9 +18,9 @@ class Factory
      * @var array
      */
     private $invokableClasses = [
-        AbstractRequest::PAYMENT_SETTLE_METHOD  => \Nuvei\Payments\Model\Request\Payment\Settle::class,
-        AbstractRequest::PAYMENT_REFUND_METHOD  => \Nuvei\Payments\Model\Request\Payment\Refund::class,
-        AbstractRequest::PAYMENT_VOID_METHOD    => \Nuvei\Payments\Model\Request\Payment\Cancel::class,
+        AbstractRequest::PAYMENT_SETTLE_METHOD  => \Nuvei\Checkout\Model\Request\Payment\Settle::class,
+        AbstractRequest::PAYMENT_REFUND_METHOD  => \Nuvei\Checkout\Model\Request\Payment\Refund::class,
+        AbstractRequest::PAYMENT_VOID_METHOD    => \Nuvei\Checkout\Model\Request\Payment\Cancel::class,
     ];
 
     /**
@@ -37,7 +37,7 @@ class Factory
      */
     public function __construct(
         ObjectManagerInterface $objectManager,
-        \Nuvei\Payments\Model\Config $config
+        \Nuvei\Checkout\Model\Config $config
     ) {
         $this->objectManager = $objectManager;
         $this->config = $config;
@@ -78,7 +78,7 @@ class Factory
         if (!$model instanceof RequestInterface) {
             throw new LocalizedException(
                 __(
-                    "%1 doesn't implement \Nuvei\Payments\Mode\RequestInterface",
+                    "%1 doesn't implement \Nuvei\Checkout\Mode\RequestInterface",
                     $className
                 )
             );

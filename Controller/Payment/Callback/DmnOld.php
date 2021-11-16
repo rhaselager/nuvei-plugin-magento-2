@@ -1,14 +1,14 @@
 <?php
 
-namespace Nuvei\Payments\Controller\Payment\Callback;
+namespace Nuvei\Checkout\Controller\Payment\Callback;
 
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Order\Payment\Transaction;
-use Nuvei\Payments\Model\Payment;
+use Nuvei\Checkout\Model\Payment;
 
 /**
- * Nuvei Payments payment redirect controller.
+ * Nuvei Checkout payment redirect controller.
  */
 class DmnOld extends \Magento\Framework\App\Action\Action
 {
@@ -64,7 +64,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Nuvei\Payments\Model\Config $moduleConfig,
+        \Nuvei\Checkout\Model\Config $moduleConfig,
         \Magento\Sales\Model\Order\Payment\State\CaptureCommand $captureCommand,
         \Magento\Framework\DataObjectFactory $dataObjectFactory,
         \Magento\Quote\Api\CartManagementInterface $cartManagement,
@@ -79,7 +79,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepo,
         \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
         \Magento\Sales\Model\ResourceModel\Order $orderResourceModel,
-        \Nuvei\Payments\Model\Request\Factory $requestFactory,
+        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
         \Magento\Framework\App\Request\Http $httpRequest
     ) {
         $this->moduleConfig             = $moduleConfig;

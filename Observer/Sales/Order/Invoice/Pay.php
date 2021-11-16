@@ -1,22 +1,22 @@
 <?php
 
-namespace Nuvei\Payments\Observer\Sales\Order\Invoice;
+namespace Nuvei\Checkout\Observer\Sales\Order\Invoice;
 
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Order\Payment as OrderPayment;
-use Nuvei\Payments\Model\Payment;
+use Nuvei\Checkout\Model\Payment;
 
 /**
- * Nuvei Payments sales order invoice pay observer.
+ * Nuvei Checkout sales order invoice pay observer.
  */
 class Pay implements ObserverInterface
 {
     private $config;
     
-    public function __construct(\Nuvei\Payments\Model\Config $config)
+    public function __construct(\Nuvei\Checkout\Model\Config $config)
     {
         $this->config = $config;
     }

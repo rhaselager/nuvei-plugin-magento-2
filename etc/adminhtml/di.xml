@@ -1,21 +1,21 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Nuvei Payments di adminhtml config.
+ * Nuvei Checkout di adminhtml config.
  *
  * @category Nuvei
- * @package  Nuvei_Payments
+ * @package  Nuvei_Checkout
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <type name="Magento\Sales\Model\Service\CreditmemoService">
         <plugin name="persistRequestLog"
-                type="\Nuvei\Payments\Model\Plugin\Service\CreditmemoService\Plugin"
+                type="\Nuvei\Checkout\Model\Plugin\Service\CreditmemoService\Plugin"
                 sortOrder="10"/>
     </type>
     
-    <type name="Nuvei\Payments\Model\Payment">
+    <type name="Nuvei\Checkout\Model\Payment">
         <arguments>
             <argument name="data" xsi:type="array">
                 <item name="formBlockType" xsi:type="string">Magento\Payment\Block\Adminhtml\Transparent\Form</item>
@@ -25,12 +25,12 @@
 	
 	<type name="Magento\Backend\Block\Widget\Button\Toolbar">
         <plugin name="orderFormToolbarButtons" 
-				type="Nuvei\Payments\Plugin\Block\Widget\Button\Toolbar" />
+				type="Nuvei\Checkout\Plugin\Block\Widget\Button\Toolbar" />
     </type>
 	
 	<type name="Magento\Sales\Block\Adminhtml\Order\Invoice\View">
         <plugin name="orderInvoiceFormToolbarButtons" 
-				type="Nuvei\Payments\Plugin\Block\Adminhtml\Order\Invoice\View" />
+				type="Nuvei\Checkout\Plugin\Block\Adminhtml\Order\Invoice\View" />
     </type>
 	
 	<!-- Show system message when there is a new version of the plugin -->
@@ -38,7 +38,7 @@
 		<arguments>
 			<argument name="messages" xsi:type="array">
 				<item name="latestPluginVersionMessage" 
-					  xsi:type="string">Nuvei\Payments\Model\System\Message\LatestPluginVersionMessage</item>
+					  xsi:type="string">Nuvei\Checkout\Model\System\Message\LatestPluginVersionMessage</item>
 			</argument>
 		</arguments>
 	</type>

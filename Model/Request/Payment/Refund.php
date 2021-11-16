@@ -1,17 +1,17 @@
 <?php
 
-namespace Nuvei\Payments\Model\Request\Payment;
+namespace Nuvei\Checkout\Model\Request\Payment;
 
 use Magento\Framework\Exception\PaymentException;
 //use Magento\Sales\Model\Order\Payment\Transaction as OrderTransaction;
-use Nuvei\Payments\Model\AbstractRequest;
-use Nuvei\Payments\Model\AbstractResponse;
-use Nuvei\Payments\Model\Payment;
-use Nuvei\Payments\Model\Request\AbstractPayment;
-use Nuvei\Payments\Model\RequestInterface;
+use Nuvei\Checkout\Model\AbstractRequest;
+use Nuvei\Checkout\Model\AbstractResponse;
+use Nuvei\Checkout\Model\Payment;
+use Nuvei\Checkout\Model\Request\AbstractPayment;
+use Nuvei\Checkout\Model\RequestInterface;
 
 /**
- * Nuvei Payments refund payment request model.
+ * Nuvei Checkout refund payment request model.
  */
 class Refund extends AbstractPayment implements RequestInterface
 {
@@ -35,12 +35,12 @@ class Refund extends AbstractPayment implements RequestInterface
      * @param float                             $amount
      */
     public function __construct(
-        \Nuvei\Payments\Model\Logger $logger,
-        \Nuvei\Payments\Model\Config $config,
-        \Nuvei\Payments\Lib\Http\Client\Curl $curl,
-        \Nuvei\Payments\Model\Request\Factory $requestFactory,
-        \Nuvei\Payments\Model\Request\Payment\Factory $paymentRequestFactory,
-        \Nuvei\Payments\Model\Response\Factory $responseFactory,
+        \Nuvei\Checkout\Model\Logger $logger,
+        \Nuvei\Checkout\Model\Config $config,
+        \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
+        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
+        \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
+        \Nuvei\Checkout\Model\Response\Factory $responseFactory,
         \Magento\Sales\Model\Order\Payment $orderPayment,
         \Magento\Sales\Api\TransactionRepositoryInterface $transactionRepository,
         \Magento\Framework\App\Request\Http $request,

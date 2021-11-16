@@ -5,7 +5,7 @@
  * Override original logic in Magento 2 and allow Orders with Total Amount of 0
  */
 
-namespace Nuvei\Payments\Plugin;
+namespace Nuvei\Checkout\Plugin;
 
 class ZeroTotal
 {

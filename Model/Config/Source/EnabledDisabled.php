@@ -1,6 +1,6 @@
 <?php
 
-namespace Nuvei\Payments\Model\Config\Source;
+namespace Nuvei\Checkout\Model\Config\Source;
 
 class EnabledDisabled extends \Magento\Eav\Model\Entity\Attribute\Source\AbstractSource
 {

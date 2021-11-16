@@ -1,15 +1,15 @@
 <?php
 
-namespace Nuvei\Payments\Observer\Sales\Order\Cancel;
+namespace Nuvei\Checkout\Observer\Sales\Order\Cancel;
 
-use Nuvei\Payments\Model\Payment;
+use Nuvei\Checkout\Model\Payment;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Event\Observer;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment as OrderPayment;
 
 /**
- * Nuvei Payments sales order void observer.
+ * Nuvei Checkout sales order void observer.
  */
 class Register implements ObserverInterface
 {

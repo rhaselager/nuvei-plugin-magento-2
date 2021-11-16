@@ -1,9 +1,9 @@
 <?php
 
-namespace Nuvei\Payments\Api\Data;
+namespace Nuvei\Checkout\Api\Data;
 
 /**
- * Nuvei Payments request log entity interface.
+ * Nuvei Checkout request log entity interface.
  */
 interface RequestLogInterface
 {

@@ -1,16 +1,16 @@
 <?php
 
-namespace Nuvei\Payments\Block\Adminhtml;
+namespace Nuvei\Checkout\Block\Adminhtml;
 
 class ReadPlans extends \Magento\Backend\Block\Template
 {
-    protected $_template = 'Nuvei_Payments::readPlans.phtml';
+    protected $_template = 'Nuvei_Checkout::readPlans.phtml';
     
     private $config;
 
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
-        \Nuvei\Payments\Model\Config $config,
+        \Nuvei\Checkout\Model\Config $config,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -21,7 +21,7 @@ class ReadPlans extends \Magento\Backend\Block\Template
     public function getPaymentPlans()
     {
         $file_name = $this->config->getTempPath() . DIRECTORY_SEPARATOR
-            . \Nuvei\Payments\Model\Config::PAYMENT_PLANS_FILE_NAME;
+            . \Nuvei\Checkout\Model\Config::PAYMENT_PLANS_FILE_NAME;
         
         if (!is_readable($file_name)) {
             return '';

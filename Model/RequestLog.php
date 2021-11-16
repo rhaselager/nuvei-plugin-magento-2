@@ -1,9 +1,9 @@
 <?php
 
-namespace Nuvei\Payments\Model;
+namespace Nuvei\Checkout\Model;
 
-use Nuvei\Payments\Api\Data\RequestLogInterface;
-use Nuvei\Payments\Api\Data\RequestLogInterfaceFactory;
+use Nuvei\Checkout\Api\Data\RequestLogInterface;
+use Nuvei\Checkout\Api\Data\RequestLogInterfaceFactory;
 use Magento\Framework\Api\DataObjectHelper;
 use Magento\Framework\Data\Collection\AbstractDb;
 use Magento\Framework\Model\AbstractModel;
@@ -14,7 +14,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 
 /**
- * Nuvei Payments request log model.
+ * Nuvei Checkout request log model.
  */
 class RequestLog extends AbstractModel
 {
@@ -92,7 +92,7 @@ class RequestLog extends AbstractModel
     {
         parent::_construct();
 
-        $this->_init(\Nuvei\Payments\Model\ResourceModel\RequestLog::class);
+        $this->_init(\Nuvei\Checkout\Model\ResourceModel\RequestLog::class);
     }
 
     /**

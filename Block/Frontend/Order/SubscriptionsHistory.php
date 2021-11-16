@@ -1,6 +1,6 @@
 <?php
 
-namespace Nuvei\Payments\Block\Frontend\Order;
+namespace Nuvei\Checkout\Block\Frontend\Order;
 
 use \Magento\Framework\App\ObjectManager;
 use \Magento\Sales\Model\ResourceModel\Order\CollectionFactoryInterface;
@@ -48,7 +48,7 @@ class SubscriptionsHistory extends \Magento\Sales\Block\Order\History
         \Magento\Sales\Model\ResourceModel\Order\CollectionFactory $orderCollectionFactory,
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Sales\Model\Order\Config $orderConfig,
-        \Nuvei\Payments\Model\Config $config,
+        \Nuvei\Checkout\Model\Config $config,
         \Magento\Framework\App\RequestInterface $request
     ) {
         $this->_orderCollectionFactory  = $orderCollectionFactory;

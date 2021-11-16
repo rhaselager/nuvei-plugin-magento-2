@@ -1,12 +1,12 @@
 <?php
 
-namespace Nuvei\Payments\Block\System\Config;
+namespace Nuvei\Checkout\Block\System\Config;
 
 class GetNotifyUrl implements \Magento\Config\Model\Config\CommentInterface
 {
     private $config;
     
-    public function __construct(\Nuvei\Payments\Model\Config $config)
+    public function __construct(\Nuvei\Checkout\Model\Config $config)
     {
         $this->config = $config;
     }

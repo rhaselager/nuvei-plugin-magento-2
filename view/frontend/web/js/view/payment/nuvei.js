@@ -1,8 +1,8 @@
 /**
- * Nuvei Payments js component.
+ * Nuvei Checkout js component.
  *
  * @category Nuvei
- * @package  Nuvei_Payments
+ * @package  Nuvei_Checkout
  */
 define(
     [
@@ -14,7 +14,7 @@ define(
         
         rendererList.push({
 			type: 'nuvei',
-			component: 'Nuvei_Payments/js/view/payment/method-renderer/nuvei'
+			component: 'Nuvei_Checkout/js/view/payment/method-renderer/nuvei'
 		});
 
         return Component.extend({});

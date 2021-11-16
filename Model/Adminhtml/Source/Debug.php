@@ -1,11 +1,11 @@
 <?php
 
-namespace Nuvei\Payments\Model\Adminhtml\Source;
+namespace Nuvei\Checkout\Model\Adminhtml\Source;
 
 use Magento\Framework\Option\ArrayInterface;
 
 /**
- * Nuvei Payments mode source model.
+ * Nuvei Checkout mode source model.
  */
 class Debug implements ArrayInterface
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Nuvei\Payments\Setup;
+namespace Nuvei\Checkout\Setup;
 
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\DB\Ddl\Table;
@@ -9,7 +9,7 @@ use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\SchemaSetupInterface;
 
 /**
- * Nuvei Payments install schema.
+ * Nuvei Checkout install schema.
  */
 class InstallSchema implements InstallSchemaInterface
 {
@@ -27,10 +27,10 @@ class InstallSchema implements InstallSchemaInterface
         $setup->startSetup();
 
         // add plugin table
-        if (!$setup->tableExists('nuvei_payments_api_request_log')) {
+        if (!$setup->tableExists('nuvei_checkout_api_request_log')) {
             $table = $setup->getConnection()
                 ->newTable(
-                    $setup->getTable('nuvei_payments_api_request_log')
+                    $setup->getTable('nuvei_checkout_api_request_log')
                 )
                 ->addColumn(
                     'request_id',
@@ -148,14 +148,14 @@ class InstallSchema implements InstallSchemaInterface
                     ],
                     'Updated At'
                 )
-                ->setComment('Nuvei Payments Api Request Log Grid Table');
+                ->setComment('Nuvei Checkout Api Request Log Grid Table');
             $setup->getConnection()->createTable($table);
 
             $setup->getConnection()
                 ->addIndex(
-                    $setup->getTable('nuvei_payments_api_request_log'),
+                    $setup->getTable('nuvei_checkout_api_request_log'),
                     $setup->getIdxName(
-                        $setup->getTable('nuvei_payments_api_request_log'),
+                        $setup->getTable('nuvei_checkout_api_request_log'),
                         ['method', 'request', 'response', 'increment_id'],
                         AdapterInterface::INDEX_TYPE_FULLTEXT
                     ),
@@ -165,9 +165,9 @@ class InstallSchema implements InstallSchemaInterface
 
             $setup->getConnection()
                 ->addIndex(
-                    $setup->getTable('nuvei_payments_api_request_log'),
+                    $setup->getTable('nuvei_checkout_api_request_log'),
                     $setup->getIdxName(
-                        $setup->getTable('nuvei_payments_api_request_log'),
+                        $setup->getTable('nuvei_checkout_api_request_log'),
                         ['parent_request_id'],
                         AdapterInterface::INDEX_TYPE_INDEX
                     ),
@@ -177,9 +177,9 @@ class InstallSchema implements InstallSchemaInterface
 
             $setup->getConnection()
                 ->addIndex(
-                    $setup->getTable('nuvei_payments_api_request_log'),
+                    $setup->getTable('nuvei_checkout_api_request_log'),
                     $setup->getIdxName(
-                        $setup->getTable('nuvei_payments_api_request_log'),
+                        $setup->getTable('nuvei_checkout_api_request_log'),
                         ['status'],
                         AdapterInterface::INDEX_TYPE_INDEX
                     ),

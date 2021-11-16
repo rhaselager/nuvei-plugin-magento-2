@@ -1,11 +1,11 @@
 <?php
 
-namespace Nuvei\Payments\Model\ResourceModel;
+namespace Nuvei\Checkout\Model\ResourceModel;
 
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
 /**
- * Nuvei Payments request log resource model.
+ * Nuvei Checkout request log resource model.
  */
 class RequestLog extends AbstractDb
 {
@@ -16,6 +16,6 @@ class RequestLog extends AbstractDb
      */
     protected function _construct()
     {
-        $this->_init('nuvei_payments_api_request_log', 'request_id');
+        $this->_init('nuvei_checkout_api_request_log', 'request_id');
     }
 }

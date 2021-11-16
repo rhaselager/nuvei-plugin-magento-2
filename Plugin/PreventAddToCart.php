@@ -6,7 +6,7 @@
  * A product with a rebilling plan must stay alone in a Cart and an Order.
  */
 
-namespace Nuvei\Payments\Plugin;
+namespace Nuvei\Checkout\Plugin;
 
 class PreventAddToCart
 {
@@ -20,7 +20,7 @@ class PreventAddToCart
     private $configurableProduct;
 
     public function __construct(
-        \Nuvei\Payments\Model\Config $config,
+        \Nuvei\Checkout\Model\Config $config,
         \Magento\Framework\App\Request\Http $request,
         \Magento\Framework\Message\ManagerInterface $messanger,
         \Magento\Catalog\Model\Product $product_obj,
@@ -61,10 +61,10 @@ class PreventAddToCart
                 $conProd = $this->configurableProduct->getProductByAttributes($requestInfo['super_attribute'], $productInfo);
                 
                 if(is_object($conProd)) {
-                    $payment_enabled = (bool) $conProd->getData(\Nuvei\Payments\Model\Config::PAYMENT_SUBS_ENABLE);
+                    $payment_enabled = (bool) $conProd->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_ENABLE);
                 }
             } else { // 2.2 when we have simple peoduct without options
-                $payment_enabled = (bool) $productInfo->getData(\Nuvei\Payments\Model\Config::PAYMENT_SUBS_ENABLE);
+                $payment_enabled = (bool) $productInfo->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_ENABLE);
             }
             
             // the incoming product has plan

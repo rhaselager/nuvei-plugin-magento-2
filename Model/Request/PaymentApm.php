@@ -1,19 +1,19 @@
 <?php
 
-namespace Nuvei\Payments\Model\Request;
+namespace Nuvei\Checkout\Model\Request;
 
 use Magento\Checkout\Model\Session as CheckoutSession;
-use Nuvei\Payments\Lib\Http\Client\Curl;
-use Nuvei\Payments\Model\AbstractRequest;
-use Nuvei\Payments\Model\AbstractResponse;
-use Nuvei\Payments\Model\Config;
-use Nuvei\Payments\Model\Payment;
-use Nuvei\Payments\Model\Request\Factory as RequestFactory;
-use Nuvei\Payments\Model\RequestInterface;
-use Nuvei\Payments\Model\Response\Factory as ResponseFactory;
+use Nuvei\Checkout\Lib\Http\Client\Curl;
+use Nuvei\Checkout\Model\AbstractRequest;
+use Nuvei\Checkout\Model\AbstractResponse;
+use Nuvei\Checkout\Model\Config;
+use Nuvei\Checkout\Model\Payment;
+use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
+use Nuvei\Checkout\Model\RequestInterface;
+use Nuvei\Checkout\Model\Response\Factory as ResponseFactory;
 
 /**
- * Nuvei Payments paymentAPM request model.
+ * Nuvei Checkout paymentAPM request model.
  */
 class PaymentApm extends AbstractRequest implements RequestInterface
 {
@@ -39,7 +39,7 @@ class PaymentApm extends AbstractRequest implements RequestInterface
      * @param CheckoutSession  $checkoutSession
      */
     public function __construct(
-        \Nuvei\Payments\Model\Logger $logger,
+        \Nuvei\Checkout\Model\Logger $logger,
         Config $config,
         Curl $curl,
         ResponseFactory $responseFactory,

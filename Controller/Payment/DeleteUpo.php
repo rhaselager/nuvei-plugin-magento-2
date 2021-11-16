@@ -1,9 +1,9 @@
 <?php
 
-namespace Nuvei\Payments\Controller\Payment;
+namespace Nuvei\Checkout\Controller\Payment;
 
 use Magento\Framework\App\Action\Action;
-use Nuvei\Payments\Model\AbstractRequest;
+use Nuvei\Checkout\Model\AbstractRequest;
 
 class DeleteUpo extends Action
 {
@@ -38,10 +38,10 @@ class DeleteUpo extends Action
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Nuvei\Payments\Model\Redirect\Url $redirectUrlBuilder,
-        \Nuvei\Payments\Model\Config $moduleConfig,
+        \Nuvei\Checkout\Model\Redirect\Url $redirectUrlBuilder,
+        \Nuvei\Checkout\Model\Config $moduleConfig,
         \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory,
-        \Nuvei\Payments\Model\Request\Factory $requestFactory
+        \Nuvei\Checkout\Model\Request\Factory $requestFactory
     ) {
         parent::__construct($context);
 

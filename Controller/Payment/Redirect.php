@@ -1,16 +1,16 @@
 <?php
 
-namespace Nuvei\Payments\Controller\Payment;
+namespace Nuvei\Checkout\Controller\Payment;
 
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\JsonFactory;
-use Nuvei\Payments\Model\Config as ModuleConfig;
-use Nuvei\Payments\Model\Redirect\Url as RedirectUrlBuilder;
+use Nuvei\Checkout\Model\Config as ModuleConfig;
+use Nuvei\Checkout\Model\Redirect\Url as RedirectUrlBuilder;
 
 /**
- * Nuvei Payments payment redirect controller.
+ * Nuvei Checkout payment redirect controller.
  */
 class Redirect extends Action
 {

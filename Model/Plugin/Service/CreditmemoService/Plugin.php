@@ -1,17 +1,17 @@
 <?php
 
-namespace Nuvei\Payments\Model\Plugin\Service\CreditmemoService;
+namespace Nuvei\Checkout\Model\Plugin\Service\CreditmemoService;
 
-use Nuvei\Payments\Api\Data\RequestLogInterface;
-use Nuvei\Payments\Model\RequestLogFactory;
-use Nuvei\Payments\Model\Logger;
+use Nuvei\Checkout\Api\Data\RequestLogInterface;
+use Nuvei\Checkout\Model\RequestLogFactory;
+use Nuvei\Checkout\Model\Logger;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Registry as CoreRegistry;
 use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Service\CreditmemoService;
 
 /**
- * Nuvei Payments credit memo service plugin model.
+ * Nuvei Checkout credit memo service plugin model.
  */
 class Plugin
 {

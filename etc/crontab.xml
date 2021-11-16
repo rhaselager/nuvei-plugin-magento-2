@@ -1,24 +1,24 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Nuvei Payments crontab config.
+ * Nuvei Checkout crontab config.
  *
  * @category Nuvei
- * @package  Nuvei_Payments
+ * @package  Nuvei_Checkout
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
     <group id="default">
         <job name="nuvei_delete_old_request_log"
-             instance="Nuvei\Payments\Cron\DeleteOldRequestLog"
+             instance="Nuvei\Checkout\Cron\DeleteOldRequestLog"
              method="execute">
             <schedule>0 1 * * *</schedule>
         </job>
         
 		<!-- At 00:00 on Sunday. -->
 		<job name="nuvei_check_for_new_version"
-             instance="Nuvei\Payments\Cron\CheckForLatestVersion"
+             instance="Nuvei\Checkout\Cron\CheckForLatestVersion"
              method="execute">
             <schedule>0 0 * * 0</schedule>
         </job>

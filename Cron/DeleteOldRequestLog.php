@@ -1,12 +1,12 @@
 <?php
 
-namespace Nuvei\Payments\Cron;
+namespace Nuvei\Checkout\Cron;
 
-use Nuvei\Payments\Model\Config as ModuleConfig;
-use Nuvei\Payments\Model\ResourceModel\RequestLog\CollectionFactory;
+use Nuvei\Checkout\Model\Config as ModuleConfig;
+use Nuvei\Checkout\Model\ResourceModel\RequestLog\CollectionFactory;
 
 /**
- * Nuvei Payments delete old request log entries cron job.
+ * Nuvei Checkout delete old request log entries cron job.
  */
 class DeleteOldRequestLog
 {

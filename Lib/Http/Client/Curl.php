@@ -1,9 +1,9 @@
 <?php
 
-namespace Nuvei\Payments\Lib\Http\Client;
+namespace Nuvei\Checkout\Lib\Http\Client;
 
 /**
- * Nuvei Payments curl http client library.
+ * Nuvei Checkout curl http client library.
  */
 class Curl extends \Magento\Framework\HTTP\Client\Curl
 {

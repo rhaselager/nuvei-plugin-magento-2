@@ -1,15 +1,15 @@
 <?php
 
-namespace Nuvei\Payments\Controller\Payment;
+namespace Nuvei\Checkout\Controller\Payment;
 
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\JsonFactory;
-use Nuvei\Payments\Model\Config as ModuleConfig;
+use Nuvei\Checkout\Model\Config as ModuleConfig;
 
 /**
- * Nuvei Payments UpdateQuotePaymentMethod controller.
+ * Nuvei Checkout UpdateQuotePaymentMethod controller.
  */
 class UpdateQuotePaymentMethod extends Action
 {

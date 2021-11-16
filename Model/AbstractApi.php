@@ -1,11 +1,11 @@
 <?php
 
-namespace Nuvei\Payments\Model;
+namespace Nuvei\Checkout\Model;
 
-use Nuvei\Payments\Model\Logger as Logger;
+use Nuvei\Checkout\Model\Logger as Logger;
 
 /**
- * Nuvei Payments abstract api model.
+ * Nuvei Checkout abstract api model.
  */
 abstract class AbstractApi
 {

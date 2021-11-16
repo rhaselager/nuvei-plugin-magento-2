@@ -1,6 +1,6 @@
 <?php
 
-namespace Nuvei\Payments\Block\System\Config;
+namespace Nuvei\Checkout\Block\System\Config;
 
 class ShowLastDownloadTime implements \Magento\Config\Model\Config\CommentInterface
 {
@@ -8,7 +8,7 @@ class ShowLastDownloadTime implements \Magento\Config\Model\Config\CommentInterf
     private $directory;
     
     public function __construct(
-        \Nuvei\Payments\Model\Config $config,
+        \Nuvei\Checkout\Model\Config $config,
         \Magento\Framework\Filesystem\DirectoryList $directory
     ) {
         $this->config       = $config;

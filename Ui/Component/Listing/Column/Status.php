@@ -1,12 +1,12 @@
 <?php
 
-namespace Nuvei\Payments\Ui\Component\Listing\Column;
+namespace Nuvei\Checkout\Ui\Component\Listing\Column;
 
 use Magento\Ui\Component\Listing\Columns\Column;
 use Magento\Framework\View\Element\UiComponent\ContextInterface;
 use Magento\Framework\View\Element\UiComponentFactory;
 use Magento\Sales\Model\ResourceModel\Order\Status\CollectionFactory;
-use Nuvei\Payments\Model\Payment;
+use Nuvei\Checkout\Model\Payment;
 
 /**
  * Add additional marker for Nuvei Payment Plan.
@@ -34,7 +34,7 @@ class Status extends Column
         ContextInterface $context,
         UiComponentFactory $uiComponentFactory,
         CollectionFactory $collectionFactory,
-        \Nuvei\Payments\Model\Config $config,
+        \Nuvei\Checkout\Model\Config $config,
         \Magento\Sales\Model\Order $collection,
         array $components = [],
         array $data = []

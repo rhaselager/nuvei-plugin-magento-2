@@ -1,17 +1,17 @@
 <?php
 
-namespace Nuvei\Payments\Model;
+namespace Nuvei\Checkout\Model;
 
-use Nuvei\Payments\Api\Data\RequestLogInterface;
-use Nuvei\Payments\Api\RequestLogRepositoryInterface;
-use Nuvei\Payments\Model\Data\RequestLogFactory;
+use Nuvei\Checkout\Api\Data\RequestLogInterface;
+use Nuvei\Checkout\Api\RequestLogRepositoryInterface;
+use Nuvei\Checkout\Model\Data\RequestLogFactory;
 use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\Api\DataObjectHelper;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Registry as CoreRegistry;
 
 /**
- * Nuvei Payments logger model.
+ * Nuvei Checkout logger model.
  */
 class Logger extends \Monolog\Logger
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Nuvei\Payments\Model\Config\Source;
+namespace Nuvei\Checkout\Model\Config\Source;
 
 class PaymentPlansOptions extends \Magento\Eav\Model\Entity\Attribute\Source\AbstractSource
 {
@@ -13,7 +13,7 @@ class PaymentPlansOptions extends \Magento\Eav\Model\Entity\Attribute\Source\Abs
     
     public function __construct(
         \Magento\Framework\Filesystem\DirectoryList $directory,
-        \Nuvei\Payments\Model\Config $config,
+        \Nuvei\Checkout\Model\Config $config,
         \Magento\Framework\Filesystem\Io\File $file
     ) {
         $this->directory        = $directory;
@@ -31,7 +31,7 @@ class PaymentPlansOptions extends \Magento\Eav\Model\Entity\Attribute\Source\Abs
         
         # json version
         $file_name = $this->directory->getPath('tmp') . DIRECTORY_SEPARATOR
-            . \Nuvei\Payments\Model\Config::PAYMENT_PLANS_FILE_NAME;
+            . \Nuvei\Checkout\Model\Config::PAYMENT_PLANS_FILE_NAME;
         
         if (is_readable($file_name)) {
             try {

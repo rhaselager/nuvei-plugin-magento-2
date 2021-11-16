@@ -1,19 +1,19 @@
 <?php
 
-namespace Nuvei\Payments\Model\Request;
+namespace Nuvei\Checkout\Model\Request;
 
 use Magento\Sales\Model\Order\Payment as OrderPayment;
-use Nuvei\Payments\Lib\Http\Client\Curl;
-use Nuvei\Payments\Model\AbstractRequest;
-use Nuvei\Payments\Model\Config;
-use Nuvei\Payments\Model\Logger as Logger;
-use Nuvei\Payments\Model\Request\Factory as RequestFactory;
-use Nuvei\Payments\Model\Request\Payment\Factory as PaymentRequestFactory;
-use Nuvei\Payments\Model\Response\Factory as ResponseFactory;
-use Nuvei\Payments\Model\ResponseInterface;
+use Nuvei\Checkout\Lib\Http\Client\Curl;
+use Nuvei\Checkout\Model\AbstractRequest;
+use Nuvei\Checkout\Model\Config;
+use Nuvei\Checkout\Model\Logger as Logger;
+use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
+use Nuvei\Checkout\Model\Request\Payment\Factory as PaymentRequestFactory;
+use Nuvei\Checkout\Model\Response\Factory as ResponseFactory;
+use Nuvei\Checkout\Model\ResponseInterface;
 
 /**
- * Nuvei Payments abstract payment request model.
+ * Nuvei Checkout abstract payment request model.
  */
 abstract class AbstractPayment extends AbstractRequest
 {

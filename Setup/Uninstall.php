@@ -1,6 +1,6 @@
 <?php
 
-namespace Nuvei\Payments\Setup;
+namespace Nuvei\Checkout\Setup;
 
 use Magento\Framework\Setup\UninstallInterface;
 use Magento\Framework\Setup\SchemaSetupInterface;
@@ -13,7 +13,7 @@ class Uninstall implements UninstallInterface
         $installer = $setup;
         $installer->startSetup();
 
-        $installer->getConnection()->dropTable($installer->getTable('nuvei_payments_api_request_log'));
+        $installer->getConnection()->dropTable($installer->getTable('nuvei_checkout_api_request_log'));
 
         $installer->endSetup();
     }

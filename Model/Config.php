@@ -1,6 +1,6 @@
 <?php
 
-namespace Nuvei\Payments\Model;
+namespace Nuvei\Checkout\Model;
 
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -11,11 +11,11 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
- * Nuvei Payments config model.
+ * Nuvei Checkout config model.
  */
 class Config
 {
-    const MODULE_NAME                           = 'Nuvei_Payments';
+    const MODULE_NAME                           = 'Nuvei_Checkout';
     
     const PAYMENT_PLANS_ATTR_NAME               = 'nuvei_payment_plans';
     const PAYMENT_PLANS_ATTR_LABEL              = 'Nuvei Payment Plans';

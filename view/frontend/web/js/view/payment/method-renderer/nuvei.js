@@ -1,8 +1,8 @@
 /**
- * Nuvei Payments js component.
+ * Nuvei Checkout js component.
  *
  * @category Nuvei
- * @package  Nuvei_Payments
+ * @package  Nuvei_Checkout
  */
 define(
     [
@@ -135,7 +135,7 @@ define(
 		
         return Component.extend({
             defaults: {
-                template				: 'Nuvei_Payments/payment/nuvei',
+                template				: 'Nuvei_Checkout/payment/nuvei',
 				apmMethods				: [],
 				upos					: [],
 				applePayData			: {},

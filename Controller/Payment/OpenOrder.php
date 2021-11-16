@@ -1,18 +1,18 @@
 <?php
 
-namespace Nuvei\Payments\Controller\Payment;
+namespace Nuvei\Checkout\Controller\Payment;
 
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\JsonFactory;
-use Nuvei\Payments\Model\AbstractRequest;
-use Nuvei\Payments\Model\Config as ModuleConfig;
-use Nuvei\Payments\Model\Logger as Logger;
-use Nuvei\Payments\Model\Request\Factory as RequestFactory;
+use Nuvei\Checkout\Model\AbstractRequest;
+use Nuvei\Checkout\Model\Config as ModuleConfig;
+use Nuvei\Checkout\Model\Logger as Logger;
+use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
 
 /**
- * Nuvei Payments OpenOrder controller.
+ * Nuvei Checkout OpenOrder controller.
  */
 class OpenOrder extends Action
 {

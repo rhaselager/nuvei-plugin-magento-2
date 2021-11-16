@@ -1,10 +1,10 @@
 <?php
 
-namespace Nuvei\Payments\Controller\Frontend\Order;
+namespace Nuvei\Checkout\Controller\Frontend\Order;
 
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
-use Nuvei\Payments\Model\Config;
+use Nuvei\Checkout\Model\Config;
 use Magento\Framework\App\CsrfAwareActionInterface;
 
 class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface

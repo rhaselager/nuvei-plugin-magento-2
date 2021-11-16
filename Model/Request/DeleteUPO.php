@@ -1,10 +1,10 @@
 <?php
 
-namespace Nuvei\Payments\Model\Request;
+namespace Nuvei\Checkout\Model\Request;
 
-use Nuvei\Payments\Model\AbstractRequest;
-use Nuvei\Payments\Model\AbstractResponse;
-use Nuvei\Payments\Model\RequestInterface;
+use Nuvei\Checkout\Model\AbstractRequest;
+use Nuvei\Checkout\Model\AbstractResponse;
+use Nuvei\Checkout\Model\RequestInterface;
 
 class DeleteUPO extends AbstractRequest implements RequestInterface
 {
@@ -19,10 +19,10 @@ class DeleteUPO extends AbstractRequest implements RequestInterface
      * @param ResponseFactory   $responseFactory
      */
     public function __construct(
-        \Nuvei\Payments\Model\Logger $logger,
-        \Nuvei\Payments\Model\Config $config,
-        \Nuvei\Payments\Lib\Http\Client\Curl $curl,
-        \Nuvei\Payments\Model\Response\Factory $responseFactory
+        \Nuvei\Checkout\Model\Logger $logger,
+        \Nuvei\Checkout\Model\Config $config,
+        \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
+        \Nuvei\Checkout\Model\Response\Factory $responseFactory
     ) {
         parent::__construct(
             $logger,

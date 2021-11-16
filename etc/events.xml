@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Nuvei Payments events config.
+ * Nuvei Checkout events config.
  *
  * @category Nuvei
- * @package  Nuvei_Payments
+ * @package  Nuvei_Checkout
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -12,21 +12,21 @@
 	
     <event name="sales_order_invoice_register">
         <observer name="nuvei_capture_order_status_update"
-                  instance="Nuvei\Payments\Observer\Sales\Order\Invoice\Register"/>
+                  instance="Nuvei\Checkout\Observer\Sales\Order\Invoice\Register"/>
     </event>
     
     <event name="sales_order_invoice_save_after">
         <observer name="nuvei_invoice_pay"
-                  instance="Nuvei\Payments\Observer\Sales\Order\Invoice\AfterSave"/>
+                  instance="Nuvei\Checkout\Observer\Sales\Order\Invoice\AfterSave"/>
     </event>
 	
     <event name="sales_order_payment_void">
         <observer name="nuvei_void_order_status_update"
-                  instance="Nuvei\Payments\Observer\Sales\Order\Cancel\Register"/>
+                  instance="Nuvei\Checkout\Observer\Sales\Order\Cancel\Register"/>
     </event>
 	
     <event name="sales_order_creditmemo_refund">
         <observer name="nuvei_refund_order_status_update"
-                  instance="Nuvei\Payments\Observer\Sales\Order\Refund\Register"/>
+                  instance="Nuvei\Checkout\Observer\Sales\Order\Refund\Register"/>
     </event>
 </config>

@@ -1,21 +1,21 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Nuvei Payments adminhtml menu config.
+ * Nuvei Checkout adminhtml menu config.
  *
  * @category Nuvei
- * @package  Nuvei_Payments
+ * @package  Nuvei_Checkout
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
     <menu>
-        <add id="Nuvei_Payments::sales_nuvei"
+        <add id="Nuvei_Checkout::sales_nuvei"
              title="Nuvei"
              translate="title"
-             module="Nuvei_Payments"
+             module="Nuvei_Checkout"
              sortOrder="20"
              parent="Magento_Sales::sales"
-             resource="Nuvei_Payments::sales_nuvei"/>
+             resource="Nuvei_Checkout::sales_nuvei"/>
     </menu>
 </config>

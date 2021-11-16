@@ -1,12 +1,12 @@
 <?php
 
-namespace Nuvei\Payments\Api;
+namespace Nuvei\Checkout\Api;
 
-use Nuvei\Payments\Api\Data\RequestLogInterface;
+use Nuvei\Checkout\Api\Data\RequestLogInterface;
 use Magento\Framework\Exception\LocalizedException;
 
 /**
- * Nuvei Payments request log repository interface.
+ * Nuvei Checkout request log repository interface.
  */
 interface RequestLogRepositoryInterface
 {

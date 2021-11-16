@@ -1,13 +1,13 @@
 <?php
 
-namespace Nuvei\Payments\Controller\Payment\Callback;
+namespace Nuvei\Checkout\Controller\Payment\Callback;
 
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 
 /**
- * Nuvei Payments payment place controller.
+ * Nuvei Checkout payment place controller.
  */
 class Error extends \Magento\Framework\App\Action\Action implements \Magento\Framework\App\CsrfAwareActionInterface
 {
@@ -24,7 +24,7 @@ class Error extends \Magento\Framework\App\Action\Action implements \Magento\Fra
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Nuvei\Payments\Model\Config $moduleConfig
+        \Nuvei\Checkout\Model\Config $moduleConfig
     ) {
         parent::__construct($context);
 

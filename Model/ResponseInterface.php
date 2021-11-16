@@ -1,9 +1,9 @@
 <?php
 
-namespace Nuvei\Payments\Model;
+namespace Nuvei\Checkout\Model;
 
 /**
- * Nuvei Payments response interface.
+ * Nuvei Checkout response interface.
  */
 interface ResponseInterface
 {

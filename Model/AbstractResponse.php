@@ -1,13 +1,13 @@
 <?php
 
-namespace Nuvei\Payments\Model;
+namespace Nuvei\Checkout\Model;
 
 use Magento\Framework\Exception\PaymentException;
-use Nuvei\Payments\Lib\Http\Client\Curl;
-use Nuvei\Payments\Model\Logger as Logger;
+use Nuvei\Checkout\Lib\Http\Client\Curl;
+use Nuvei\Checkout\Model\Logger as Logger;
 
 /**
- * Nuvei Payments abstract response model.
+ * Nuvei Checkout abstract response model.
  */
 abstract class AbstractResponse extends AbstractApi
 {

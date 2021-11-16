@@ -1,6 +1,6 @@
 <?php
 
-namespace Nuvei\Payments\Cron;
+namespace Nuvei\Checkout\Cron;
 
 class CheckForLatestVersion
 {
@@ -8,7 +8,7 @@ class CheckForLatestVersion
     private $directory;
 
     public function __construct(
-        \Nuvei\Payments\Model\Config $moduleConfig,
+        \Nuvei\Checkout\Model\Config $moduleConfig,
         \Magento\Framework\Filesystem\DirectoryList $directory
     ) {
         $this->moduleConfig = $moduleConfig;

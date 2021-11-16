@@ -6,7 +6,7 @@
 		<referenceBlock name="customer_account_navigation">
 			<block class="Magento\Framework\View\Element\Html\Link\Current" name="customer-nuvei-subscr">
 				<arguments>
-					<argument name="path" xsi:type="string">nuvei_payments/frontend/order_subscriptionshistory</argument>
+					<argument name="path" xsi:type="string">nuvei_checkout/frontend/order_subscriptionshistory</argument>
 					<argument name="label" xsi:type="string">Nuvei Subscriptions</argument>
 					<argument name="sortOrder" xsi:type="number">1</argument>
 				</arguments>

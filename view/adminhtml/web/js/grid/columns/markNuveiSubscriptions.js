@@ -6,7 +6,7 @@ define([
 
     return Column.extend({
         defaults: {
-            bodyTmpl: 'Nuvei_Payments/ui/grid/cells/status_content'
+            bodyTmpl: 'Nuvei_Checkout/ui/grid/cells/status_content'
         },
         
 		orderHasSubscr: function(row) {

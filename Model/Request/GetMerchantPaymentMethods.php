@@ -1,17 +1,17 @@
 <?php
 
-namespace Nuvei\Payments\Model\Request;
+namespace Nuvei\Checkout\Model\Request;
 
-use Nuvei\Payments\Lib\Http\Client\Curl;
-use Nuvei\Payments\Model\AbstractRequest;
-use Nuvei\Payments\Model\AbstractResponse;
-use Nuvei\Payments\Model\Config;
-use Nuvei\Payments\Model\Request\Factory as RequestFactory;
-use Nuvei\Payments\Model\RequestInterface;
-use Nuvei\Payments\Model\Response\Factory as ResponseFactory;
+use Nuvei\Checkout\Lib\Http\Client\Curl;
+use Nuvei\Checkout\Model\AbstractRequest;
+use Nuvei\Checkout\Model\AbstractResponse;
+use Nuvei\Checkout\Model\Config;
+use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
+use Nuvei\Checkout\Model\RequestInterface;
+use Nuvei\Checkout\Model\Response\Factory as ResponseFactory;
 
 /**
- * Nuvei Payments get merchant payment methods request model.
+ * Nuvei Checkout get merchant payment methods request model.
  */
 class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterface
 {
@@ -38,7 +38,7 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
      * @param Factory          $requestFactory
      */
     public function __construct(
-        \Nuvei\Payments\Model\Logger $logger,
+        \Nuvei\Checkout\Model\Logger $logger,
         Config $config,
         Curl $curl,
         ResponseFactory $responseFactory,

@@ -1,8 +1,8 @@
 <?php
 
-namespace Nuvei\Payments\Controller\Adminhtml\System\Config;
+namespace Nuvei\Checkout\Controller\Adminhtml\System\Config;
 
-use Nuvei\Payments\Model\AbstractRequest;
+use Nuvei\Checkout\Model\AbstractRequest;
 
 class GetPlans extends \Magento\Backend\App\Action
 {
@@ -14,8 +14,8 @@ class GetPlans extends \Magento\Backend\App\Action
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
         \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory,
-        \Nuvei\Payments\Model\Config $moduleConfig,
-        \Nuvei\Payments\Model\Request\Factory $requestFactory
+        \Nuvei\Checkout\Model\Config $moduleConfig,
+        \Nuvei\Checkout\Model\Request\Factory $requestFactory
     ) {
         parent::__construct($context);
         

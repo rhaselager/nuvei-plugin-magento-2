@@ -1,18 +1,18 @@
 <?php
 
-namespace Nuvei\Payments\Block\System\Config;
+namespace Nuvei\Checkout\Block\System\Config;
 
 use Magento\Framework\Data\Form\Element\AbstractElement;
 
 class Button extends \Magento\Config\Block\System\Config\Form\Field
 {
-    protected $_template = 'Nuvei_Payments::system/config/getPlans.phtml';
+    protected $_template = 'Nuvei_Checkout::system/config/getPlans.phtml';
  
     private $config;
     
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
-        \Nuvei\Payments\Model\Config $config,
+        \Nuvei\Checkout\Model\Config $config,
         array $data = []
     ) {
         parent::__construct($context, $data);

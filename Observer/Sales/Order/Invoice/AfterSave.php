@@ -1,8 +1,8 @@
 <?php
 
-namespace Nuvei\Payments\Observer\Sales\Order\Invoice;
+namespace Nuvei\Checkout\Observer\Sales\Order\Invoice;
 
-use Nuvei\Payments\Model\Payment;
+use Nuvei\Checkout\Model\Payment;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Event\Observer;
 use Magento\Sales\Model\Order;
@@ -10,7 +10,7 @@ use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Order\Payment as OrderPayment;
 
 /**
- * Nuvei Payments sales order invoice after save observer.
+ * Nuvei Checkout sales order invoice after save observer.
  *
  * We use this observer to get the Invoice ID and pass it into the Settle request.
  */
@@ -24,9 +24,9 @@ class AfterSave implements ObserverInterface
     private $requestFactory;
     
     public function __construct(
-        \Nuvei\Payments\Model\Config $config,
-        \Nuvei\Payments\Model\Request\Payment\Factory $paymentRequestFactory,
-        \Nuvei\Payments\Model\Request\Factory $requestFactory,
+        \Nuvei\Checkout\Model\Config $config,
+        \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
+        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
         \Magento\Framework\ObjectManagerInterface $objectManager,
         \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory
     ) {
@@ -125,7 +125,7 @@ class AfterSave implements ObserverInterface
                 return $this;
             }
             
-            $request = $this->objectManager->create(\Nuvei\Payments\Model\Request\SettleTransaction::class);
+            $request = $this->objectManager->create(\Nuvei\Checkout\Model\Request\SettleTransaction::class);
 
             $request
                 ->setPayment($payment)

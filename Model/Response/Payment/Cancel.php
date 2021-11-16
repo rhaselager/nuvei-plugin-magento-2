@@ -1,12 +1,12 @@
 <?php
 
-namespace Nuvei\Payments\Model\Response\Payment;
+namespace Nuvei\Checkout\Model\Response\Payment;
 
-use Nuvei\Payments\Model\Response\AbstractPayment;
-use Nuvei\Payments\Model\ResponseInterface;
+use Nuvei\Checkout\Model\Response\AbstractPayment;
+use Nuvei\Checkout\Model\ResponseInterface;
 
 /**
- * Nuvei Payments payment void response model.
+ * Nuvei Checkout payment void response model.
  */
 class Cancel extends AbstractPayment implements ResponseInterface
 {

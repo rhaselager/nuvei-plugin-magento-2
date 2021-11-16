@@ -1,17 +1,17 @@
 <?php
 
-namespace Nuvei\Payments\Controller\Payment\Callback;
+namespace Nuvei\Checkout\Controller\Payment\Callback;
 
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Order\Payment\Transaction;
-use Nuvei\Payments\Model\Payment;
+use Nuvei\Checkout\Model\Payment;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
-use Nuvei\Payments\Model\AbstractRequest;
+use Nuvei\Checkout\Model\AbstractRequest;
 
 /**
- * Nuvei Payments payment redirect controller.
+ * Nuvei Checkout payment redirect controller.
  */
 class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Framework\App\CsrfAwareActionInterface
 {
@@ -67,7 +67,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Nuvei\Payments\Model\Config $moduleConfig,
+        \Nuvei\Checkout\Model\Config $moduleConfig,
         \Magento\Sales\Model\Order\Payment\State\CaptureCommand $captureCommand,
         \Magento\Framework\DataObjectFactory $dataObjectFactory,
         \Magento\Quote\Api\CartManagementInterface $cartManagement,
@@ -82,7 +82,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepo,
         \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
         \Magento\Sales\Model\ResourceModel\Order $orderResourceModel,
-        \Nuvei\Payments\Model\Request\Factory $requestFactory,
+        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
         \Magento\Framework\App\Request\Http $httpRequest
     ) {
         $this->moduleConfig             = $moduleConfig;

@@ -1,15 +1,15 @@
 <?php
 
-namespace Nuvei\Payments\Model\Response;
+namespace Nuvei\Checkout\Model\Response;
 
-use Nuvei\Payments\Lib\Http\Client\Curl;
-use Nuvei\Payments\Model\AbstractResponse;
-use Nuvei\Payments\Model\Config;
+use Nuvei\Checkout\Lib\Http\Client\Curl;
+use Nuvei\Checkout\Model\AbstractResponse;
+use Nuvei\Checkout\Model\Config;
 use Magento\Sales\Model\Order\Payment as OrderPayment;
-use Nuvei\Payments\Model\Logger;
+use Nuvei\Checkout\Model\Logger;
 
 /**
- * Nuvei Payments abstract payment response model.
+ * Nuvei Checkout abstract payment response model.
  */
 abstract class AbstractPayment extends AbstractResponse
 {

@@ -1,16 +1,16 @@
 <?php
 
-namespace Nuvei\Payments\Model\Response;
+namespace Nuvei\Checkout\Model\Response;
 
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Sales\Model\Order\Payment as OrderPayment;
-use Nuvei\Payments\Lib\Http\Client\Curl;
-use Nuvei\Payments\Model\AbstractResponse;
-use Nuvei\Payments\Model\ResponseInterface;
+use Nuvei\Checkout\Lib\Http\Client\Curl;
+use Nuvei\Checkout\Model\AbstractResponse;
+use Nuvei\Checkout\Model\ResponseInterface;
 
 /**
- * Nuvei Payments response factory model.
+ * Nuvei Checkout response factory model.
  */
 class Factory
 {
@@ -20,14 +20,14 @@ class Factory
      * @var array
      */
     private $invokableClasses = [
-        AbstractResponse::TOKEN_HANDLER             => \Nuvei\Payments\Model\Response\Token::class,
-        AbstractResponse::PAYMENT_SETTLE_HANDLER    => \Nuvei\Payments\Model\Response\Payment\Settle::class,
-        AbstractResponse::GET_USER_DETAILS_HANDLER  => \Nuvei\Payments\Model\Response\GetUserDetails::class,
-        AbstractResponse::PAYMENT_REFUND_HANDLER    => \Nuvei\Payments\Model\Response\Payment\Refund::class,
-        AbstractResponse::PAYMENT_VOID_HANDLER      => \Nuvei\Payments\Model\Response\Payment\Cancel::class,
+        AbstractResponse::TOKEN_HANDLER             => \Nuvei\Checkout\Model\Response\Token::class,
+        AbstractResponse::PAYMENT_SETTLE_HANDLER    => \Nuvei\Checkout\Model\Response\Payment\Settle::class,
+        AbstractResponse::GET_USER_DETAILS_HANDLER  => \Nuvei\Checkout\Model\Response\GetUserDetails::class,
+        AbstractResponse::PAYMENT_REFUND_HANDLER    => \Nuvei\Checkout\Model\Response\Payment\Refund::class,
+        AbstractResponse::PAYMENT_VOID_HANDLER      => \Nuvei\Checkout\Model\Response\Payment\Cancel::class,
         
         AbstractResponse::GET_MERCHANT_PAYMENT_METHODS_HANDLER
-            => \Nuvei\Payments\Model\Response\GetMerchantPaymentMethods::class,
+            => \Nuvei\Checkout\Model\Response\GetMerchantPaymentMethods::class,
     ];
 
     /**
@@ -85,7 +85,7 @@ class Factory
         if (!$model instanceof ResponseInterface) {
             throw new LocalizedException(
                 __(
-                    '%1 doesn\'t implement \Nuvei\Payments\Mode\ResponseInterface',
+                    '%1 doesn\'t implement \Nuvei\Checkout\Mode\ResponseInterface',
                     $className
                 )
             );

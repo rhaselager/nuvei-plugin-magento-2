@@ -7,7 +7,7 @@
 	  xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <update handle="styles"/>
     <head>
-        <css src="Nuvei_Payments::css/status-color.css" />
+        <css src="Nuvei_Checkout::css/status-color.css" />
     </head>
     <body>
         <referenceContainer name="content">

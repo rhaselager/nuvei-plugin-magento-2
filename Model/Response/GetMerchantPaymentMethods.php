@@ -1,15 +1,15 @@
 <?php
 
-namespace Nuvei\Payments\Model\Response;
+namespace Nuvei\Checkout\Model\Response;
 
 use Magento\Framework\Locale\Resolver;
-use Nuvei\Payments\Lib\Http\Client\Curl;
-use Nuvei\Payments\Model\AbstractResponse;
-use Nuvei\Payments\Model\Config;
-use Nuvei\Payments\Model\ResponseInterface;
+use Nuvei\Checkout\Lib\Http\Client\Curl;
+use Nuvei\Checkout\Model\AbstractResponse;
+use Nuvei\Checkout\Model\Config;
+use Nuvei\Checkout\Model\ResponseInterface;
 
 /**
- * Nuvei Payments get merchant payment methods response model.
+ * Nuvei Checkout get merchant payment methods response model.
  */
 class GetMerchantPaymentMethods extends AbstractResponse implements ResponseInterface
 {
@@ -39,7 +39,7 @@ class GetMerchantPaymentMethods extends AbstractResponse implements ResponseInte
      * @param Resolver $localeResolver
      */
     public function __construct(
-        \Nuvei\Payments\Model\Logger $logger,
+        \Nuvei\Checkout\Model\Logger $logger,
         Config $config,
         $requestId,
         Curl $curl,
@@ -100,14 +100,14 @@ class GetMerchantPaymentMethods extends AbstractResponse implements ResponseInte
             
             // set custom payment logo for CC
             if ('cc_card' == $method["paymentMethod"]) {
-                $pm["logoURL"] = $this->assetRepo->getUrl("Nuvei_Payments::images/visa_mc_maestro.svg");
+                $pm["logoURL"] = $this->assetRepo->getUrl("Nuvei_Checkout::images/visa_mc_maestro.svg");
             } elseif (!empty($method["logoURL"])) {
                 $pm["logoURL"] = preg_replace('/\.svg\.svg$/', '.svg', $method["logoURL"]);
             }
             
             // check for Apple Pay
             if ('ppp_ApplePay' == $method["paymentMethod"]) {
-                $pm['logoURL'] = $this->assetRepo->getUrl("Nuvei_Payments::images/applepay.svg");
+                $pm['logoURL'] = $this->assetRepo->getUrl("Nuvei_Checkout::images/applepay.svg");
                 
                 // fix for the payment name
                 if (!isset($method['paymentMethodDisplayName']['message'])
