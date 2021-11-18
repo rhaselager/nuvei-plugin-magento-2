@@ -265,7 +265,7 @@ class Config
                     
 //                    \Magento\Framework\Filesystem\Driver\file_put_contents(
                     file_put_contents(
-                        $logsPath . DIRECTORY_SEPARATOR . 'Nuvei-' . date('Y-m-d') . '.txt',
+                        $logsPath . DIRECTORY_SEPARATOR . 'Nuvei-' . date('Y-m-d') . '.log',
                         date('H:i:s', time()) . ': ' . $string,
                         FILE_APPEND
                     );
@@ -277,7 +277,7 @@ class Config
             
             if (is_dir($logsPath)) {
                 return file_put_contents(
-                    $logsPath . DIRECTORY_SEPARATOR . $log_file_name . '.txt',
+                    $logsPath . DIRECTORY_SEPARATOR . $log_file_name . '.log',
                     date('H:i:s', time()) . ': ' . $string,
                     FILE_APPEND
                 );
@@ -595,13 +595,13 @@ class Config
         
         if ($this->versionNum != 0 && $this->versionNum < 220) {
             return $this->urlBuilder->getUrl(
-                'nuvei_payments/payment/callback_completeold',
+                'nuvei_checkout/payment/callback_completeold',
                 $params
             );
         }
         
         return $this->urlBuilder->getUrl(
-            'nuvei_payments/payment/callback_complete',
+            'nuvei_checkout/payment/callback_complete',
             $params
         );
     }
@@ -618,13 +618,13 @@ class Config
         
         if ($this->versionNum != 0 && $this->versionNum < 220) {
             return $this->urlBuilder->getUrl(
-                'nuvei_payments/payment/callback_completeold',
+                'nuvei_checkout/payment/callback_completeold',
                 $params
             );
         }
         
         return $this->urlBuilder->getUrl(
-            'nuvei_payments/payment/callback_complete',
+            'nuvei_checkout/payment/callback_complete',
             $params
         );
     }
@@ -641,13 +641,13 @@ class Config
 
         if ($this->versionNum != 0 && $this->versionNum < 220) {
             return $this->urlBuilder->getUrl(
-                'nuvei_payments/payment/callback_errorold',
+                'nuvei_checkout/payment/callback_errorold',
                 $params
             );
         }
         
         return $this->urlBuilder->getUrl(
-            'nuvei_payments/payment/callback_error',
+            'nuvei_checkout/payment/callback_error',
             $params
         );
     }
@@ -686,10 +686,10 @@ class Config
         }
         
         if ($this->versionNum != 0 && $this->versionNum < 220) {
-            return $url . 'nuvei_payments/payment/callback_dmnold/' . $params_str;
+            return $url . 'nuvei_checkout/payment/callback_dmnold/' . $params_str;
         }
         
-        return $url . 'nuvei_payments/payment/callback_dmn/' . $params_str;
+        return $url . 'nuvei_checkout/payment/callback_dmn/' . $params_str;
     }
 
     /**

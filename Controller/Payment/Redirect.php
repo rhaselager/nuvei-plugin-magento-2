@@ -68,7 +68,7 @@ class Redirect extends Action
             ->setHttpResponseCode(\Magento\Framework\Webapi\Response::HTTP_OK);
 
         if (!$this->moduleConfig->isActive()) {
-            $msg = 'Redirect Controller: Nuvei payments module is not active at the moment!';
+            $msg = 'Redirect Controller: Nuvei checkout module is not active at the moment!';
             
             $this->moduleConfig->createLog($msg);
             return $result->setData(['error_message' => __($msg)]);

@@ -106,11 +106,8 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
      */
     protected function getParams()
     {
-        $tokenRequest = $this->requestFactory->create(AbstractRequest::OPEN_ORDER_METHOD);
-        
-        $tokenResponse = $tokenRequest
-            ->setBillingAddress($this->billing_address)
-            ->process();
+        $tokenRequest   = $this->requestFactory->create(AbstractRequest::GET_SESSION_TOKEN);
+        $tokenResponse  = $tokenRequest->process();
         
         $languageCode = 'en';
         if ($this->store && $this->store->getLocaleCode()) {
@@ -131,7 +128,7 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
         }
         
         $params = [
-            'sessionToken'  => $tokenResponse->sessionToken,
+            'sessionToken'  => !empty($tokenResponse['sessionToken']) ? $tokenResponse['sessionToken'] : '',
             "currencyCode"  => $currencyCode,
             "countryCode"   => $country_code,
             "languageCode"  => $languageCode,

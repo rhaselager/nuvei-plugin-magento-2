@@ -94,7 +94,7 @@ class NuveiPlanDetails extends \Magento\Catalog\Block\Product\View
             'rec_period'        => __('Recurring period'),
             'rec_amount'        => __('Recurring amount'),
             'trial_period'      => __('Trial period'),
-            'nuvei_ajax_url'    => $this->urlBuilder->getUrl('nuvei_payments/frontend/order_subscriptionsHistory'),
+            'nuvei_ajax_url'    => $this->urlBuilder->getUrl('nuvei_checkout/frontend/order_subscriptionsHistory'),
             'nuvei_prod_id'     => $this->getProduct()->getId(),
 //            'nuvei_attr_code'   => $nuvei_prod_attr_code,
             'nuvei_attr_id'     => $nuvei_prod_attr_id,

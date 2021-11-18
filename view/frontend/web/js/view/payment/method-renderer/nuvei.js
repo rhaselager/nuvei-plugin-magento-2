@@ -288,10 +288,6 @@ define(
 				return window.checkoutConfig.payment[self.getCode()].getUpdateOrderUrl;
 			},
 			
-			getRemoveUpoUrl: function() {
-				return window.checkoutConfig.payment[self.getCode()].getRemoveUpoUrl;
-			},
-			
 			getUpdateQuotePM: function() {
                 return window.checkoutConfig.payment[self.getCode()].updateQuotePM;
             },

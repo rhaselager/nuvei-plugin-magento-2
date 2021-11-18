@@ -107,18 +107,17 @@ class ConfigProvider extends CcGenericConfigProvider
             'payment' => [
                 Payment::METHOD_CODE => [
                     'getMerchantPaymentMethodsUrl' => $this->urlBuilder
-                        ->getUrl('nuvei_payments/payment/GetMerchantPaymentMethods'),
+                        ->getUrl('nuvei_checkout/payment/GetMerchantPaymentMethods'),
                     
-                    'redirectUrl'               => $this->urlBuilder->getUrl('nuvei_payments/payment/redirect'),
-                    'paymentApmUrl'             => $this->urlBuilder->getUrl('nuvei_payments/payment/apm'),
-                    'getUPOsUrl'                => $this->urlBuilder->getUrl('nuvei_payments/payment/GetUpos'),
-                    'getUpdateOrderUrl'         => $this->urlBuilder->getUrl('nuvei_payments/payment/OpenOrder'),
-                    'getRemoveUpoUrl'           => $this->urlBuilder->getUrl('nuvei_payments/payment/DeleteUpo'),
+                    'redirectUrl'               => $this->urlBuilder->getUrl('nuvei_checkout/payment/redirect'),
+                    'paymentApmUrl'             => $this->urlBuilder->getUrl('nuvei_checkout/payment/apm'),
+                    'getUPOsUrl'                => $this->urlBuilder->getUrl('nuvei_checkout/payment/GetUpos'),
+                    'getUpdateOrderUrl'         => $this->urlBuilder->getUrl('nuvei_checkout/payment/OpenOrder'),
                     'checkoutLogoUrl'           => $this->assetRepo->getUrl("Nuvei_Checkout::images/nuvei.png"),
                     'checkoutApplePayBtn'       => $this->assetRepo->getUrl("Nuvei_Checkout::images/ApplePay-Button.png"),
                     
                     'countryId'                 => $this->moduleConfig->getQuoteCountryCode(),
-                    'updateQuotePM'             => $this->urlBuilder->getUrl('nuvei_payments/payment/UpdateQuotePaymentMethod'),
+                    'updateQuotePM'             => $this->urlBuilder->getUrl('nuvei_checkout/payment/UpdateQuotePaymentMethod'),
                     'useUPOs'                   => $this->moduleConfig->canUseUpos(),
                     'submitUserTokenForGuest'   => ($this->moduleConfig->allowGuestsSubscr()
                         && !empty($this->moduleConfig->getProductPlanData())) ? 1 : 0,

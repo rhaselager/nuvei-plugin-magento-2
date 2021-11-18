@@ -33,7 +33,7 @@ class Button extends \Magento\Config\Block\System\Config\Form\Field
     
     public function getAjaxUrl()
     {
-        return $this->getUrl('nuvei_payments/system_config/getPlans');
+        return $this->getUrl('nuvei_checkout/system_config/getPlans');
     }
     
     public function getButtonHtml()

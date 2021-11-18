@@ -62,10 +62,10 @@ class OpenOrder extends Action
         $result = $this->jsonResultFactory->create()->setHttpResponseCode(\Magento\Framework\Webapi\Response::HTTP_OK);
 
         if (!$this->moduleConfig->isActive()) {
-            $this->moduleConfig->createLog('Nuvei payments module is not active at the moment!');
+            $this->moduleConfig->createLog('Nuvei checkout module is not active at the moment!');
             
             return $result->setData([
-                'error_message' => __('Nuvei payments module is not active at the moment!')
+                'error_message' => __('Nuvei checkout module is not active at the moment!')
             ]);
         }
         

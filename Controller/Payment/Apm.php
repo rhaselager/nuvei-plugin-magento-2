@@ -62,7 +62,7 @@ class Apm extends Action
 
         if (!$this->moduleConfig->isActive()) {
             return $result->setData([
-                'error_message' => __('Nuvei payments module is not active at the moment!')
+                'error_message' => __('Nuvei checkout module is not active at the moment!')
             ]);
         }
 
