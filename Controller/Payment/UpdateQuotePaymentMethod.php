@@ -37,7 +37,7 @@ class UpdateQuotePaymentMethod extends Action
     ) {
         parent::__construct($context);
 
-        $this->moduleConfig            = $moduleConfig;
+        $this->moduleConfig         = $moduleConfig;
         $this->jsonResultFactory    = $jsonResultFactory;
     }
 
@@ -59,8 +59,8 @@ class UpdateQuotePaymentMethod extends Action
         $this->moduleConfig->setQuotePaymentMethod($this->getRequest()->getParam('paymentMethod'));
         
         return $result->setData([
-            "error"            => 0,
-            "message"        => "Success"
+            "error"     => 0,
+            "message"   => "Success"
         ]);
     }
 }

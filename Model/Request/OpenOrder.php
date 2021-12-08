@@ -27,7 +27,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
      */
     protected $orderData;
     
-    private $billingAddress; // array
+//    private $billingAddress; // array
     private $countryCode; // string
     private $quote;
     private $cart;
@@ -80,6 +80,8 @@ class OpenOrder extends AbstractRequest implements RequestInterface
      */
     public function process()
     {
+        $this->config->createLog('OpenOrder model');
+        
         // first try to update order
         $this->quote    = $this->cart->getQuote();
         $this->items    = $this->quote->getItems();
@@ -91,9 +93,10 @@ class OpenOrder extends AbstractRequest implements RequestInterface
 
             $req_resp = $update_order_request
                 ->setOrderData($order_data)
-                ->setBillingAddress($this->billingAddress)
                 ->process();
         }
+        
+        $this->config->createLog(@$req_resp, 'OpenOrder $req_resp');
         
         // if UpdateOrder fails - continue with OpenOrder
         if (empty($req_resp['status']) || 'success' != strtolower($req_resp['status'])) {
@@ -115,15 +118,17 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         );
         $this->cart->getQuote()->save();
         
-        return $this;
-    }
-    
-    public function setBillingAddress($billingAddress)
-    {
-        $this->billingAddress = $billingAddress;
+        $this->config->createLog('OpenOrder before return');
         
         return $this;
     }
+    
+//    public function setBillingAddress($billingAddress)
+//    {
+//        $this->billingAddress = $billingAddress;
+//        
+//        return $this;
+//    }
     
     /**
      * {@inheritdoc}

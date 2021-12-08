@@ -152,7 +152,7 @@ class SettleTransaction extends AbstractRequest implements RequestInterface
      */
     protected function getRequestMethod()
     {
-        return self::SETTLE_METHOD;
+        return self::PAYMENT_SETTLE_METHOD;
     }
     
     /**

@@ -98,10 +98,45 @@ class ConfigProvider extends CcGenericConfigProvider
             return [];
         }
         
-        $locale            = $this->scopeConfig->getValue(
+        $locale = $this->scopeConfig->getValue(
             'general/locale/code',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE
         );
+        
+        // call OpenOrder here to get the SessionToken
+//        $request    = $this->requestFactory->create(AbstractRequest::OPEN_ORDER_METHOD);
+//        $resp       = $request->process();
+        
+        # blocked_cards
+		$blocked_cards     = [];
+		$blocked_cards_str = $this->moduleConfig->getBlockedCards();
+		// clean the string from brakets and quotes
+		$blocked_cards_str = str_replace('],[', ';', $blocked_cards_str);
+		$blocked_cards_str = str_replace('[', '', $blocked_cards_str);
+		$blocked_cards_str = str_replace(']', '', $blocked_cards_str);
+		$blocked_cards_str = str_replace('"', '', $blocked_cards_str);
+		$blocked_cards_str = str_replace("'", '', $blocked_cards_str);
+		
+		if (!empty($blocked_cards_str)) {
+			$blockCards_sets = explode(';', $blocked_cards_str);
+
+			if (count($blockCards_sets) == 1) {
+				$blocked_cards = explode(',', current($blockCards_sets));
+			} else {
+				foreach ($blockCards_sets as $elements) {
+					$blocked_cards[] = explode(',', $elements);
+				}
+			}
+		}
+		# blocked_cards END
+        
+        // get email
+        $email = $this->cart->getQuote()->getBillingAddress()->getEmail();
+        
+        if(empty($email)) {
+            $email = $this->cart->getQuote()->getCustomerEmail();
+        }
+        // get email END
         
         $config = [
             'payment' => [
@@ -111,27 +146,45 @@ class ConfigProvider extends CcGenericConfigProvider
                     
                     'redirectUrl'               => $this->urlBuilder->getUrl('nuvei_checkout/payment/redirect'),
                     'paymentApmUrl'             => $this->urlBuilder->getUrl('nuvei_checkout/payment/apm'),
-                    'getUPOsUrl'                => $this->urlBuilder->getUrl('nuvei_checkout/payment/GetUpos'),
                     'getUpdateOrderUrl'         => $this->urlBuilder->getUrl('nuvei_checkout/payment/OpenOrder'),
+                    'successUrl'                => $this->moduleConfig->getCallbackSuccessUrl(),
                     'checkoutLogoUrl'           => $this->assetRepo->getUrl("Nuvei_Checkout::images/nuvei.png"),
-                    'checkoutApplePayBtn'       => $this->assetRepo->getUrl("Nuvei_Checkout::images/ApplePay-Button.png"),
-                    
+                    'isTestMode'                => $this->moduleConfig->isTestModeEnabled(),
                     'countryId'                 => $this->moduleConfig->getQuoteCountryCode(),
                     'updateQuotePM'             => $this->urlBuilder->getUrl('nuvei_checkout/payment/UpdateQuotePaymentMethod'),
-                    'useUPOs'                   => $this->moduleConfig->canUseUpos(),
+                    
                     'submitUserTokenForGuest'   => ($this->moduleConfig->allowGuestsSubscr()
                         && !empty($this->moduleConfig->getProductPlanData())) ? 1 : 0,
-                    // we need this for the WebSDK
-                    'merchantSiteId'            => $this->moduleConfig->getMerchantSiteId(),
-                    'merchantId'                => $this->moduleConfig->getMerchantId(),
-                    'isTestMode'                => $this->moduleConfig->isTestModeEnabled(),
-                    'locale'                    => substr($locale, 0, 2),
-                    'webMasterId'               => $this->moduleConfig->getSourcePlatformField(),
-                    'sourceApplication'         => $this->moduleConfig->getSourceApplication(),
-                    'userTokenId'               => $this->moduleConfig->getQuoteBillingAddress()['email'],
-                    'applePayLabel'             => $this->moduleConfig->getMerchantApplePayLabel(),
-                    'currencyCode'              => trim($this->storeManager->getStore()->getCurrentCurrencyCode()),
-//                    'total'                   => (string) number_format($this->cart->getQuote()->getGrandTotal(), 2, '.', ''),
+                    
+                    'nuveiCheckoutParams'       => [
+//                        'sessionToken'          => $resp->sessionToken,
+                        'env'                   => $this->moduleConfig->isTestModeEnabled() ? 'test' : 'prod',
+                        'merchantId'            => $this->moduleConfig->getMerchantId(),
+                        'merchantSiteId'        => $this->moduleConfig->getMerchantSiteId(),
+//                        'country'               => '', // set it in the js
+                        'currency'              => trim($this->storeManager->getStore()->getCurrentCurrencyCode()),
+//                        'amount'                => '', // set it in the js
+                        'renderTo'              => '#nuvei_checkout',
+                    //            'onResult'              => ', // pass it in the JS, showNuveiCheckout()
+                    //            'userTokenId'           => '',
+                        'useDCC'                =>  $this->moduleConfig->useDCC(),
+                        'strict'                => false,
+                        'savePM'                => $this->moduleConfig->canUseUpos(),
+                    //            'subMethod'           => '',
+                    //            'pmWhitelist'           => [],
+                        'blockCards'            => $blocked_cards,
+                        'pmBlacklist'           => $this->moduleConfig->getPMsBlackList(),
+                        'alwaysCollectCvv'      => true,
+//                        'fullName'              => '', // set it in the js
+                        'email'                 => $email,
+                        'payButton'             => $this->moduleConfig->getPayButtnoText(),
+                        'showResponseMessage'   => false, // shows/hide the response popups
+                        'locale'                => substr($locale, 0, 2),
+                        'autoOpenPM'            => (bool) $this->moduleConfig->autoExpandPms(),
+                        'logLevel'              => $this->moduleConfig->getCheckoutLogLevel(),
+                        'maskCvv'               => true,
+                        'i18n'                  => $this->moduleConfig->getCheckoutTransl(),
+                    ],
                 ],
             ],
         ];

@@ -100,7 +100,7 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
         $params = $this->getRequest()->getParams();
         $this->moduleConfig->createLog($params, 'Success params:');
         
-        $resultRedirect    = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
+        $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
         $form_key       = filter_input(INPUT_GET, 'form_key');
 
         try {

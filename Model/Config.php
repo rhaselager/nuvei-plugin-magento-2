@@ -557,6 +557,35 @@ class Config
     {
         return (bool)$this->getConfigValue('use_upos');
     }
+    
+    public function useDCC()
+    {
+        return $this->getConfigValue('use_dcc');
+    }
+    
+    public function getBlockedCards() {
+        return $this->getConfigValue('block_cards');
+    }
+    
+    public function getPMsBlackList() {
+        return explode(',', $this->getConfigValue('block_pms'));
+    }
+    
+    public function getPayButtnoText() {
+        return $this->getConfigValue('pay_btn_text');
+    }
+    
+    public function autoExpandPms() {
+        return $this->getConfigValue('auto_expand_pms');
+    }
+    
+    public function getCheckoutLogLevel() {
+        return $this->getConfigValue('checkout_log_level');
+    }
+    
+    public function getCheckoutTransl() {
+        return json_decode($this->getConfigValue('checkout_transl'), true);
+    }
 
     public function getSourcePlatformField()
     {
@@ -918,7 +947,7 @@ class Config
                 
                 // if there are more than 1 products in the Cart we assume there are no product with a Plan
                 if (count($items) > 1) {
-                    $this->createLog('getProductPlanData() - the Items in the Cart are more than 1. We assume there is no Product with a plan amongs them.');
+                    $this->createLog('getProductPlanData() - the Items in the Cart are more than 1. We assume there is no Product with a plan in the Cart.');
                     return $return_arr;
                 }
                 

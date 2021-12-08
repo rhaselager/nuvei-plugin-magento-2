@@ -51,7 +51,7 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
     public function execute()
     {
         if (!$this->moduleConfig->isActive()) {
-            $this->moduleConfig->createLog('Nuvei checkout module is not active at the moment!');
+            $this->moduleConfig->createLog('GetMerchantPaymentMethods error - Nuvei checkout module is not active at the moment!');
             
             return [];
         }

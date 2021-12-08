@@ -28,15 +28,12 @@ abstract class AbstractRequest extends AbstractApi
     const PAYMENT_VOID_METHOD                   = 'voidTransaction';
     const OPEN_ORDER_METHOD                     = 'openOrder';
     const UPDATE_ORDER_METHOD                   = 'updateOrder';
-    const PAYMENT_APM_METHOD                    = 'paymentAPM';
-    const PAYMENT_UPO_APM_METHOD                = 'payment';
     const GET_MERCHANT_PAYMENT_METHODS_METHOD   = 'getMerchantPaymentMethods';
-    const GET_UPOS_METHOD                       = 'getUserUPOs';
     const GET_MERCHANT_PAYMENT_PLANS_METHOD     = 'getPlansList';
     const CREATE_MERCHANT_PAYMENT_PLAN          = 'createPlan';
     const CREATE_SUBSCRIPTION_METHOD            = 'createSubscription';
     const CANCEL_SUBSCRIPTION_METHOD            = 'cancelSubscription';
-    const SETTLE_METHOD                         = 'settleTransaction';
+//    const SETTLE_METHOD                         = 'settleTransaction';
     const GET_SESSION_TOKEN                     = 'getSessionToken';
 
     /**
@@ -484,84 +481,6 @@ abstract class AbstractRequest extends AbstractApi
         return $responseHandler;
     }
 
-    /**
-     * @param Quote $quote
-     *
-     * @return array
-     */
-//    protected function getQuoteData(Quote $quote)
-//    {
-//        /** @var OrderAddressInterface $billing */
-//        $billing = $quote->getBillingAddress();
-//
-//        $shipping = 0;
-//        $totalTax = 0;
-//        $shippingAddress = $quote->getShippingAddress();
-//        if ($shippingAddress !== null) {
-//            $shipping = $shippingAddress->getBaseShippingAmount();
-//            $totalTax = $shippingAddress->getBaseTaxAmount();
-//        }
-//
-//        $quoteData = [
-//            'clientUniqueId'    => $quote->getReservedOrderId() ?: $this->config->getReservedOrderId(),
-//            'currency'          => $quote->getBaseCurrencyCode(),
-//            'items'             => [],
-//            'ipAddress'         => $quote->getRemoteIp(),
-//
-//            'amountDetails'     => [
-//                'totalShipping'     => (float) $shipping,
-//                'totalHandling'     => (float) 0,
-//                'totalDiscount'     => (float )abs($quote->getBaseSubtotal()
-//                    - $quote->getBaseSubtotalWithDiscount()),
-//                'totalTax'          => (float)$totalTax,
-//            ],
-//
-//            'deviceDetails'     => [
-//                'deviceType'        => 'DESKTOP',
-//                'ipAddress'         => $quote->getRemoteIp(),
-//            ],
-//        ];
-//
-//        if ($billing !== null) {
-//            $state = $billing->getRegionCode();
-//            if (strlen($state) > 5) {
-//                $state = substr($state, 0, 2);
-//            }
-//
-//            $quoteData['billingAddress'] = [
-//                'firstName' => $billing->getFirstname(),
-//                'lastName'  => $billing->getLastname(),
-//                'address'   => is_array($billing->getStreet())
-//                    ? implode(' ', $billing->getStreet()) : '',
-//                'cell'      => '',
-//                'phone'     => $billing->getTelephone(),
-//                'zip'       => $billing->getPostcode(),
-//                'city'      => $billing->getCity(),
-//                'country'   => $billing->getCountryId(),
-//                'state'     => $state,
-//                'email'     => $billing->getEmail(),
-//            ];
-//            $quoteData = array_merge($quoteData, $quoteData['billingAddress']);
-//        }
-//
-//        // Add items details.
-//        $quoteItems = $quote->getAllVisibleItems();
-//        foreach ($quoteItems as $quoteItem) {
-//            $price = (float)$quoteItem->getBasePrice();
-//            if (!$price) {
-//                continue;
-//            }
-//
-//            $quoteData['items'][] = [
-//                'name'      => $quoteItem->getName(),
-//                'price'     => $price,
-//                'quantity'  => (int)$quoteItem->getQty(),
-//            ];
-//        }
-//
-//        return $quoteData;
-//    }
-    
     protected function checkResponse($accept_error_status)
     {
         $resp_body        = json_decode($this->curl->getBody(), true);
@@ -617,16 +536,6 @@ abstract class AbstractRequest extends AbstractApi
                     'price'     => round((float) $item->getPrice(), 2),
                 ];
 
-//                $attributes = $product->getAttributes();
-                
-//                $this->config->createLog($item->getProduct()->getData(), '$item->getProduct()->getData()');
-//                $this->config->createLog($attributes, '$item $attributes');
-
-                
-
-
-
-
                 // if subscription is not enabled continue witht the next product
                 if ($item->getProduct()->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_ENABLE) != 1) {
                     continue;
@@ -634,13 +543,9 @@ abstract class AbstractRequest extends AbstractApi
 
                 // mandatory data
                 $subs_data[$product->getId()] = [
-                    'planId' => $item->getProduct()->getData(\Nuvei\Checkout\Model\Config::PAYMENT_PLANS_ATTR_NAME),
-
-//                    'initialAmount' => number_format($item->getProduct()
-//                        ->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_INTIT_AMOUNT), 2, '.', ''),
-                    'initialAmount' => 0,
-
-                    'recurringAmount' => number_format($item->getProduct()
+                    'planId'            => $item->getProduct()->getData(\Nuvei\Checkout\Model\Config::PAYMENT_PLANS_ATTR_NAME),
+                    'initialAmount'     => 0,
+                    'recurringAmount'   => number_format($item->getProduct()
                         ->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_REC_AMOUNT), 2, '.', ''),
                 ];
 

@@ -30,10 +30,9 @@ class Factory
         AbstractRequest::GET_USER_DETAILS_METHOD            => \Nuvei\Checkout\Model\Request\GetUserDetails::class,
         AbstractRequest::OPEN_ORDER_METHOD                  => \Nuvei\Checkout\Model\Request\OpenOrder::class,
         AbstractRequest::UPDATE_ORDER_METHOD                => \Nuvei\Checkout\Model\Request\UpdateOrder::class,
-        AbstractRequest::PAYMENT_APM_METHOD                 => \Nuvei\Checkout\Model\Request\PaymentApm::class,
         AbstractRequest::GET_MERCHANT_PAYMENT_PLANS_METHOD  => \Nuvei\Checkout\Model\Request\GetPlansList::class,
         AbstractRequest::CREATE_MERCHANT_PAYMENT_PLAN       => \Nuvei\Checkout\Model\Request\CreatePlan::class,
-        AbstractRequest::SETTLE_METHOD                      => \Nuvei\Checkout\Model\Request\Settle::class,
+        AbstractRequest::PAYMENT_SETTLE_METHOD              => \Nuvei\Checkout\Model\Request\Settle::class,
         AbstractRequest::GET_SESSION_TOKEN                  => \Nuvei\Checkout\Model\Request\GetSessionToken::class,
     ];
 

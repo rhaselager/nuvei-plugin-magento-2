@@ -476,11 +476,13 @@ class DmnOld extends \Magento\Framework\App\Action\Action
 
                 $this->order->addStatusHistoryComment(
                     $msg_transaction
-                    . __("request, response status is") . ' <b>' . $params['Status'] . '</b>.<br/>'
-                    . __('Transaction ID: ') . $params['TransactionID'] .', '
-                    . __('Related Transaction ID: ') . $params['relatedTransactionId'] .', '
+                    . __("request. Response status: ") . ' <b>' . $params['Status'] . '</b>.<br/>'
+                    . __('Payment Method: ') . $params['payment_method'] . ',<br/>'
+                    . __('Transaction ID: ') . $params['TransactionID'] . ',<br/>'
+                    . __('Related Transaction ID: ') . $params['relatedTransactionId'] . ',<br/>'
                     . __('Transaction Amount: ') . number_format($params['totalAmount'], 2, '.', '')
-                    . ' ' . $params['currency'] . ' <br/>' . $refund_msg,
+                    . ' ' . $params['currency'] . ' <br/>'
+                    . $refund_msg,
                     $this->sc_transaction_type
                 );
             } elseif (in_array($status, ['declined', 'error'])) { // DECLINED/ERROR TRANSACTION

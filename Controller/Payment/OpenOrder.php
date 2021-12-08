@@ -59,23 +59,29 @@ class OpenOrder extends Action
      */
     public function execute()
     {
+        $this->moduleConfig->createLog('OpenOrder controller');
+        
         $result = $this->jsonResultFactory->create()->setHttpResponseCode(\Magento\Framework\Webapi\Response::HTTP_OK);
 
         if (!$this->moduleConfig->isActive()) {
-            $this->moduleConfig->createLog('Nuvei checkout module is not active at the moment!');
+            $this->moduleConfig->createLog('OpenOrder error - Nuvei checkout module is not active at the moment!');
             
             return $result->setData([
-                'error_message' => __('Nuvei checkout module is not active at the moment!')
+                'error_message' => __('OpenOrder error - Nuvei checkout module is not active at the moment!')
             ]);
         }
         
         $request    = $this->requestFactory->create(AbstractRequest::OPEN_ORDER_METHOD);
         $resp       = $request->process();
-
-        return $result->setData([
+        $output     = [
             "error"         => 0,
             "sessionToken"  => $resp->sessionToken,
+            "amount"        => $resp->ooAmount,
             "message"       => "Success"
-        ]);
+        ];
+        
+        $this->moduleConfig->createLog($output, 'OpenOrder controller after getting the response');
+        
+        return $result->setData($output);
     }
 }
