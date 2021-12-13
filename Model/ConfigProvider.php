@@ -95,7 +95,15 @@ class ConfigProvider extends CcGenericConfigProvider
     public function getConfig()
     {
         if (!$this->moduleConfig->isActive()) {
-            return [];
+            $this->moduleConfig->createLog($this->moduleConfig->isActive(), 'Mudule is not active');
+            
+            return $config = [
+                'payment' => [
+                    Payment::METHOD_CODE => [
+                        'isActive' => 0,
+                    ],
+                ],
+            ];
         }
         
         $locale = $this->scopeConfig->getValue(
@@ -103,13 +111,10 @@ class ConfigProvider extends CcGenericConfigProvider
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE
         );
         
-        // call OpenOrder here to get the SessionToken
-//        $request    = $this->requestFactory->create(AbstractRequest::OPEN_ORDER_METHOD);
-//        $resp       = $request->process();
-        
         # blocked_cards
 		$blocked_cards     = [];
 		$blocked_cards_str = $this->moduleConfig->getBlockedCards();
+        
 		// clean the string from brakets and quotes
 		$blocked_cards_str = str_replace('],[', ';', $blocked_cards_str);
 		$blocked_cards_str = str_replace('[', '', $blocked_cards_str);
@@ -156,26 +161,22 @@ class ConfigProvider extends CcGenericConfigProvider
                     'submitUserTokenForGuest'   => ($this->moduleConfig->allowGuestsSubscr()
                         && !empty($this->moduleConfig->getProductPlanData())) ? 1 : 0,
                     
-                    'nuveiCheckoutParams'       => [
-//                        'sessionToken'          => $resp->sessionToken,
+                    'nuveiCheckoutParams' => [
+                        'sessionToken'          => '',
                         'env'                   => $this->moduleConfig->isTestModeEnabled() ? 'test' : 'prod',
                         'merchantId'            => $this->moduleConfig->getMerchantId(),
                         'merchantSiteId'        => $this->moduleConfig->getMerchantSiteId(),
-//                        'country'               => '', // set it in the js
+                        'country'               => '', // set it in the js
                         'currency'              => trim($this->storeManager->getStore()->getCurrentCurrencyCode()),
-//                        'amount'                => '', // set it in the js
+                        'amount'                => 0, // set it in the js
                         'renderTo'              => '#nuvei_checkout',
-                    //            'onResult'              => ', // pass it in the JS, showNuveiCheckout()
-                    //            'userTokenId'           => '',
                         'useDCC'                =>  $this->moduleConfig->useDCC(),
                         'strict'                => false,
                         'savePM'                => $this->moduleConfig->canUseUpos(),
-                    //            'subMethod'           => '',
-                    //            'pmWhitelist'           => [],
-                        'blockCards'            => $blocked_cards,
                         'pmBlacklist'           => $this->moduleConfig->getPMsBlackList(),
+                        'pmWhitelist'           => null,
                         'alwaysCollectCvv'      => true,
-//                        'fullName'              => '', // set it in the js
+                        'fullName'              => '', // set it in the js
                         'email'                 => $email,
                         'payButton'             => $this->moduleConfig->getPayButtnoText(),
                         'showResponseMessage'   => false, // shows/hide the response popups
@@ -184,10 +185,13 @@ class ConfigProvider extends CcGenericConfigProvider
                         'logLevel'              => $this->moduleConfig->getCheckoutLogLevel(),
                         'maskCvv'               => true,
                         'i18n'                  => $this->moduleConfig->getCheckoutTransl(),
+                        'blockCards'            => $blocked_cards,
                     ],
                 ],
             ],
         ];
+        
+        $this->moduleConfig->createLog($config, 'config for the checkout');
         
         return $config;
     }

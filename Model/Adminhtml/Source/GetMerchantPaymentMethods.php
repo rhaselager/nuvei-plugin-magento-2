@@ -56,7 +56,11 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
             return [];
         }
         
-        $pms_array = [];
+        $pms_array      = [];
+        $pms_array[]    = [
+            'value' => '',
+            'label' => __('None')
+        ];
         
         foreach ($this->getApmMethods() as $data) {
             if(empty($data['paymentMethod'])) {

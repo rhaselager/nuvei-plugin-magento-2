@@ -59,8 +59,6 @@ class OpenOrder extends Action
      */
     public function execute()
     {
-        $this->moduleConfig->createLog('OpenOrder controller');
-        
         $result = $this->jsonResultFactory->create()->setHttpResponseCode(\Magento\Framework\Webapi\Response::HTTP_OK);
 
         if (!$this->moduleConfig->isActive()) {
@@ -79,8 +77,6 @@ class OpenOrder extends Action
             "amount"        => $resp->ooAmount,
             "message"       => "Success"
         ];
-        
-        $this->moduleConfig->createLog($output, 'OpenOrder controller after getting the response');
         
         return $result->setData($output);
     }

@@ -177,6 +177,7 @@ class Config
     /**
      * Return config path.
      *
+     * @param string $sub_group The beginning of the Sub group
      * @return string
      */
     private function getConfigPath()
@@ -407,19 +408,28 @@ class Config
      * Return config field value.
      *
      * @param string $fieldKey Field key.
+     * @param string $sub_group The beginning of the the Sub group
      *
      * @return mixed
      */
-    private function getConfigValue($fieldKey)
+    private function getConfigValue($fieldKey, $sub_group = '')
     {
         if (isset($this->config[$fieldKey]) === false) {
+            $path = $this->getConfigPath();
+            
+            if(!empty($sub_group)) {
+                $path .= $sub_group . '_configuration/';
+            }
+            
+            $path .= $fieldKey;
+            
             $this->config[$fieldKey] = $this->scopeConfig->getValue(
-                $this->getConfigPath() . $fieldKey,
+                $path,
                 ScopeInterface::SCOPE_STORE,
                 $this->storeId
             );
         }
-
+        
         return $this->config[$fieldKey];
     }
 
@@ -473,7 +483,7 @@ class Config
     
     public function getMerchantApplePayLabel()
     {
-        return $this->getConfigValue('apple_pay_label');
+        return $this->getConfigValue('apple_pay_label','basic');
     }
 
     /**
@@ -517,7 +527,7 @@ class Config
     
     public function canUseUpos()
     {
-        if ($this->customerSession->isLoggedIn() && 1 == $this->getConfigValue('use_upos')) {
+        if ($this->customerSession->isLoggedIn() && 1 == $this->useUPOs()) {
             return true;
         }
         
@@ -564,11 +574,11 @@ class Config
     }
     
     public function getBlockedCards() {
-        return $this->getConfigValue('block_cards');
+        return $this->getConfigValue('block_cards', 'advanced');
     }
     
     public function getPMsBlackList() {
-        return explode(',', $this->getConfigValue('block_pms'));
+        return $this->getConfigValue('block_pms', 'advanced');
     }
     
     public function getPayButtnoText() {
@@ -584,7 +594,8 @@ class Config
     }
     
     public function getCheckoutTransl() {
-        return json_decode($this->getConfigValue('checkout_transl'), true);
+        $checkout_transl = str_replace("'", '"', $this->getConfigValue('checkout_transl', 'advanced'));
+        return json_decode($checkout_transl, true);
     }
 
     public function getSourcePlatformField()

@@ -33,7 +33,7 @@
                 <!-- Advanced Configuration. -->
 				<allowspecific>0</allowspecific>
                 <specificcountry/>
-                <use_dcc>enabled</use_dcc>
+                <use_dcc>enable</use_dcc>
 				<use_upos>0</use_upos>
 				<pay_btn_text>amountButton</pay_btn_text>
 				<auto_expand_pms>1</auto_expand_pms>

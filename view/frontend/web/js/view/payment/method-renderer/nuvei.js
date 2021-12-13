@@ -66,26 +66,19 @@ function getNuveiCheckoutParams() {
 function nuveiGetSessionToken() {
 	console.log('nuveiGetSessionToken()');
 	
-//	jQuery('body').trigger('processStart');
+	jQuery('body').trigger('processStart');
 	
-//	if(nuveiGetCode() != nuveiSelectedProvider) {
-//		console.log('nuveiGetSessionToken() - slected payment method is not Nuvei');
-//		jQuery('body').trigger('processStop');
-//		return;
-//	}
-
-	if(nuveiCheckoutSdkParams.hasOwnProperty('sessionToken')) {
+	if(nuveiCheckoutSdkParams.hasOwnProperty('sessionToken')
+		&& '' != nuveiCheckoutSdkParams.nuveiCheckoutSdkParams
+	) {
 		console.log('nuveiGetSessionToken() - checkout data is already set');
-//		jQuery('body').trigger('processStop');
+		jQuery('body').trigger('processStop');
 		return;
 	}
 
 	// load Nuvei Checkout
-	nuveiCheckoutSdkParams = getNuveiCheckoutParams();
-
-	if(!nuveiCheckoutSdkParams.hasOwnProperty('amount')) {
-		nuveiCheckoutSdkParams.amount = nuveiOrderTotal;
-	}
+	nuveiCheckoutSdkParams			= getNuveiCheckoutParams();
+	nuveiCheckoutSdkParams.amount	= nuveiOrderTotal;
 	
 	// call openOrder here and get the session token
 	 jQuery.ajax({
@@ -94,18 +87,18 @@ function nuveiGetSessionToken() {
 	})
 	.error(function(jqXHR, textStatus, errorThrown){
 		// TODO show unexpected error
-		console.log('nuveiLoadCheckout update order fail jqXHR', jqXHR);
+//		console.log('nuveiLoadCheckout update order fail jqXHR', jqXHR);
 		console.log('nuveiLoadCheckout update order fail textStatus', textStatus);
 		console.log('nuveiLoadCheckout update order fail errorThrown', errorThrown);
 
 		//window.location.reload();
 		
-//		jQuery('body').trigger('processStop');
+		jQuery('body').trigger('processStop');
 		return;
 	})
 	.success(function(resp) {
-		console.log('success', resp);
 		nuveiLoadCheckout(resp);
+		jQuery('body').trigger('processStop');
 		return;
 	});
 }
@@ -120,22 +113,28 @@ function nuveiLoadCheckout(sessionTokenResp) {
 
 	if(!sessionTokenResp.hasOwnProperty('sessionToken') || '' == sessionTokenResp.sessionToken) {
 		console.log('nuveiLoadCheckout update order sessionToken problem, reload the page');
-//				window.location.reload();
-//		jQuery('body').trigger('processStop');
+
+		alert(jQuery.mage.__('Missing mandatory payment details. Please reload the page and try again!'));
+
+		jQuery('body').trigger('processStop');
 		return;
 	}
 	
+	nuveiCheckoutSdkParams.amount		= sessionTokenResp.amount;
 	nuveiCheckoutSdkParams.sessionToken	= sessionTokenResp.sessionToken;
 	nuveiCheckoutSdkParams.country		= nuveiBillingCountry;
 	nuveiCheckoutSdkParams.fullName		= nuveiOrderFullName;
-
+	
+	if(nuveiCheckoutSdkParams.savePM) {
+		nuveiCheckoutSdkParams.userTokenId = nuveiCheckoutSdkParams.email;
+	}
+	
 	console.log('nuveiLoadCheckout()', nuveiCheckoutSdkParams);
 
 	nuveiCheckoutSdkParams.prePayment	= nuveiPrePayment;
 	nuveiCheckoutSdkParams.onResult		= nuveiAfterSdkResponse;
 
 	nuveiCheckoutSdk(nuveiCheckoutSdkParams);
-//	jQuery('body').trigger('processStart');
 	return;
 };
 
@@ -148,17 +147,15 @@ function nuveiLoadCheckout(sessionTokenResp) {
 function nuveiPrePayment(paymentDetails) {
 	console.log('nuveiPrePayment()');
 	
-//	jQuery('body').trigger('processStart');
-	
 	return new Promise((resolve, reject) => {
 		// validate user agreement
 		if (!nuveiValidateAgreement()) {
 			reject(jQuery.mage.__('Please, accept required agreement!'));
 			jQuery('body').trigger('processStop');
+			return;
 		}
-		else {
-			nuveiUpdateOrder(resolve, reject);
-		};
+		
+		nuveiUpdateOrder(resolve, reject);
 	});
 };
 
@@ -170,102 +167,26 @@ function nuveiUpdateOrder(resolve, reject, secondCall = false) {
            if (xmlhttp.status == 200) {
 				console.log('status == 200', xmlhttp.response);
 				resolve();
+				return;
            }
-           else if (xmlhttp.status == 400) {
+           
+			if (xmlhttp.status == 400) {
               console.log('There was an error 400');
 			  reject();
+			  Query('body').trigger('processStop');
+			  return;
            }
-           else {
-				console.log('something else other than 200 was returned');
-			   
-				if(!secondCall) {
-					nuveiUpdateOrder(resolve, reject, true)
-				}
-				else {
-					reject();
-				}
-           }
+		   
+			console.log('something else other than 200 was returned');
+
+			reject();
+			Query('body').trigger('processStop');
+			return;
         }
     };
 
     xmlhttp.open("GET", window.checkoutConfig.payment[nuveiGetCode()].getUpdateOrderUrl, true);
     xmlhttp.send();
-	
-	
-	
-//	jQuery.ajax({
-//		type: "GET",
-//		url: window.checkoutConfig.payment[nuveiGetCode()].getUpdateOrderUrl,
-//		dataType: 'json',
-//		data: {},
-//		success: function() {
-//			console.log('nuvei success');
-//		},
-//		error: function(jqXHR, textStatus, errorThrown) {
-//			console.log('nuvei error');
-//			console.log('update order fail jqXHR', jqXHR);
-//			console.log('update order fail textStatus', textStatus);
-//			console.log('update order fail errorThrown', errorThrown);
-//		},
-//		complete: function(xhr, textStatus) {
-//			console.log('nuvei complete method', xhr);
-//			console.log('nuvei complete method', textStatus);
-//			
-//		} 
-//	})
-//	.fail(function(jqXHR, textStatus, errorThrown){
-//		// TODO show unexpected error
-//		console.log('update order fail jqXHR', jqXHR);
-//		console.log('update order fail textStatus', textStatus);
-//		console.log('update order fail errorThrown', errorThrown);
-//
-////				reject(jQuery.mage.__('Unexpected error, please try again!'));
-//
-//		reject();
-//	})
-//	.done(function(resp) {
-//		console.log(resp);
-//
-//		if(resp.hasOwnProperty('sessionToken') && '' != resp.sessionToken) {
-//			if(resp.sessionToken == nuveiCheckoutSdkParams.sessionToken) {
-//				console.log('session token is ok');
-////						return true;
-//				resolve();
-//			}
-//
-//			nuveiCheckoutSdkParams.sessionToken = resp.sessionToken;
-//			nuveiCheckoutSdkParams.amount		= resp.amount;
-//
-//			console.log('resp.sessionToken != nuveiCheckoutSdkParams.sessionToken', nuveiCheckoutSdkParams.sessionToken);
-//			nuveiLoadCheckout();
-//			return false;
-//		}
-//
-//		console.log('update order problem');
-//		return false;
-//	})
-//		.complete(function (resp) {
-//			try {
-//				console.log('complete', resp);
-//				console.log('complete responseJSON', resp.responseJSON);
-//				console.log('complete responseJSON', resp.responseJSON.sessionToken);
-////				console.log('complete status', resp.hasOwnProperty('status'));
-////				return false;
-//			}
-//			catch(error) {}
-//
-////			if(resp.hasOwnProperty('responseJSON')
-////				&& resp.responseJSON('sessionToken')
-////				&& '' != resp.responseJSON.sessionToken
-////				&& resp.responseJSON.sessionToken == nuveiCheckoutSdkParams.sessionToken
-////			) {
-////				return true;
-////			}
-////
-////			return false;
-//		})
-//;
-//	resolve();
 }
 
 /**
@@ -282,8 +203,7 @@ function nuveiAfterSdkResponse(resp) {
 		|| !resp.hasOwnProperty('transactionId')
 	) {
 		if(!alert(jQuery.mage.__('Unexpected error, please try again later!'))) {
-//			window.location.reload();
-			jQuery('body').trigger('processStop');
+			window.location.reload();
 			return;
 		}
 	}
@@ -316,8 +236,6 @@ function nuveiAfterSdkResponse(resp) {
 
 	// on Success, Approved
 	window.location.href = window.checkoutConfig.payment[nuveiGetCode()].successUrl;
-//	jQuery('#co-payment-form').attr('onsubmit', '');
-//	jQuery('#co-payment-form').trigger('submit');
 	jQuery('body').trigger('processStop');
 	return;
 };
@@ -346,13 +264,12 @@ define(
     ) {
         'use strict';
 
-//		console.log('setPaymentInformation', typeof (setPaymentInformation))
-//		console.log('messageContainer', typeof (self.messageContainer))
+		if(0 == window.checkoutConfig.payment[nuveiGetCode()].isActive) {
+			return;
+		}
 
-        var self					= null;
-		nuveiOrderFullName			= quote.billingAddress().firstname + ' ' + quote.billingAddress().lastname;
-//		nuveiSetPaymentInformation	= setPaymentInformation;
-//		nuveiMessageContainer		= self.messageContainer;
+        var self			= null;
+		nuveiOrderFullName	= quote.billingAddress().firstname + ' ' + quote.billingAddress().lastname;
 		
         return Component.extend({
             defaults: {

@@ -27,7 +27,6 @@ class OpenOrder extends AbstractRequest implements RequestInterface
      */
     protected $orderData;
     
-//    private $billingAddress; // array
     private $countryCode; // string
     private $quote;
     private $cart;
@@ -80,8 +79,6 @@ class OpenOrder extends AbstractRequest implements RequestInterface
      */
     public function process()
     {
-        $this->config->createLog('OpenOrder model');
-        
         // first try to update order
         $this->quote    = $this->cart->getQuote();
         $this->items    = $this->quote->getItems();
@@ -95,8 +92,6 @@ class OpenOrder extends AbstractRequest implements RequestInterface
                 ->setOrderData($order_data)
                 ->process();
         }
-        
-        $this->config->createLog(@$req_resp, 'OpenOrder $req_resp');
         
         // if UpdateOrder fails - continue with OpenOrder
         if (empty($req_resp['status']) || 'success' != strtolower($req_resp['status'])) {
@@ -118,17 +113,8 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         );
         $this->cart->getQuote()->save();
         
-        $this->config->createLog('OpenOrder before return');
-        
         return $this;
     }
-    
-//    public function setBillingAddress($billingAddress)
-//    {
-//        $this->billingAddress = $billingAddress;
-//        
-//        return $this;
-//    }
     
     /**
      * {@inheritdoc}
@@ -182,46 +168,52 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             $currency = $this->config->getQuoteBaseCurrency();
         }
         
-        $this->requestParams = array_merge_recursive(
-            [
-                'clientUniqueId'    => $this->config->getCheckoutSession()->getQuoteId(),
-                'currency'          => $currency,
-                'amount'            => (string) number_format($this->quote->getGrandTotal(), 2, '.', ''),
-                'deviceDetails'     => $this->config->getDeviceDetails(),
-                'shippingAddress'   => $this->config->getQuoteShippingAddress(),
-                'billingAddress'    => $billing_address,
-                'transactionType'   => $this->config->getPaymentAction(),
-                
-                'urlDetails'        => [
-                    'successUrl'        => $this->config->getCallbackSuccessUrl(),
-                    'failureUrl'        => $this->config->getCallbackErrorUrl(),
-                    'pendingUrl'        => $this->config->getCallbackPendingUrl(),
-                    'backUrl'           => $this->config->getBackUrl(),
-                    'notificationUrl'   => $this->config->getCallbackDmnUrl(),
-                ],
-                
-                'merchantDetails'    => [
-                    // pass amount
-                    'customField1' => (string) number_format($this->quote->getGrandTotal(), 2, '.', ''),
-                    // subscription data
-                    'customField2' => isset($items_data['subs_data'])
-                        ? json_encode($items_data['subs_data']) : '',
-                    // customField3 is passed in AbstractRequest
-                    // time when we create the request
-                    'customField4' => time(),
-                    // list of Order items
-                    'customField5' => isset($items_data['items_data'])
-                        ? json_encode($items_data['items_data']) : '',
-                ],
-                
-                'paymentOption'      => [
-                    'card' => [
-                        'threeD' => [
-                            'isDynamic3D' => 1
-                        ]
-                    ]
-                ],
+        $params = [
+            'clientUniqueId'    => $this->config->getCheckoutSession()->getQuoteId(),
+            'currency'          => $currency,
+            'amount'            => (string) number_format($this->quote->getGrandTotal(), 2, '.', ''),
+            'deviceDetails'     => $this->config->getDeviceDetails(),
+            'shippingAddress'   => $this->config->getQuoteShippingAddress(),
+            'billingAddress'    => $billing_address,
+            'transactionType'   => $this->config->getPaymentAction(),
+
+            'urlDetails'        => [
+                'successUrl'        => $this->config->getCallbackSuccessUrl(),
+                'failureUrl'        => $this->config->getCallbackErrorUrl(),
+                'pendingUrl'        => $this->config->getCallbackPendingUrl(),
+                'backUrl'           => $this->config->getBackUrl(),
+                'notificationUrl'   => $this->config->getCallbackDmnUrl(),
             ],
+
+            'merchantDetails'    => [
+                // pass amount
+                'customField1' => (string) number_format($this->quote->getGrandTotal(), 2, '.', ''),
+                // subscription data
+                'customField2' => isset($items_data['subs_data'])
+                    ? json_encode($items_data['subs_data']) : '',
+                // customField3 is passed in AbstractRequest
+                // time when we create the request
+                'customField4' => time(),
+                // list of Order items
+                'customField5' => isset($items_data['items_data'])
+                    ? json_encode($items_data['items_data']) : '',
+            ],
+
+            'paymentOption'      => [
+                'card' => [
+                    'threeD' => [
+                        'isDynamic3D' => 1
+                    ]
+                ]
+            ],
+        ];
+        
+        if($this->config->useUPOs() == 1) {
+            $params['userTokenId'] = $params['billingAddress']['email'];
+        }
+        
+        $this->requestParams = array_merge_recursive(
+            $params,
             parent::getParams()
         );
         

@@ -142,7 +142,7 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
         }
         
         $currencyCode = $this->config->getQuoteBaseCurrency();
-        $this->config->createLog($currencyCode, '$currencyCode');
+        
         if ((empty($currencyCode) || null === $currencyCode)
             && $this->cart
         ) {

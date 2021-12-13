@@ -222,8 +222,6 @@
 						<frontend_class>validate-number</frontend_class>
 						<config_path>payment/nuvei/sort_order</config_path>
 					</field>
-					
-					
 				</group>
 				
 				<group id="advanced_configuration"

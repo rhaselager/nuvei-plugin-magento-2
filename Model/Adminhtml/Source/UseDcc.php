@@ -18,9 +18,9 @@ class UseDcc implements ArrayInterface
     {
         return [
             ''          => __('Please, select an option...'),
-            'Enable'    => __('Enabled'),
-            'Force'     => __('Enabled and expanded'),
-            'False'     => __('Disabled'),
+            'enable'    => __('Enabled'),
+            'force'     => __('Enabled and expanded'),
+            'false'     => __('Disabled'),
         ];
     }
 }
