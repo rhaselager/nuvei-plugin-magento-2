@@ -244,22 +244,22 @@ define(
     [
         'jquery',
         'Magento_Payment/js/view/payment/cc-form',
-        'Magento_Paypal/js/action/set-payment-method',
-        'jquery.redirect',
+//        'Magento_Paypal/js/action/set-payment-method',
+//        'jquery.redirect',
         'ko',
         'Magento_Checkout/js/model/quote',
         'mage/translate',
-		'Magento_Checkout/js/action/set-payment-information',
+//		'Magento_Checkout/js/action/set-payment-information',
 		'mage/validation'
     ],
     function(
         $,
         Component,
-        setPaymentMethodAction,
-        jqueryRedirect,
+//        setPaymentMethodAction,
+//        jqueryRedirect,
         ko,
         quote,
-		setPaymentInformation,
+//		setPaymentInformation,
         mage
     ) {
         'use strict';

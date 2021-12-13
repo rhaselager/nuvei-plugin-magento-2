@@ -117,7 +117,7 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
                         'Complete Callback error - place order error'
                     );
 
-                    throw new PaymentException(__($result->getErrorMessage()));
+                    throw new PaymentException(__($result->getMessage()));
                 }
             } else {
                 $this->moduleConfig->createLog('Attention - the Quote is not active! '
