@@ -135,26 +135,6 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
         $billing_address = $this->config->getQuoteBillingAddress();
         $this->config->createLog($billing_address, 'UpdateOrder $billing_address $billing_address');
         
-        
-
-//        if (is_array($this->billingAddress['street']) && !empty($this->billingAddress['street'])) {
-//            $billing_address['address'] = implode(' ', $this->billingAddress['street']);
-//        }
-
-//        if (!empty($this->billingAddress)) {
-//            $billing_address['firstName']   = $this->billingAddress['firstname'] ?: $billing_address['firstName'];
-//            $billing_address['lastName']    = $this->billingAddress['lastname'] ?: $billing_address['lastName'];
-//            
-//            if (is_array($this->billingAddress['street']) && !empty($this->billingAddress['street'])) {
-//                $billing_address['address'] = implode(' ', $this->billingAddress['street']);
-//            }
-//            
-//            $billing_address['phone']   = $this->billingAddress['telephone'] ?: $billing_address['phone'];
-//            $billing_address['zip']     = $this->billingAddress['postcode'] ?: $billing_address['zip'];
-//            $billing_address['city']    = $this->billingAddress['city'] ?: $billing_address['city'];
-//            $billing_address['country'] = $this->billingAddress['countryId'] ?: $billing_address['country'];
-//        }
-        
         $params = array_merge_recursive(
             parent::getParams(),
             [

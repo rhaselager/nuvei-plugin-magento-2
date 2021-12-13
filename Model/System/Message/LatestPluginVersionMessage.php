@@ -13,13 +13,16 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
     
     private $directory;
     private $modulConfig;
+    private $fileSystem;
     
     public function __construct(
         \Magento\Framework\Filesystem\DirectoryList $directory,
-        \Nuvei\Checkout\Model\Config $modulConfig
+        \Nuvei\Checkout\Model\Config $modulConfig,
+        \Magento\Framework\Filesystem\DriverInterface $fileSystem
     ) {
         $this->directory    = $directory;
         $this->modulConfig  = $modulConfig;
+        $this->fileSystem   = $fileSystem;
     }
 
     /**
@@ -41,18 +44,18 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
     {
         $file = $this->directory->getPath('tmp') . DIRECTORY_SEPARATOR . 'nuvei-plugin-latest-version.txt';
         
-        if (!file_exists($file)) {
+        if (!$this->fileSystem->isFile($file)) {
             $this->modulConfig->createLog('LatestPluginVersionMessage - version file does not exists.');
             return false;
         }
         
-        if (!is_readable($file)) {
+        if (!$this->fileSystem->isReadable($file)) {
             $this->modulConfig->createLog('LatestPluginVersionMessage Error - '
                 . 'version file exists, but is not readable!');
             return false;
         }
         
-        $git_version = (int) str_replace('.', '', trim(file_get_contents($file)));
+        $git_version = (int) str_replace('.', '', trim($this->fileSystem->fileGetContents($file)));
         
         $this_version = str_replace('Magento Plugin ', '', $this->modulConfig->getSourcePlatformField());
         $this_version = (int) str_replace('.', '', $this_version);

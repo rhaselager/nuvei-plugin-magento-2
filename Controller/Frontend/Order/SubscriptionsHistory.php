@@ -19,6 +19,7 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
     private $helper;
     private $eavAttribute;
     private $config;
+    private $zendUri;
 
     /**
      * @param Context $context
@@ -34,7 +35,8 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
         \Magento\ConfigurableProduct\Model\Product\Type\Configurable $configurable,
         \Magento\Framework\Pricing\Helper\Data $helper,
         \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute,
-        Config $config
+        Config $config,
+        \Zend\Uri\Uri $zendUri
     ) {
         $this->resultPageFactory    = $resultPageFactory;
         $this->httpRequest          = $httpRequest;
@@ -45,6 +47,7 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
         $this->helper               = $helper;
         $this->eavAttribute         = $eavAttribute;
         $this->config               = $config;
+        $this-$zendUri              = $zendUri;
         
         parent::__construct($context);
     }
@@ -116,7 +119,9 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
             }
             
             if (is_string($params['params'])) {
-                parse_str($params['params'], $hash_params);
+//                parse_str($params['params'], $hash_params);
+                $this->zendUri->setQuery($params['params']);
+                $hash_params = $this->zendUri->getQueryAsArray();
             } else {
                 $hash_params = $params['params'];
             }

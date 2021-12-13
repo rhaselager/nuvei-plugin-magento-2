@@ -543,7 +543,8 @@ abstract class AbstractRequest extends AbstractApi
 
                 // mandatory data
                 $subs_data[$product->getId()] = [
-                    'planId'            => $item->getProduct()->getData(\Nuvei\Checkout\Model\Config::PAYMENT_PLANS_ATTR_NAME),
+                    'planId'            => $item->getProduct()
+                        ->getData(\Nuvei\Checkout\Model\Config::PAYMENT_PLANS_ATTR_NAME),
                     'initialAmount'     => 0,
                     'recurringAmount'   => number_format($item->getProduct()
                         ->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_REC_AMOUNT), 2, '.', ''),

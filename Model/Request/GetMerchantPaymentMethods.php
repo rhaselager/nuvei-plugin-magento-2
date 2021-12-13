@@ -87,7 +87,8 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
     public function process()
     {
         if (!$this->moduleConfig->isActive()) {
-            $this->moduleConfig->createLog('GetMerchantPaymentMethods Error - Nuvei payments module is not active at the moment!');
+            $this->moduleConfig->createLog('GetMerchantPaymentMethods Error - '
+                . 'Nuvei payments module is not active at the moment!');
             return [];
         }
         if (empty($this->moduleConfig->getMerchantId())) {
@@ -148,7 +149,6 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
         ) {
             $this->config->createLog($this->cart->getQuote()->getOrderCurrencyCode(), 'getOrderCurrencyCode');
             $this->config->createLog($this->cart->getQuote()->getStoreCurrencyCode(), 'getStoreCurrencyCode');
-            
             
             $currencyCode = empty($this->cart->getQuote()->getOrderCurrencyCode())
                 ? $this->cart->getQuote()->getStoreCurrencyCode() : $this->cart->getQuote()->getOrderCurrencyCode();

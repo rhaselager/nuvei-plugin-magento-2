@@ -58,9 +58,10 @@ class PreventAddToCart
             // 2.1 when we have configurable product with option attribute
             if (!empty($requestInfo['super_attribute'])) {
                 // get the configurable product by its attributes
-                $conProd = $this->configurableProduct->getProductByAttributes($requestInfo['super_attribute'], $productInfo);
+                $conProd = $this->configurableProduct
+                    ->getProductByAttributes($requestInfo['super_attribute'], $productInfo);
                 
-                if(is_object($conProd)) {
+                if (is_object($conProd)) {
                     $payment_enabled = (bool) $conProd->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_ENABLE);
                 }
             } else { // 2.2 when we have simple peoduct without options

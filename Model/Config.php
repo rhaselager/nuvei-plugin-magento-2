@@ -121,6 +121,7 @@ class Config
     private $productRepository;
     private $configurable;
     private $eavAttribute;
+    private $fileSystem;
     
     private $clientUniqueIdPostfix = '_sandbox_apm'; // postfix for Sandbox APM payments
 
@@ -150,7 +151,8 @@ class Config
         \Magento\Catalog\Model\Product $productObj,
         \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
         \Magento\ConfigurableProduct\Model\Product\Type\Configurable $configurable,
-        \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute
+        \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute,
+        \Magento\Framework\Filesystem\DriverInterface $fileSystem
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->storeManager = $storeManager;
@@ -172,6 +174,7 @@ class Config
         $this->productRepository    = $productRepository;
         $this->configurable         = $configurable;
         $this->eavAttribute         = $eavAttribute;
+        $this->fileSystem           = $fileSystem;
     }
 
     /**
@@ -264,8 +267,7 @@ class Config
                 case 1: // save both files
                     $log_file_name = 'Nuvei';
                     
-//                    \Magento\Framework\Filesystem\Driver\file_put_contents(
-                    file_put_contents(
+                    $this->fileSystem->filePutContents(
                         $logsPath . DIRECTORY_SEPARATOR . 'Nuvei-' . date('Y-m-d') . '.log',
                         date('H:i:s', time()) . ': ' . $string,
                         FILE_APPEND
@@ -276,8 +278,8 @@ class Config
                     return;
             }
             
-            if (is_dir($logsPath)) {
-                return file_put_contents(
+            if ($this->fileSystem->isDirectory($logsPath)) {
+                return $this->fileSystem->filePutContents(
                     $logsPath . DIRECTORY_SEPARATOR . $log_file_name . '.log',
                     date('H:i:s', time()) . ': ' . $string,
                     FILE_APPEND
@@ -417,7 +419,7 @@ class Config
         if (isset($this->config[$fieldKey]) === false) {
             $path = $this->getConfigPath();
             
-            if(!empty($sub_group)) {
+            if (!empty($sub_group)) {
                 $path .= $sub_group . '_configuration/';
             }
             
@@ -483,7 +485,7 @@ class Config
     
     public function getMerchantApplePayLabel()
     {
-        return $this->getConfigValue('apple_pay_label','basic');
+        return $this->getConfigValue('apple_pay_label', 'basic');
     }
 
     /**
@@ -573,27 +575,33 @@ class Config
         return $this->getConfigValue('use_dcc');
     }
     
-    public function getBlockedCards() {
+    public function getBlockedCards()
+    {
         return $this->getConfigValue('block_cards', 'advanced');
     }
     
-    public function getPMsBlackList() {
+    public function getPMsBlackList()
+    {
         return $this->getConfigValue('block_pms', 'advanced');
     }
     
-    public function getPayButtnoText() {
+    public function getPayButtnoText()
+    {
         return $this->getConfigValue('pay_btn_text');
     }
     
-    public function autoExpandPms() {
+    public function autoExpandPms()
+    {
         return $this->getConfigValue('auto_expand_pms');
     }
     
-    public function getCheckoutLogLevel() {
+    public function getCheckoutLogLevel()
+    {
         return $this->getConfigValue('checkout_log_level');
     }
     
-    public function getCheckoutTransl() {
+    public function getCheckoutTransl()
+    {
         $checkout_transl = str_replace("'", '"', $this->getConfigValue('checkout_transl', 'advanced'));
         return json_decode($checkout_transl, true);
     }
@@ -958,7 +966,8 @@ class Config
                 
                 // if there are more than 1 products in the Cart we assume there are no product with a Plan
                 if (count($items) > 1) {
-                    $this->createLog('getProductPlanData() - the Items in the Cart are more than 1. We assume there is no Product with a plan in the Cart.');
+                    $this->createLog('getProductPlanData() - the Items in the Cart are more than 1. '
+                        . 'We assume there is no Product with a plan in the Cart.');
                     return $return_arr;
                 }
                 
@@ -981,20 +990,16 @@ class Config
                     if (!empty($options['info_buyRequest']['selected_configurable_option'])) {
                         $product_id = $options['info_buyRequest']['selected_configurable_option'];
                         $product    = $this->productObj->load($product_id);
-                    }
-                    // 1.1.2. when we have super_attribute
-                    elseif (!empty($options['info_buyRequest']['super_attribute'])
+                    } elseif (!empty($options['info_buyRequest']['super_attribute'])
                         && !empty($options['info_buyRequest']['product'])
-                    ) {
+                    ) { // 1.1.2. when we have super_attribute
                         $parent     = $this->productRepository->getById($options['info_buyRequest']['product']);
                         $product    = $this->configurable->getProductByAttributes(
                             $options['info_buyRequest']['super_attribute'],
                             $parent
                         );
                         $product_id = $product->getId();
-                    }
-                    // 1.1.3. no elements to hold variations, stop process
-                    else {
+                    } else { // 1.1.3. no elements to hold variations, stop process
                         return $return_arr;
                     }
 

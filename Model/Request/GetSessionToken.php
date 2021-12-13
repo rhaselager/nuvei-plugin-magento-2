@@ -43,11 +43,6 @@ class GetSessionToken extends AbstractRequest implements RequestInterface
         return '';
     }
     
-    protected function getParams()
-    {
-        return parent::getParams();
-    }
-    
     protected function getChecksumKeys()
     {
         return [
@@ -57,5 +52,4 @@ class GetSessionToken extends AbstractRequest implements RequestInterface
             'timeStamp',
         ];
     }
-    
 }

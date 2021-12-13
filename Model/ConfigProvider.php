@@ -112,33 +112,33 @@ class ConfigProvider extends CcGenericConfigProvider
         );
         
         # blocked_cards
-		$blocked_cards     = [];
-		$blocked_cards_str = $this->moduleConfig->getBlockedCards();
+        $blocked_cards     = [];
+        $blocked_cards_str = $this->moduleConfig->getBlockedCards();
         
-		// clean the string from brakets and quotes
-		$blocked_cards_str = str_replace('],[', ';', $blocked_cards_str);
-		$blocked_cards_str = str_replace('[', '', $blocked_cards_str);
-		$blocked_cards_str = str_replace(']', '', $blocked_cards_str);
-		$blocked_cards_str = str_replace('"', '', $blocked_cards_str);
-		$blocked_cards_str = str_replace("'", '', $blocked_cards_str);
-		
-		if (!empty($blocked_cards_str)) {
-			$blockCards_sets = explode(';', $blocked_cards_str);
+        // clean the string from brakets and quotes
+        $blocked_cards_str = str_replace('],[', ';', $blocked_cards_str);
+        $blocked_cards_str = str_replace('[', '', $blocked_cards_str);
+        $blocked_cards_str = str_replace(']', '', $blocked_cards_str);
+        $blocked_cards_str = str_replace('"', '', $blocked_cards_str);
+        $blocked_cards_str = str_replace("'", '', $blocked_cards_str);
+        
+        if (!empty($blocked_cards_str)) {
+            $blockCards_sets = explode(';', $blocked_cards_str);
 
-			if (count($blockCards_sets) == 1) {
-				$blocked_cards = explode(',', current($blockCards_sets));
-			} else {
-				foreach ($blockCards_sets as $elements) {
-					$blocked_cards[] = explode(',', $elements);
-				}
-			}
-		}
-		# blocked_cards END
+            if (count($blockCards_sets) == 1) {
+                $blocked_cards = explode(',', current($blockCards_sets));
+            } else {
+                foreach ($blockCards_sets as $elements) {
+                    $blocked_cards[] = explode(',', $elements);
+                }
+            }
+        }
+        # blocked_cards END
         
         // get email
         $email = $this->cart->getQuote()->getBillingAddress()->getEmail();
         
-        if(empty($email)) {
+        if (empty($email)) {
             $email = $this->cart->getQuote()->getCustomerEmail();
         }
         // get email END
@@ -156,7 +156,8 @@ class ConfigProvider extends CcGenericConfigProvider
                     'checkoutLogoUrl'           => $this->assetRepo->getUrl("Nuvei_Checkout::images/nuvei.png"),
                     'isTestMode'                => $this->moduleConfig->isTestModeEnabled(),
                     'countryId'                 => $this->moduleConfig->getQuoteCountryCode(),
-                    'updateQuotePM'             => $this->urlBuilder->getUrl('nuvei_checkout/payment/UpdateQuotePaymentMethod'),
+                    'updateQuotePM'             => $this->urlBuilder
+                        ->getUrl('nuvei_checkout/payment/UpdateQuotePaymentMethod'),
                     
                     'submitUserTokenForGuest'   => ($this->moduleConfig->allowGuestsSubscr()
                         && !empty($this->moduleConfig->getProductPlanData())) ? 1 : 0,

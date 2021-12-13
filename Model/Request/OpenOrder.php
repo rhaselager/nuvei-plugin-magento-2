@@ -136,7 +136,6 @@ class OpenOrder extends AbstractRequest implements RequestInterface
     {
         if (null === $this->cart || empty($this->cart)) {
             $this->config->createLog('OpenOrder class Error - mising Cart data.');
-            
             throw new PaymentException(__('There is no Cart data.'));
         }
         
@@ -208,7 +207,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             ],
         ];
         
-        if($this->config->useUPOs() == 1) {
+        if ($this->config->useUPOs() == 1) {
             $params['userTokenId'] = $params['billingAddress']['email'];
         }
         

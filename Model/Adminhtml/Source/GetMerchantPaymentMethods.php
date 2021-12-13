@@ -51,7 +51,8 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
     public function execute()
     {
         if (!$this->moduleConfig->isActive()) {
-            $this->moduleConfig->createLog('GetMerchantPaymentMethods error - Nuvei checkout module is not active at the moment!');
+            $this->moduleConfig->createLog('GetMerchantPaymentMethods error - '
+                . 'Nuvei checkout module is not active at the moment!');
             
             return [];
         }
@@ -63,13 +64,13 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
         ];
         
         foreach ($this->getApmMethods() as $data) {
-            if(empty($data['paymentMethod'])) {
+            if (empty($data['paymentMethod'])) {
                 continue;
             }
             
             $title = $data['paymentMethod'];
             
-            if(!empty($data['paymentMethodDisplayName']['message'])) {
+            if (!empty($data['paymentMethodDisplayName']['message'])) {
                 $title = $data['paymentMethodDisplayName']['message'];
             }
             
@@ -103,10 +104,10 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
         }
     }
 
-    public function toOptionArray(): array {
+    public function toOptionArray(): array
+    {
         $pms = $this->execute();
 //        $this->moduleConfig->createLog($pms);
         return $pms;
     }
-
 }

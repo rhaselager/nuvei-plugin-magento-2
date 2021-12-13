@@ -1221,7 +1221,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         } while ($tryouts < $max_tries && empty($orderList));
         
         // try to create the order
-        if ( (!$orderList || empty($orderList))
+        if ((!$orderList || empty($orderList))
             && !isset($params['dmnType'])
         ) {
             if (in_array(strtolower($params['transactionType']), ['sale', 'auth'])

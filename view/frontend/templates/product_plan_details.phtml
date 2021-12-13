@@ -114,7 +114,8 @@
                     var _self   = $(this);
                     
                     if(_self.val() != 0 && _self.val() != '') {
-                        nuveiShowPlanDetails(<?= $block->escapeHtml($nuvei_texts['nuvei_attr_id']); ?> + '=' + _self.val());
+                        nuveiShowPlanDetails(<?= $block->escapeHtml($nuvei_texts['nuvei_attr_id']); ?>
+                            + '=' + _self.val());
                     }
                     
                     event.stopPropagation();

@@ -10,12 +10,15 @@ class GetPlansList extends AbstractRequest implements RequestInterface
     protected $requestFactory;
     protected $config;
     
+    private $fileSystem;
+    
     public function __construct(
         \Nuvei\Checkout\Model\Logger $logger,
         \Nuvei\Checkout\Model\Config $config,
         \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
         \Nuvei\Checkout\Model\Response\Factory $responseFactory,
-        \Nuvei\Checkout\Model\Request\Factory $requestFactory
+        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
+        \Magento\Framework\Filesystem\DriverInterface $fileSystem
     ) {
         parent::__construct(
             $logger,
@@ -26,6 +29,7 @@ class GetPlansList extends AbstractRequest implements RequestInterface
 
         $this->requestFactory   = $requestFactory;
         $this->config           = $config;
+        $this->fileSystem       = $fileSystem;
     }
     
     public function process()
@@ -97,7 +101,7 @@ class GetPlansList extends AbstractRequest implements RequestInterface
                 return false;
             }
 
-            file_put_contents(
+            $this->fileSystem->filePutContents(
                 $tempPath. DIRECTORY_SEPARATOR . \Nuvei\Checkout\Model\Config::PAYMENT_PLANS_FILE_NAME,
                 json_encode($plans)
             );
