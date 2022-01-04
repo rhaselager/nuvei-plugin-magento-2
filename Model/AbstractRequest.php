@@ -223,25 +223,6 @@ abstract class AbstractRequest extends AbstractApi
     }
 
     /**
-     * Return full endpoint to particular method for request call.
-     *
-     * @return string
-     */
-    protected function getEndpoint()
-    {
-        $endpoint = self::LIVE_ENDPOINT;
-        if ($this->config->isTestModeEnabled() === true) {
-            $endpoint = self::TEST_ENDPOINT;
-        }
-        
-        $endpoint   .= 'api/v1/';
-
-        $method     = $this->getRequestMethod();
-
-        return $endpoint . $method . '.do';
-    }
-
-    /**
      * Return method for request call.
      *
      * @return string
@@ -436,7 +417,7 @@ abstract class AbstractRequest extends AbstractApi
      */
     protected function sendRequest($continue_process = false, $accept_error_status = false)
     {
-        $endpoint   = $this->getEndpoint();
+        $endpoint   = $this->config->getEndpoint();
         $headers    = $this->getHeaders();
         $params     = $this->prepareParams();
 
