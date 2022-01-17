@@ -50,6 +50,8 @@ class Config
     const STORE_SUBS_DROPDOWN_LABEL             = 'Nuvei Subscription Options';
     const STORE_SUBS_DROPDOWN_NAME              = 'nuvei_subscription_options';
     
+    private $traceId;
+    
     /**
      * Scope config object.
      *
@@ -188,7 +190,16 @@ class Config
         return sprintf('payment/%s/', Payment::METHOD_CODE);
     }
     
-    public function createLog($data, $title = '')
+    /**
+     * Prepare and save log.
+     * 
+     * @param mixed $data
+     * @param string $title
+     * @param string $log_level
+     * 
+     * @return void
+     */
+    public function createLog($data, $title = '', $log_level = 'TRACE')
     {
         if (! $this->isDebugEnabled()) {
             return;
@@ -239,17 +250,57 @@ class Config
             $d = $this->isTestModeEnabled() ? print_r($data, true) : json_encode($data);
         }
         
-        $string .= '[v.' . $this->moduleList->getOne(self::MODULE_NAME)['setup_version'] . '] | ';
+        $tab            = '    ';
+        $utimestamp     = microtime(true);
+        $timestamp      = floor($utimestamp);
+        $milliseconds   = round(($utimestamp - $timestamp) * 1000000);
+        $record_time    = date('Y-m-d') . 'T' . date('H:i:s') . '.' . $milliseconds . date('P');
+        
+        if(!$this->traceId) {
+            $this->traceId = bin2hex(random_bytes(16));
+        }
+        
+        $source_file_name   = '';
+        $member_name        = '';
+        $source_line_number = '';
+        
+        $backtrace = debug_backtrace();
+        if(!empty($backtrace)) {
+            if(!empty($backtrace[0]['file'])) {
+                $file_path_arr  = explode(DS, $backtrace[0]['file']);
+                
+                if(!empty($file_path_arr)) {
+                    $source_file_name = end($file_path_arr) . '|';
+                }
+            }
+            
+            if(!empty($backtrace[0]['function'])) {
+                $member_name = $backtrace[0]['function'] . '|';
+            }
+            
+            if(!empty($backtrace[0]['line'])) {
+                $source_line_number = $backtrace[0]['line'] . $tab;
+            }
+        }
+        
+        $string .= $record_time . $tab
+            . $log_level . $tab
+            . $this->traceId . $tab
+            . 'Magento 2 Nuvei Checkout v' . $this->moduleList->getOne(self::MODULE_NAME)['setup_version'] . '|'
+            . $source_file_name
+            . $member_name
+            . $source_line_number;
         
         if (!empty($title)) {
             if (is_string($title)) {
                 $string .= $title;
             } else {
-                $string .= "\r\n" . ($this->isTestModeEnabled()
-                    ? json_encode($title, JSON_PRETTY_PRINT) : json_encode($title));
+                if($this->isTestModeEnabled()) {
+                    $string .= "\r\n" . json_encode($title, JSON_PRETTY_PRINT) . "\r\n";
+                } else{
+                    $string .= json_encode($title) . $tab;
+                }
             }
-            
-            $string .= "\r\n";
         }
 
         $string .= $d . "\r\n\r\n";
@@ -269,7 +320,7 @@ class Config
                     
                     $this->fileSystem->filePutContents(
                         $logsPath . DIRECTORY_SEPARATOR . 'Nuvei-' . date('Y-m-d') . '.log',
-                        date('H:i:s', time()) . ': ' . $string,
+                        $string,
                         FILE_APPEND
                     );
                     break;
@@ -281,7 +332,7 @@ class Config
             if ($this->fileSystem->isDirectory($logsPath)) {
                 return $this->fileSystem->filePutContents(
                     $logsPath . DIRECTORY_SEPARATOR . $log_file_name . '.log',
-                    date('H:i:s', time()) . ': ' . $string,
+                    $string,
                     FILE_APPEND
                 );
             }
@@ -967,7 +1018,7 @@ class Config
                 // if there are more than 1 products in the Cart we assume there are no product with a Plan
                 if (count($items) > 1) {
                     $this->createLog('getProductPlanData() - the Items in the Cart are more than 1. '
-                        . 'We assume there is no Product with a plan in the Cart.');
+                        . 'We assume there is no Product with a plan amongs them.');
                     return $return_arr;
                 }
                 
@@ -982,32 +1033,62 @@ class Config
 
                 $this->createLog($options, 'getProductPlanData $options');
 
-                // 1.1 in case of configurable product
-                if (!empty($options['info_buyRequest'])
-                    && is_array($options['info_buyRequest'])
+                // stop the proccess
+                if (empty($options['info_buyRequest'])
+                    || !is_array($options['info_buyRequest'])
                 ) {
-                    // 1.1.1. when we have selected_configurable_option paramter
-                    if (!empty($options['info_buyRequest']['selected_configurable_option'])) {
-                        $product_id = $options['info_buyRequest']['selected_configurable_option'];
-                        $product    = $this->productObj->load($product_id);
-                    } elseif (!empty($options['info_buyRequest']['super_attribute'])
-                        && !empty($options['info_buyRequest']['product'])
-                    ) { // 1.1.2. when we have super_attribute
-                        $parent     = $this->productRepository->getById($options['info_buyRequest']['product']);
-                        $product    = $this->configurable->getProductByAttributes(
-                            $options['info_buyRequest']['super_attribute'],
-                            $parent
-                        );
-                        $product_id = $product->getId();
-                    } else { // 1.1.3. no elements to hold variations, stop process
+                    return $return_arr;
+                }
+                
+                // 1.1 in case of configurable product
+                // 1.1.1. when we have selected_configurable_option paramter
+                if (!empty($options['info_buyRequest']['selected_configurable_option'])) {
+                    $product_id = $options['info_buyRequest']['selected_configurable_option'];
+                    $product    = $this->productObj->load($product_id);
+                    
+                    $nuvei_sub_enabled = $product->getCustomAttribute('nuvei_sub_enabled');
+                    $this->createLog(
+                        $nuvei_sub_enabled,
+                        'getProductPlanData get nuvei_sub_enabled on configurable product'
+                    );
+                    
+                    if(!is_object($nuvei_sub_enabled)) {
                         return $return_arr;
                     }
-
+                }
+                // 1.1.2. when we have super_attribute
+                elseif (!empty($options['info_buyRequest']['super_attribute'])
+                    && !empty($options['info_buyRequest']['product'])
+                ) {
+                    $parent     = $this->productRepository->getById($options['info_buyRequest']['product']);
+                    $product    = $this->configurable->getProductByAttributes(
+                        $options['info_buyRequest']['super_attribute'],
+                        $parent
+                    );
+                    $product_id = $product->getId();
+                    
+                    $nuvei_sub_enabled = $product->getCustomAttribute('nuvei_sub_enabled');
+                    $this->createLog(
+                        $nuvei_sub_enabled,
+                        'getProductPlanData get nuvei_sub_enabled on configurable product'
+                    );
+                    
+                    if(!is_object($nuvei_sub_enabled)) {
+                        return $return_arr;
+                    }
+                }
+                
+                if(!empty($product) && 0 != $product_id) {
                     $plan_data[$product_id]     = $this->buildPlanDetailsArray($product);
                     $items_data[$product_id]    = [
                         'quantity'  => $item->getQty(),
                         'price'     => round((float) $item->getPrice(), 2),
                     ];
+                    
+                    $this->createLog(
+                        $plan_data,
+                        'getProductPlanData $plan_data'
+                    );
 
                     // return plan details only if the subscription is enabled
                     if (!empty($plan_data[$product_id])) {
@@ -1021,8 +1102,18 @@ class Config
                 }
 
                 // 1.2 in case of simple product
-                $product= $this->productObj->load($options['info_buyRequest']['product']);
-
+                $product = $this->productObj->load($options['info_buyRequest']['product']);
+                $nuvei_sub_enabled  = $product->getCustomAttribute('nuvei_sub_enabled');
+                
+                $this->createLog(
+                    $product->getCustomAttribute('nuvei_sub_enabled'),
+                    'getProductPlanData get nuvei_sub_enabled on simple product'
+                );
+                
+                if(!is_object($nuvei_sub_enabled)) {
+                    return $return_arr;
+                }
+                
                 $plan_data[$options['info_buyRequest']['product']] = $this->buildPlanDetailsArray($product);
 
                 $items_data[$item->getId()] = [
@@ -1075,8 +1166,20 @@ class Config
 
             $parent     = $this->productRepository->getById($product_id);
             $product    = $this->configurable->getProductByAttributes($prod_options, $parent);
+            
+//            $nuvei_sub_enabled  = $product->getCustomAttribute('nuvei_sub_enabled');
+//                
+//            $this->createLog(
+//                $product->getCustomAttribute('nuvei_sub_enabled'),
+//                'getProductPlanData get nuvei_sub_enabled on simple product'
+//            );
 
             $plan_data = $this->buildPlanDetailsArray($product);
+            
+            $this->createLog(
+                $plan_data,
+                'getProductPlanData $plan_data of incoming product'
+            );
 
             if (!empty($plan_data)) {
                 return $plan_data;
