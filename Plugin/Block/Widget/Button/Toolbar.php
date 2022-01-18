@@ -75,6 +75,9 @@ class Toolbar
             
 //            $this->config->createLog($buttonList->getItems(), 'buttonList');
             
+            // the plugin does not support reorder from the admin
+            $buttonList->remove('order_reorder');
+            
             if (!in_array($payment_method, Payment::PAYMETNS_SUPPORT_REFUND)
                 || in_array($ord_status, [Payment::SC_VOIDED, Payment::SC_PROCESSING])
             ) {

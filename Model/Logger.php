@@ -91,14 +91,14 @@ class Logger extends \Monolog\Logger
             $processors
         );
 
-        $this->moduleConfig = $moduleConfig;
-        $this->requestLogFactory = $requestLogFactory;
-        $this->requestLogRepository = $requestLogRepository;
-        $this->dataObjectHelper = $dataObjectHelper;
-        $this->customerSession = $customerSession;
-        $this->storeManager = $storeManager;
-        $this->privateDataKeysProvider = $privateDataKeysProvider;
-        $this->coreRegistry = $coreRegistry;
+        $this->moduleConfig             = $moduleConfig;
+        $this->requestLogFactory        = $requestLogFactory;
+        $this->requestLogRepository     = $requestLogRepository;
+        $this->dataObjectHelper         = $dataObjectHelper;
+        $this->customerSession          = $customerSession;
+        $this->storeManager             = $storeManager;
+        $this->privateDataKeysProvider  = $privateDataKeysProvider;
+        $this->coreRegistry             = $coreRegistry;
     }
 
     /**
@@ -182,9 +182,9 @@ class Logger extends \Monolog\Logger
     private function getDefaultData()
     {
         return [
-            'customer_id' => $this->customerSession->getCustomerId(),
-            'website_id' => $this->storeManager->getWebsite()->getId(),
-            'store_id' => $this->storeManager->getStore()->getId(),
+            'customer_id'   => $this->customerSession->getCustomerId(),
+            'website_id'    => $this->storeManager->getWebsite()->getId(),
+            'store_id'      => $this->storeManager->getStore()->getId(),
         ];
     }
 
