@@ -9,12 +9,6 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
-    <!-- filter payment providers if in the cart there is a product with a Payment Plan -->
-    <event name="payment_method_is_active">
-        <observer name="nuvei_filter_payment_providers" 
-                  instance="Nuvei\Payments\Observer\FilterPaymentProviders" />
-    </event>
-    
     <!-- when user login, check quote before merge with the guest quote -->
     <event name="sales_quote_merge_before">
         <observer name="nuvei_validate_quote_merge" 

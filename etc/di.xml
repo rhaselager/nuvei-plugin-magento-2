@@ -88,6 +88,14 @@
 				type="Nuvei\Checkout\Plugin\ZeroTotal" />
 	</type>
 	
+    <!-- filter payment providers if in the cart there is a product with a Payment Plan -->
+    <type name="Magento\Payment\Model\MethodList">
+        <plugin sortOrder="5" 
+                name="nuveiDisablePaymentProviders" 
+                type="Nuvei\Payments\Plugin\Model\Method\MethodAvailable" 
+                disabled="false" />
+    </type>
+    
     <!-- Interface preferences. -->
     <preference for="Nuvei\Checkout\Api\RequestLogRepositoryInterface"
                 type="Nuvei\Checkout\Model\ResourceModel\RequestLogRepository"/>
