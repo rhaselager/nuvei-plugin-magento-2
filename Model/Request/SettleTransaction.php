@@ -34,8 +34,6 @@ class SettleTransaction extends AbstractRequest implements RequestInterface
             $curl,
             $responseFactory
         );
-
-        $this->config = $config;
     }
     
     /**

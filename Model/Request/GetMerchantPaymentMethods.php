@@ -56,7 +56,6 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
         $this->requestFactory   = $requestFactory;
         $this->store            = $store;
         $this->cart             = $cart;
-        $this->moduleConfig     = $moduleConfig;
     }
 
     /**
@@ -86,25 +85,25 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
      */
     public function process()
     {
-        if (!$this->moduleConfig->isActive()) {
-            $this->moduleConfig->createLog('GetMerchantPaymentMethods Error - '
+        if (!$this->config->isActive()) {
+            $this->config->createLog('GetMerchantPaymentMethods Error - '
                 . 'Nuvei payments module is not active at the moment!');
             return [];
         }
-        if (empty($this->moduleConfig->getMerchantId())) {
-            $this->moduleConfig->createLog('GetMerchantPaymentMethods Error - merchantId is empty!');
+        if (empty($this->config->getMerchantId())) {
+            $this->config->createLog('GetMerchantPaymentMethods Error - merchantId is empty!');
             return [];
         }
-        if (empty($this->moduleConfig->getMerchantSiteId())) {
-            $this->moduleConfig->createLog('GetMerchantPaymentMethods Error - merchantSiteId is empty!');
+        if (empty($this->config->getMerchantSiteId())) {
+            $this->config->createLog('GetMerchantPaymentMethods Error - merchantSiteId is empty!');
             return [];
         }
-        if (empty($this->moduleConfig->getMerchantSecretKey())) {
-            $this->moduleConfig->createLog('GetMerchantPaymentMethods Error - merchant secret key is empty!');
+        if (empty($this->config->getMerchantSecretKey())) {
+            $this->config->createLog('GetMerchantPaymentMethods Error - merchant secret key is empty!');
             return [];
         }
-        if (empty($this->moduleConfig->getHash())) {
-            $this->moduleConfig->createLog('GetMerchantPaymentMethods Error - merchant hash is empty!');
+        if (empty($this->config->getHash())) {
+            $this->config->createLog('GetMerchantPaymentMethods Error - merchant hash is empty!');
             return [];
         }
         

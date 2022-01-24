@@ -355,7 +355,7 @@
 						<comment model="Nuvei\Checkout\Block\System\Config\CheckoutTranslateComment" />
 					</field>
 					
-					<field id="allow_guests_subscr"
+<!--					<field id="allow_guests_subscr"
 						   translate="label"
 						   type="select"
 						   sortOrder="110"
@@ -366,7 +366,7 @@
 						<label>Allow Subscriptions for Guests</label>
 						<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
 						<config_path>payment/nuvei/allow_guests_subscr</config_path>
-					</field>
+					</field>-->
 					
 					<field id="notifyURL"
 						   translate="label"

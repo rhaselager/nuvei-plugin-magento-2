@@ -25,7 +25,6 @@ class GetSessionToken extends AbstractRequest implements RequestInterface
         );
 
         $this->requestFactory   = $requestFactory;
-        $this->config           = $config;
     }
     
     public function process()

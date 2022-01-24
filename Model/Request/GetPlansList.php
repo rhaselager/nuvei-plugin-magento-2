@@ -28,7 +28,6 @@ class GetPlansList extends AbstractRequest implements RequestInterface
         );
 
         $this->requestFactory   = $requestFactory;
-        $this->config           = $config;
         $this->fileSystem       = $fileSystem;
     }
     

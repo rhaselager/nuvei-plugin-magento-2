@@ -27,7 +27,6 @@ class CreatePlan extends AbstractRequest implements RequestInterface
         );
 
         $this->requestFactory   = $requestFactory;
-        $this->config           = $config;
         $this->storeManager     = $storeManager;
     }
     

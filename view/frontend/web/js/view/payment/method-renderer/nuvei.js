@@ -294,19 +294,28 @@ define(
                     ]);
                    
 				try {
+                    if(typeof quote.paymentMethod != 'undefined') {
+                        quote.paymentMethod.subscribe(self.changePaymentProvider, this, 'change');
+                    }
+                    
 					if(quote.paymentMethod._latestValue != null) {
 						self.nuveiSelectedProvider = nuveiSelectedProvider = quote.paymentMethod._latestValue.method;
 						self.scUpdateQuotePM();
 					}
                     
-                    self.nuveiOrderTotal		= nuveiOrderTotal
+                    if(typeof quote.totals != 'undefined') {
+                        self.nuveiOrderTotal    = nuveiOrderTotal
                                                 = parseFloat(quote.totals().base_grand_total).toFixed(2);
-                    self.nuveiBillingCountry	= nuveiBillingCountry
-                                                = quote.billingAddress().countryId;
+                        
+                        quote.totals.subscribe(self.scTotalsChange, this, 'change');
+                    }
+                    
+                    if(typeof quote.billingAddress != 'undefined') {
+                        self.nuveiBillingCountry	= nuveiBillingCountry
+                                                    = quote.billingAddress().countryId;
 
-                    quote.billingAddress.subscribe(self.scBillingAddrChange, this, 'change');
-                    quote.totals.subscribe(self.scTotalsChange, this, 'change');
-                    quote.paymentMethod.subscribe(self.changePaymentProvider, this, 'change');
+                        quote.billingAddress.subscribe(self.scBillingAddrChange, this, 'change');
+                    }
 				}
 				catch(_error) {
 					console.error(_error);
