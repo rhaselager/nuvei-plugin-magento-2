@@ -173,10 +173,7 @@ abstract class AbstractRequest extends AbstractApi
         Curl $curl,
         ResponseFactory $responseFactory
     ) {
-        parent::__construct(
-            $logger,
-            $config
-        );
+        parent::__construct($logger, $config);
 
         $this->curl             = $curl;
         $this->responseFactory  = $responseFactory;
@@ -220,6 +217,25 @@ abstract class AbstractRequest extends AbstractApi
             );
             $this->requestId = $requestLog->getId();
         }
+    }
+    
+    /**
+     * Return full endpoint to particular method for request call.
+     *
+     * @return string
+     */
+    protected function getEndpoint()
+    {
+        $endpoint = self::LIVE_ENDPOINT;
+        
+        if ($this->config->isTestModeEnabled() === true) {
+            $endpoint = self::TEST_ENDPOINT;
+        }
+        
+        $endpoint   .= 'api/v1/';
+        $method     = $this->getRequestMethod();
+
+        return $endpoint . $method . '.do';
     }
 
     /**
@@ -417,7 +433,7 @@ abstract class AbstractRequest extends AbstractApi
      */
     protected function sendRequest($continue_process = false, $accept_error_status = false)
     {
-        $endpoint   = $this->config->getEndpoint();
+        $endpoint   = $this->getEndpoint();
         $headers    = $this->getHeaders();
         $params     = $this->prepareParams();
 

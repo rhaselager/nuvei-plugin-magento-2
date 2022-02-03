@@ -1,9 +1,9 @@
 <?php
 
-namespace Nuvei\Payments\Plugin\Model\Method;
+namespace Nuvei\Checkout\Plugin\Model\Method;
 
-use Nuvei\Payments\Model\Config;
-use Nuvei\Payments\Model\Payment;
+use Nuvei\Checkout\Model\Config;
+use Nuvei\Checkout\Model\Payment;
 
 class MethodAvailable
 {

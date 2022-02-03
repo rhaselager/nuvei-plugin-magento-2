@@ -274,9 +274,9 @@ class Config
                 }
             }
             
-            if(!empty($backtrace[0]['function'])) {
-                $member_name = $backtrace[0]['function'] . '|';
-            }
+//            if(!empty($backtrace[0]['function'])) {
+//                $member_name = $backtrace[0]['function'] . '|';
+//            }
             
             if(!empty($backtrace[0]['line'])) {
                 $source_line_number = $backtrace[0]['line'] . $tab;
@@ -673,15 +673,15 @@ class Config
      *
      * @return string
      */
-    public function getEndpoint()
-    {
-        $endpoint = AbstractRequest::LIVE_ENDPOINT;
-        if ($this->isTestModeEnabled() === true) {
-            $endpoint = AbstractRequest::TEST_ENDPOINT;
-        }
-
-        return $endpoint . 'purchase.do';
-    }
+//    public function getEndpoint()
+//    {
+//        $endpoint = AbstractRequest::LIVE_ENDPOINT;
+//        if ($this->isTestModeEnabled() === true) {
+//            $endpoint = AbstractRequest::TEST_ENDPOINT;
+//        }
+//
+//        return $endpoint . 'purchase.do';
+//    }
 
     /**
      * @return string

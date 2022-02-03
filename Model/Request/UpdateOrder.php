@@ -133,7 +133,7 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
         }
         
         $billing_address = $this->config->getQuoteBillingAddress();
-        $this->config->createLog($billing_address, 'UpdateOrder $billing_address $billing_address');
+//        $this->config->createLog($billing_address, 'UpdateOrder $billing_address $billing_address');
         
         $params = array_merge_recursive(
             parent::getParams(),

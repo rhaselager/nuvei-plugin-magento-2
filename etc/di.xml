@@ -92,7 +92,14 @@
     <type name="Magento\Payment\Model\MethodList">
         <plugin sortOrder="5" 
                 name="nuveiDisablePaymentProviders" 
-                type="Nuvei\Payments\Plugin\Model\Method\MethodAvailable" 
+                type="Nuvei\Checkout\Plugin\Model\Method\MethodAvailable" 
+                disabled="false" />
+    </type>
+    
+    <!-- plugin to fix "Invalid Customer address id XXXX" error -->
+    <type name="Magento\Quote\Model\QuoteAddressValidator">
+        <plugin name="nuveiDisableGusetCheck" 
+                type="Nuvei\Checkout\Plugin\QuoteAddressValidatorPlugin" 
                 disabled="false" />
     </type>
     
