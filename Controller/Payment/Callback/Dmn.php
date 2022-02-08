@@ -1044,7 +1044,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
     
     private function createSubscription($params, $last_record, $orderIncrementId)
     {
-        $this->moduleConfig->createLog($this->start_subscr, 'start_subscr');
+        $this->moduleConfig->createLog($this->start_subscr, 'createSubscription()');
         
         // no need to create a Subscription
         if (!$this->start_subscr) {

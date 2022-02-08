@@ -47,7 +47,7 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
         $this->helper               = $helper;
         $this->eavAttribute         = $eavAttribute;
         $this->config               = $config;
-        $this-$zendUri              = $zendUri;
+        $this->zendUri              = $zendUri;
         
         parent::__construct($context);
     }

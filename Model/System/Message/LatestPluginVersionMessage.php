@@ -42,7 +42,43 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
      */
     public function isDisplayed()
     {
-        $file = $this->directory->getPath('tmp') . DIRECTORY_SEPARATOR . 'nuvei-plugin-latest-version.txt';
+        if ($this->moduleConfig->isActive() === false) {
+            $this->moduleConfig->createLog('LatestPluginVersionMessage Error - the module is not active.');
+            return;
+        }
+        
+        try {
+            $path = $this->directory->getPath('tmp');
+            
+            // check git for version on every 7th day
+//            if( (int) date('d', time()) % 7 == 0 ) {
+//                $this->curl->get('https://raw.githubusercontent.com/SafeChargeInternational/'
+//                    . 'safecharge_magento_v2/master/composer.json');
+//                $this->curl->setOption(CURLOPT_RETURNTRANSFER, true);
+//                $this->curl->setOption(CURLOPT_SSL_VERIFYPEER, false);
+//
+//                $result = $this->curl->getBody();
+//                $array  = json_decode($result, true);
+//
+//                if (empty($array['version'])) {
+//                    $this->moduleConfig->createLog($result, 'LatestPluginVersionMessage Error - missing version.');
+//                    return;
+//                }
+//
+//                $res = $this->fileSystem->filePutContents(
+//                    $path . DIRECTORY_SEPARATOR . 'nuvei-plugin-latest-version.txt',
+//                    $array['version']
+//                );
+//
+//                if (!$res) {
+//                    $this->moduleConfig->createLog('LatestPluginVersionMessage Error - file was not created.');
+//                }
+//            }
+        } catch (Exception $ex) {
+            $this->moduleConfig->createLog($ex->getMessage(), 'LatestPluginVersionMessage Exception:');
+        }
+        
+        $file = $path . DIRECTORY_SEPARATOR . 'nuvei-plugin-latest-version.txt';
         
         if (!$this->fileSystem->isFile($file)) {
             $this->modulConfig->createLog('LatestPluginVersionMessage - version file does not exists.');
@@ -74,8 +110,8 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
      */
     public function getText()
     {
-        return __('There is a new version of Nuvei Plugin available. <a href="https://github.'
-            . 'com/SafeChargeInternational/safecharge_magento_v2/blob/master/CHANGELOG.md" '
+        return __('There is a new version of Nuvei Plugin available. '
+            . '<a href="https://github.com/SafeChargeInternational/safecharge_magento_v2/blob/master/CHANGELOG.md" '
             . 'target="_blank">View version details.</a>');
     }
     

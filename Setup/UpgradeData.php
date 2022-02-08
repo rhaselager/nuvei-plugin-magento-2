@@ -73,7 +73,7 @@ class UpgradeData extends \Nuvei\Checkout\Setup\InstallSchema implements Upgrade
 //        );
         
         // add few new Order States
-        if (version_compare($context->getVersion(), '3.0.0', '<')) {
+        if (version_compare($context->getVersion(), '1.0.0', '=')) {
             $scVoided = $this->orderStatusFactory->create()
                 ->setData('status', 'nuvei_voided')
                 ->setData('label', 'Nuvei Voided')
@@ -116,7 +116,7 @@ class UpgradeData extends \Nuvei\Checkout\Setup\InstallSchema implements Upgrade
         }
          */
         
-        if (version_compare($context->getVersion(), '3.0.2', '<')) {
+        if (version_compare($context->getVersion(), '1.0.0', '=')) {
             # Admin > Product > Nuvei Subscription details
             // Enable subscription
             $eavSetup->addAttribute(
