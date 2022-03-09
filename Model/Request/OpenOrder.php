@@ -207,10 +207,6 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             ],
         ];
         
-        if ($this->config->useUPOs() == 1) {
-            $params['userTokenId'] = $params['billingAddress']['email'];
-        }
-        
         $this->requestParams = array_merge_recursive(
             $params,
             parent::getParams()

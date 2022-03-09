@@ -136,12 +136,21 @@ class ConfigProvider extends CcGenericConfigProvider
         # blocked_cards END
         
         // get email
-        $email = $this->cart->getQuote()->getBillingAddress()->getEmail();
-        
-        if (empty($email)) {
-            $email = $this->cart->getQuote()->getCustomerEmail();
-        }
+//        $email = $this->cart->getQuote()->getBillingAddress()->getEmail();
+//        
+//        if (empty($email)) {
+//            $email = $this->cart->getQuote()->getCustomerEmail();
+//        }
         // get email END
+        
+        $billing_address    = $this->moduleConfig->getQuoteBillingAddress();
+        $payment_plan_data  = $this->moduleConfig->getProductPlanData();
+        $save_pm            = $show_upo
+                            = $this->moduleConfig->canUseUpos();
+        // TODO uncomment this when sdk team is reay
+//        if(!empty($payment_plan_data)) {
+//            $save_pm = 'always';
+//        }
         
         $config = [
             'payment' => [
@@ -159,34 +168,40 @@ class ConfigProvider extends CcGenericConfigProvider
                     'updateQuotePM'             => $this->urlBuilder
                         ->getUrl('nuvei_checkout/payment/UpdateQuotePaymentMethod'),
                     
-                    'submitUserTokenForGuest'   => ($this->moduleConfig->allowGuestsSubscr()
-                        && !empty($this->moduleConfig->getProductPlanData())) ? 1 : 0,
+//                    'submitUserTokenForGuest'   => ( $this->moduleConfig->allowGuestsSubscr()
+//                        && !empty($payment_plan_data) ) ? 1 : 0,
                     
+                    'isPaymentPlan'             => !empty($payment_plan_data) ? 1 : 0,
+                    
+                    // we will set some of the parameters in the JS file
                     'nuveiCheckoutParams' => [
-                        'sessionToken'          => '',
-                        'env'                   => $this->moduleConfig->isTestModeEnabled() ? 'test' : 'prod',
-                        'merchantId'            => $this->moduleConfig->getMerchantId(),
-                        'merchantSiteId'        => $this->moduleConfig->getMerchantSiteId(),
-                        'country'               => '', // set it in the js
-                        'currency'              => trim($this->storeManager->getStore()->getCurrentCurrencyCode()),
-                        'amount'                => 0, // set it in the js
-                        'renderTo'              => '#nuvei_checkout',
-                        'useDCC'                =>  $this->moduleConfig->useDCC(),
-                        'strict'                => false,
-                        'savePM'                => $this->moduleConfig->canUseUpos(),
-                        'pmBlacklist'           => $this->moduleConfig->getPMsBlackList(),
-                        'pmWhitelist'           => null,
-                        'alwaysCollectCvv'      => true,
-                        'fullName'              => '', // set it in the js
-                        'email'                 => $email,
-                        'payButton'             => $this->moduleConfig->getPayButtnoText(),
-                        'showResponseMessage'   => false, // shows/hide the response popups
-                        'locale'                => substr($locale, 0, 2),
-                        'autoOpenPM'            => (bool) $this->moduleConfig->autoExpandPms(),
-                        'logLevel'              => $this->moduleConfig->getCheckoutLogLevel(),
-                        'maskCvv'               => true,
-                        'i18n'                  => $this->moduleConfig->getCheckoutTransl(),
-                        'blockCards'            => $blocked_cards,
+                        'sessionToken'              => '',
+                        'env'                       => $this->moduleConfig->isTestModeEnabled() ? 'test' : 'prod',
+                        'merchantId'                => $this->moduleConfig->getMerchantId(),
+                        'merchantSiteId'            => $this->moduleConfig->getMerchantSiteId(),
+                        'country'                   => '', // set it in the js
+                        'currency'                  => trim($this->storeManager->getStore()->getCurrentCurrencyCode()),
+                        'amount'                    => 0, // set it in the js
+                        'renderTo'                  => '#nuvei_checkout',
+                        'useDCC'                    =>  $this->moduleConfig->useDCC(),
+                        'strict'                    => false,
+                        'savePM'                    => $save_pm,
+                        'showUserPaymentOptions'    => $show_upo,
+                        'pmBlacklist'               => $this->moduleConfig->getPMsBlackList(),
+                        'pmWhitelist'               => null,
+                        'alwaysCollectCvv'          => true,
+                        'fullName'                  => '', // set it in the js
+//                        'email'                 => $email,
+                        'email'                     => $billing_address['email'],
+                        'payButton'                 => $this->moduleConfig->getPayButtnoText(),
+                        'showResponseMessage'       => false, // shows/hide the response popups
+                        'locale'                    => substr($locale, 0, 2),
+                        'autoOpenPM'                => (bool) $this->moduleConfig->autoExpandPms(),
+                        'logLevel'                  => $this->moduleConfig->getCheckoutLogLevel(),
+                        'maskCvv'                   => true,
+                        'i18n'                      => $this->moduleConfig->getCheckoutTransl(),
+                        'blockCards'                => $blocked_cards,
+                        'billingAddress'            => $billing_address,
                     ],
                 ],
             ],

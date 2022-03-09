@@ -65,12 +65,12 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
     ) {
         parent::__construct($context);
 
-        $this->moduleConfig                = $moduleConfig;
+        $this->moduleConfig             = $moduleConfig;
         $this->paymentRequestFactory    = $paymentRequestFactory;
         $this->dataObjectFactory        = $dataObjectFactory;
-        $this->cartManagement            = $cartManagement;
-        $this->checkoutSession            = $checkoutSession;
-        $this->onepageCheckout            = $onepageCheckout;
+        $this->cartManagement           = $cartManagement;
+        $this->checkoutSession          = $checkoutSession;
+        $this->onepageCheckout          = $onepageCheckout;
     }
     
     /**
@@ -110,11 +110,12 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
             if ((int) $this->checkoutSession->getQuote()->getIsActive() === 1) {
                 // if the option for save the order in the Redirect is ON, skip placeOrder !!!
                 $result = $this->placeOrder();
-
+                
                 if ($result->getSuccess() !== true) {
                     $this->moduleConfig->createLog(
                         $result->getMessage(),
-                        'Complete Callback error - place order error'
+                        'Complete Callback error - place order error',
+                        'WARN'
                     );
 
                     throw new PaymentException(__($result->getMessage()));
@@ -164,7 +165,7 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
             $this->onepageCheckout->getCheckoutMethod();
             
             $orderId = $this->cartManagement->placeOrder($this->getQuoteId());
-
+            
             $result
                 ->setData('success', true)
                 ->setData('order_id', $orderId);
@@ -177,7 +178,11 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
                 ]
             );
         } catch (\Exception $exception) {
-            $this->moduleConfig->createLog($exception->getMessage(), 'Success Callback Response Exception: ');
+            $this->moduleConfig->createLog(
+                $exception->getMessage(),
+                'Success Callback Response Exception',
+                'WARN'
+            );
             
             $result
                 ->setData('error', true)

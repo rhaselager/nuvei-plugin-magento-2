@@ -456,10 +456,10 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                     $this->transactionType        = Transaction::TYPE_REFUND;
                     $this->sc_transaction_type    = Payment::SC_REFUNDED;
                     
-                    if ((!empty($params['totalAmount']) && 'cc_card' == $params["payment_method"])
+                    if ( (!empty($params['totalAmount']) && 'cc_card' == $params["payment_method"])
                         || false !== strpos($params["merchant_unique_id"], 'gwp')
                     ) {
-                        $refund_msg = '<br/>The Refunded amount is <b>'
+                        $refund_msg = '<br/>Refunded amount: <b>'
                             . $params['totalAmount'] . ' ' . $params['currency'] . '</b>.';
                     }
                     
@@ -470,19 +470,23 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 
                 $this->order->setStatus($this->sc_transaction_type);
 
-                $msg_transaction = '<b>'
-                    . ($this->is_partial_settle === true ? 'Partial ' : '')
-                    . $params['transactionType'] . '</b> ';
+                $msg_transaction = '<b>';
+                
+                if($this->is_partial_settle === true) {
+                    $msg_transaction .= __("Partial ");
+                }
+                
+                $msg_transaction .= __($params['transactionType']) . ': </b> request.<br/>';
 
                 $this->order->addStatusHistoryComment(
                     $msg_transaction
-                    . __("request. Response status: ") . ' <b>' . $params['Status'] . '</b>.<br/>'
-                    . __('Payment Method: ') . $params['payment_method'] . ',<br/>'
-                    . __('Transaction ID: ') . $params['TransactionID'] . ',<br/>'
-                    . __('Related Transaction ID: ') . $params['relatedTransactionId'] . ',<br/>'
-                    . __('Transaction Amount: ') . number_format($params['totalAmount'], 2, '.', '')
-                    . ' ' . $params['currency'] . ' <br/>'
-                    . $refund_msg,
+                        . __("Response status: ") . ' <b>' . $params['Status'] . '</b>.<br/>'
+                        . __('Payment Method: ') . $params['payment_method'] . '.<br/>'
+                        . __('Transaction ID: ') . $params['TransactionID'] . '.<br/>'
+                        . __('Related Transaction ID: ') . $params['relatedTransactionId'] . '.<br/>'
+                        . __('Transaction Amount: ') . number_format($params['totalAmount'], 2, '.', '')
+                        . ' ' . $params['currency'] . '.'
+                        . $refund_msg,
                     $this->sc_transaction_type
                 );
             } elseif (in_array($status, ['declined', 'error'])) { // DECLINED/ERROR TRANSACTION
@@ -591,7 +595,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             $is_cpanel_settle = true;
         }
 
-        // set Start Subscription flag
+        // set Start Subscription flag 
         if ('sale' == $tr_type_param && !empty($params['customField2'])) {
             $this->start_subscr = true;
         } elseif ('settle' == $tr_type_param
@@ -973,6 +977,11 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             if ($params["advanceResponseChecksum"] !== $checksum) {
                 $msg = 'Checksum validation failed for advanceResponseChecksum and Order #' . $orderIncrementId;
 
+                if($this->moduleConfig->isTestModeEnabled() && null !== $this->order) {
+                    $this->order->addStatusHistoryComment(__($msg) 
+                        . ' ' . __('Transaction type ') . $params['type']);
+                }
+                
                 $this->moduleConfig->createLog($msg);
                 return $msg;
             }
@@ -1005,6 +1014,11 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         if ($params["responsechecksum"] !== $checksum) {
             $msg = 'Checksum validation failed for responsechecksum and Order #' . $orderIncrementId;
 
+            if($this->moduleConfig->isTestModeEnabled() && null !== $this->order) {
+                $this->order->addStatusHistoryComment(__($msg) 
+                    . ' ' . __('Transaction type ') . $params['type']);
+            }
+            
             $this->moduleConfig->createLog([$concat, $checksum], $msg);
             return $msg;
         }
@@ -1024,7 +1038,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
     
     private function createSubscription($params, $last_record, $orderIncrementId)
     {
-        $this->moduleConfig->createLog($this->start_subscr, 'start_subscr');
+        $this->moduleConfig->createLog($this->start_subscr, 'createSubscription()');
         
         // no need to create a Subscription
         if (!$this->start_subscr) {

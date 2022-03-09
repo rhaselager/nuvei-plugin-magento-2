@@ -7,6 +7,7 @@
 
 var nuveiSetPaymentInformation; // we will attach Magento setPaymentInformation method here
 var nuveiMessageContainer; // we will attach Magento messageContainer here
+var nuveiMagentoSelf;
 
 var nuveiAgreementsConfig		= window.checkoutConfig ? window.checkoutConfig.checkoutAgreements : {};
 var nuveiCheckoutSdkParams		= {};
@@ -15,6 +16,7 @@ var nuveiOrderTotal				= 0;
 var nuveiBillingCountry			= '';
 var nuveiOrderFullName			= '';
 var nuveiAgreementErrorMsg		= '';
+var nuveiUseCcOnly              = false; // set it true when have product with a Payment plan
 
 /**
  * Get the code of the module.
@@ -125,6 +127,12 @@ function nuveiLoadCheckout(sessionTokenResp) {
 	nuveiCheckoutSdkParams.country		= nuveiBillingCountry;
 	nuveiCheckoutSdkParams.fullName		= nuveiOrderFullName;
 	
+    if(nuveiUseCcOnly) {
+        nuveiCheckoutSdkParams.pmBlacklist  = null;
+        nuveiCheckoutSdkParams.pmWhitelist  = ['cc_card'];
+        nuveiCheckoutSdkParams.savePM       = true;
+    }
+    
 	if(nuveiCheckoutSdkParams.savePM) {
 		nuveiCheckoutSdkParams.userTokenId = nuveiCheckoutSdkParams.email;
 	}
@@ -235,6 +243,9 @@ function nuveiAfterSdkResponse(resp) {
 	}
 
 	// on Success, Approved
+//    nuveiSetPaymentInformation(nuveiMessageContainer)
+//        .done(function() {}.bind(nuveiMagentoSelf));
+    
 	window.location.href = window.checkoutConfig.payment[nuveiGetCode()].successUrl;
 	jQuery('body').trigger('processStop');
 	return;
@@ -244,7 +255,7 @@ define(
     [
         'jquery',
         'Magento_Payment/js/view/payment/cc-form',
-//        'Magento_Paypal/js/action/set-payment-method',
+        'Magento_Paypal/js/action/set-payment-method',
 //        'jquery.redirect',
         'ko',
         'Magento_Checkout/js/model/quote',
@@ -255,7 +266,7 @@ define(
     function(
         $,
         Component,
-//        setPaymentMethodAction,
+        setPaymentMethodAction,
 //        jqueryRedirect,
         ko,
         quote,
@@ -268,8 +279,10 @@ define(
 			return;
 		}
 
-        var self			= null;
-		nuveiOrderFullName	= quote.billingAddress().firstname + ' ' + quote.billingAddress().lastname;
+        var self                    = null;
+		nuveiOrderFullName          = quote.billingAddress().firstname + ' ' + quote.billingAddress().lastname;
+//        nuveiSetPaymentInformation  = setPaymentMethodAction;
+//        nuveiMessageContainer       = this.messageContainer;
 		
         return Component.extend({
             defaults: {
@@ -349,17 +362,17 @@ define(
             },
 			
 			getSessionToken: function() {
-				var tmpCheckout = window.checkout;
-				
-//				$.getScript('https://cdn.safecharge.com/safecharge_resources/v1/checkout/checkout.js')
-//					.done(function() {
-//						window.nuveiCheckoutSdk = checkout;
-//						window.checkout = tmpCheckout;
-				
-						console.log('getSessionToken() calls nuveiGetSessionToken()')
-						nuveiGetSessionToken();
-//					});
-				
+                if(window.checkoutConfig.payment[self.getCode()].isPaymentPlan) {
+                    nuveiUseCcOnly = true;
+                    
+                    if(quote.getItems().length > 1) {
+                        self.showGeneralError('You can not combine a Product with Nuvei Payment with another product. To continue, please remove some of the Product in your Cart!');
+                        return;
+                    }
+                }
+                
+                console.log('getSessionToken() calls nuveiGetSessionToken()')
+                nuveiGetSessionToken();
 			},
 			
 			showGeneralError: function(msg) {

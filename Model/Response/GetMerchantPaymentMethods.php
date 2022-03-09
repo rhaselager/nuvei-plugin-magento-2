@@ -69,6 +69,7 @@ class GetMerchantPaymentMethods extends AbstractResponse implements ResponseInte
         $this->sessionToken = (string) $body['sessionToken'];
         $langCode           = $this->getStoreLocale(true);
         $countryCode        = $countryCode ?: $this->config->getQuoteCountryCode();
+        $useCcOnly          = $this->config->getNuveiUseCcOnly();
         
         foreach ((array) $body['paymentMethods'] as $method) {
             if (!$countryCode && isset($method["paymentMethod"]) && $method["paymentMethod"] !== 'cc_card') {
@@ -76,7 +77,7 @@ class GetMerchantPaymentMethods extends AbstractResponse implements ResponseInte
             }
             
             // when we have product with a Payment plan, skip all APMs
-            if ($this->config->getNuveiUseCcOnly()
+            if ($useCcOnly
                 && !empty($method["paymentMethod"])
                 && $method["paymentMethod"] !== 'cc_card'
             ) {

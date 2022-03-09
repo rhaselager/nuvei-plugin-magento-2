@@ -589,7 +589,6 @@ class Config
     
     public function allowGuestsSubscr()
     {
-//        if (!$this->customerSession->isLoggedIn() && 0 == $this->getConfigValue('allow_guests_subscr')) {
         if (!$this->customerSession->isLoggedIn()) {
             return false;
         }
@@ -1017,118 +1016,128 @@ class Config
                 }
                 
                 // if there are more than 1 products in the Cart we assume there are no product with a Plan
-                if (count($items) > 1) {
-                    $this->createLog('getProductPlanData() - the Items in the Cart are more than 1. '
-                        . 'We assume there is no Product with a plan amongs them.');
-                    return $return_arr;
-                }
+//                if (count($items) > 1) {
+//                    $this->createLog('getProductPlanData() - the Items in the Cart are more than 1. '
+//                        . 'We assume there is no Product with a plan amongs them.');
+//                    return $return_arr;
+//                }
                 
-                $item = current($items);
-                
-                if (!is_object($item)) {
-                    $this->createLog('getProductPlanData() Error - the Item in the Cart is not an Object.');
-                    return $return_arr;
-                }
+                foreach($items as $item) {
+//                    $item = current($items);
 
-                $options = $item->getProduct()->getTypeInstance(true)->getOrderOptions($item->getProduct());
+                    if (!is_object($item)) {
+                        $this->createLog('getProductPlanData() Error - the Item in the Cart is not an Object.');
+//                        return $return_arr;
+                        continue;
+                    }
 
-                $this->createLog($options, 'getProductPlanData $options');
+                    $options = $item->getProduct()->getTypeInstance(true)->getOrderOptions($item->getProduct());
 
-                // stop the proccess
-                if (empty($options['info_buyRequest'])
-                    || !is_array($options['info_buyRequest'])
-                ) {
-                    return $return_arr;
-                }
-                
-                // 1.1 in case of configurable product
-                // 1.1.1. when we have selected_configurable_option paramter
-                if (!empty($options['info_buyRequest']['selected_configurable_option'])) {
-                    $product_id = $options['info_buyRequest']['selected_configurable_option'];
-                    $product    = $this->productObj->load($product_id);
-                    
-                    $nuvei_sub_enabled = $product->getCustomAttribute('nuvei_sub_enabled');
-                    $this->createLog(
-                        $nuvei_sub_enabled,
-                        'getProductPlanData get nuvei_sub_enabled on configurable product'
-                    );
-                    
-                    if(!is_object($nuvei_sub_enabled)) {
+                    $this->createLog($options, 'getProductPlanData $options');
+
+                    // stop the proccess
+                    if (empty($options['info_buyRequest'])
+                        || !is_array($options['info_buyRequest'])
+                    ) {
+//                        return $return_arr;
+                        continue;
+                    }
+
+                    // 1.1 in case of configurable product
+                    // 1.1.1. when we have selected_configurable_option paramter
+                    if (!empty($options['info_buyRequest']['selected_configurable_option'])) {
+                        $product_id = $options['info_buyRequest']['selected_configurable_option'];
+                        $product    = $this->productObj->load($product_id);
+
+                        $nuvei_sub_enabled = $product->getCustomAttribute('nuvei_sub_enabled');
+                        $this->createLog(
+                            $nuvei_sub_enabled,
+                            'getProductPlanData get nuvei_sub_enabled on configurable product'
+                        );
+                        
+                        if(!is_object($nuvei_sub_enabled)) {
+//                            return $return_arr;
+                            continue;
+                        }
+                    }
+                    // 1.1.2. when we have super_attribute
+                    elseif (!empty($options['info_buyRequest']['super_attribute'])
+                        && !empty($options['info_buyRequest']['product'])
+                    ) {
+                        $parent     = $this->productRepository->getById($options['info_buyRequest']['product']);
+                        $product    = $this->configurable->getProductByAttributes(
+                            $options['info_buyRequest']['super_attribute'],
+                            $parent
+                        );
+                        $product_id = $product->getId();
+
+                        $nuvei_sub_enabled = $product->getCustomAttribute('nuvei_sub_enabled');
+                        $this->createLog(
+                            $nuvei_sub_enabled,
+                            'getProductPlanData get nuvei_sub_enabled on configurable product'
+                        );
+
+                        if(!is_object($nuvei_sub_enabled)) {
+//                            return $return_arr;
+                            continue;
+                        }
+                    }
+
+                    if(!empty($product) && 0 != $product_id) {
+                        $plan_data[$product_id]     = $this->buildPlanDetailsArray($product);
+                        $items_data[$product_id]    = [
+                            'quantity'  => $item->getQty(),
+                            'price'     => round((float) $item->getPrice(), 2),
+                        ];
+
+                        $this->createLog(
+                            $plan_data,
+                            'getProductPlanData $plan_data'
+                        );
+
+                        // return plan details only if the subscription is enabled
+                        if (!empty($plan_data[$product_id])) {
+                            $return_arr = [
+                                'subs_data'     => $plan_data,
+                                'items_data'    => $items_data,
+                            ];
+                        }
+                        
                         return $return_arr;
                     }
-                }
-                // 1.1.2. when we have super_attribute
-                elseif (!empty($options['info_buyRequest']['super_attribute'])
-                    && !empty($options['info_buyRequest']['product'])
-                ) {
-                    $parent     = $this->productRepository->getById($options['info_buyRequest']['product']);
-                    $product    = $this->configurable->getProductByAttributes(
-                        $options['info_buyRequest']['super_attribute'],
-                        $parent
-                    );
-                    $product_id = $product->getId();
-                    
-                    $nuvei_sub_enabled = $product->getCustomAttribute('nuvei_sub_enabled');
+
+                    // 1.2 in case of simple product
+                    $product = $this->productObj->load($options['info_buyRequest']['product']);
+                    $nuvei_sub_enabled  = $product->getCustomAttribute('nuvei_sub_enabled');
+
                     $this->createLog(
-                        $nuvei_sub_enabled,
-                        'getProductPlanData get nuvei_sub_enabled on configurable product'
+                        $product->getCustomAttribute('nuvei_sub_enabled'),
+                        'getProductPlanData get nuvei_sub_enabled on simple product'
                     );
-                    
+
                     if(!is_object($nuvei_sub_enabled)) {
-                        return $return_arr;
+//                        return $return_arr;
+                        continue;
                     }
-                }
-                
-                if(!empty($product) && 0 != $product_id) {
-                    $plan_data[$product_id]     = $this->buildPlanDetailsArray($product);
-                    $items_data[$product_id]    = [
+
+                    $plan_data[$options['info_buyRequest']['product']] = $this->buildPlanDetailsArray($product);
+
+                    $items_data[$item->getId()] = [
                         'quantity'  => $item->getQty(),
                         'price'     => round((float) $item->getPrice(), 2),
                     ];
-                    
-                    $this->createLog(
-                        $plan_data,
-                        'getProductPlanData $plan_data'
-                    );
 
-                    // return plan details only if the subscription is enabled
-                    if (!empty($plan_data[$product_id])) {
-                        $return_arr = [
+                    if (!empty($plan_data[$options['info_buyRequest']['product']])) {
+//                        $return_arr = [
+                        return [
                             'subs_data'     => $plan_data,
                             'items_data'    => $items_data,
                         ];
                     }
 
-                    return $return_arr;
-                }
-
-                // 1.2 in case of simple product
-                $product = $this->productObj->load($options['info_buyRequest']['product']);
-                $nuvei_sub_enabled  = $product->getCustomAttribute('nuvei_sub_enabled');
-                
-                $this->createLog(
-                    $product->getCustomAttribute('nuvei_sub_enabled'),
-                    'getProductPlanData get nuvei_sub_enabled on simple product'
-                );
-                
-                if(!is_object($nuvei_sub_enabled)) {
-                    return $return_arr;
+//                    return $return_arr;
                 }
                 
-                $plan_data[$options['info_buyRequest']['product']] = $this->buildPlanDetailsArray($product);
-
-                $items_data[$item->getId()] = [
-                    'quantity'  => $item->getQty(),
-                    'price'     => round((float) $item->getPrice(), 2),
-                ];
-
-                if (!empty($plan_data[$options['info_buyRequest']['product']])) {
-                    $return_arr = [
-                        'subs_data'     => $plan_data,
-                        'items_data'    => $items_data,
-                    ];
-                }
-
                 return $return_arr;
             }
 
