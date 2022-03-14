@@ -207,6 +207,13 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             ],
         ];
         
+        // auto_close_popup
+        if(1 == $this->config->autoCloseApmPopup()) {
+            $params['urlDetails']['successUrl'] = $params['urlDetails']['pendingUrl']
+                                                = $params['urlDetails']['failureUrl']
+                                                = Config::NUVEI_SDK_AUTOCLOSE_URL;
+        }
+        
         $this->requestParams = array_merge_recursive(
             $params,
             parent::getParams()

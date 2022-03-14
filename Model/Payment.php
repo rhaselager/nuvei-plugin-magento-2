@@ -34,7 +34,7 @@ class Payment extends Cc implements TransparentInterface
     /**
      * Method code const.
      */
-    const METHOD_CODE    = 'nuvei';
+    const METHOD_CODE   = 'nuvei';
     const MODE_LIVE     = 'live';
 
     /**

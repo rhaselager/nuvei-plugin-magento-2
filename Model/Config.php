@@ -50,6 +50,8 @@ class Config
     const STORE_SUBS_DROPDOWN_LABEL             = 'Nuvei Subscription Options';
     const STORE_SUBS_DROPDOWN_NAME              = 'nuvei_subscription_options';
     
+    const NUVEI_SDK_AUTOCLOSE_URL               = 'https://cdn.safecharge.com/safecharge_resources/v1/websdk/autoclose.html';
+    
     private $traceId;
     
     /**
@@ -243,11 +245,11 @@ class Config
                 $data['plans'] = json_encode($data['plans']);
             }
 
-            $d = $this->isTestModeEnabled() ? print_r($data, true) : json_encode($data);
+            $d = $this->isTestModeEnabled() ? json_encode($data, JSON_PRETTY_PRINT) : json_encode($data);
         } elseif (is_object($data)) {
-            $d = $this->isTestModeEnabled() ? print_r($data, true) : json_encode($data);
+            $d = $this->isTestModeEnabled() ? json_encode($data, JSON_PRETTY_PRINT) : json_encode($data);
         } else {
-            $d = $this->isTestModeEnabled() ? print_r($data, true) : json_encode($data);
+            $d = $this->isTestModeEnabled() ? json_encode($data, JSON_PRETTY_PRINT) : json_encode($data);
         }
         
         $tab            = '    ';
@@ -644,6 +646,11 @@ class Config
     public function autoExpandPms()
     {
         return $this->getConfigValue('auto_expand_pms');
+    }
+    
+    public function autoCloseApmPopup()
+    {
+        return $this->getConfigValue('auto_close_popup');
     }
     
     public function getCheckoutLogLevel()

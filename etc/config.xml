@@ -37,6 +37,7 @@
 				<use_upos>0</use_upos>
 				<pay_btn_text>amountButton</pay_btn_text>
 				<auto_expand_pms>1</auto_expand_pms>
+				<auto_close_popup>1</auto_close_popup>
 				<checkout_log_level>0</checkout_log_level>
 				<allow_guests_subscr>0</allow_guests_subscr>
 				
