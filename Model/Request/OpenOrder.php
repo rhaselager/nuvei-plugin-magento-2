@@ -207,6 +207,11 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             ],
         ];
         
+        // show or not UPOs
+        if($this->config->canUseUpos()) {
+            $params['userTokenId'] = $params['billingAddress']['email'];
+        }
+        
         // auto_close_popup
         if(1 == $this->config->autoCloseApmPopup()) {
             $params['urlDetails']['successUrl'] = $params['urlDetails']['pendingUrl']
