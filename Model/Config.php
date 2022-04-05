@@ -580,6 +580,15 @@ class Config
         return true;
     }
     
+    public function showCheckoutLogo()
+    {
+        if ($this->getConfigValue('show_checkout_logo') == 1) {
+            return true;
+        }
+
+        return false;
+    }
+    
     public function canUseUpos()
     {
         if ($this->customerSession->isLoggedIn() && 1 == $this->useUPOs()) {

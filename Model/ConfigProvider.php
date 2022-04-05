@@ -152,6 +152,9 @@ class ConfigProvider extends CcGenericConfigProvider
 //            $save_pm = 'always';
 //        }
         
+        $checkout_logo = $this->moduleConfig->showCheckoutLogo()
+            ? $this->assetRepo->getUrl("Nuvei_Payments::images/nuvei.png") : '#';
+        
         $config = [
             'payment' => [
                 Payment::METHOD_CODE => [
@@ -162,7 +165,7 @@ class ConfigProvider extends CcGenericConfigProvider
                     'paymentApmUrl'             => $this->urlBuilder->getUrl('nuvei_checkout/payment/apm'),
                     'getUpdateOrderUrl'         => $this->urlBuilder->getUrl('nuvei_checkout/payment/OpenOrder'),
                     'successUrl'                => $this->moduleConfig->getCallbackSuccessUrl(),
-                    'checkoutLogoUrl'           => $this->assetRepo->getUrl("Nuvei_Checkout::images/nuvei.png"),
+                    'checkoutLogoUrl'           => $checkout_logo,
                     'isTestMode'                => $this->moduleConfig->isTestModeEnabled(),
                     'countryId'                 => $this->moduleConfig->getQuoteCountryCode(),
                     'updateQuotePM'             => $this->urlBuilder
@@ -180,7 +183,8 @@ class ConfigProvider extends CcGenericConfigProvider
                         'merchantId'                => $this->moduleConfig->getMerchantId(),
                         'merchantSiteId'            => $this->moduleConfig->getMerchantSiteId(),
                         'country'                   => '', // set it in the js
-                        'currency'                  => trim($this->storeManager->getStore()->getCurrentCurrencyCode()),
+//                        'currency'                  => trim($this->storeManager->getStore()->getCurrentCurrencyCode()),
+                        'currency'                  => $this->moduleConfig->getQuoteBaseCurrency(),
                         'amount'                    => 0, // set it in the js
                         'renderTo'                  => '#nuvei_checkout',
                         'useDCC'                    =>  $this->moduleConfig->useDCC(),

@@ -381,10 +381,21 @@
 						<config_path>payment/nuvei/allow_guests_subscr</config_path>
 					</field>-->
 					
+                    <field id="show_checkout_logo"
+                            translate="label"
+                            type="select"
+                            sortOrder="110"
+                            showInDefault="1"
+                            showInWebsite="1"
+                            showInStore="0">
+                         <label>Show checkout logo</label>
+                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                     </field>
+                    
 					<field id="notifyURL"
 						   translate="label"
 						   type="label"
-						   sortOrder="520"
+						   sortOrder="120"
 						   showInDefault="1"
 						   showInWebsite="1"
 						   showInStore="0" >
@@ -395,7 +406,7 @@
 					<field id="getPlans"
 						   translate="label"
 						   type="button"
-						   sortOrder="530"
+						   sortOrder="130"
 						   showInDefault="1"
 						   showInWebsite="1"
 						   showInStore="0" >

@@ -18,7 +18,7 @@ php bin/magento cache:flush
 
 https://www.nuvei.com/
 
-© 2007 - 2021 Nuvei
+© 2007 - 2022 Nuvei
 All rights reserved.
 
-![Nuvei Logo](https://upload.wikimedia.org/wikipedia/commons/e/e4/Nuvei-Logo.png)
+![Nuvei Logo](https://github.com/SafeChargeInternational/nuvei_checkout_magento/blob/master/view/frontend/web/images/logo-dark.svg)

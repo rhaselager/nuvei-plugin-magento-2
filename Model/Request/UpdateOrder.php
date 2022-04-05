@@ -124,22 +124,13 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
         
         $this->config->setNuveiUseCcOnly(!empty($items_data['subs_data']) ? true : false);
         
-        $currency = $quote->getOrderCurrencyCode();
-        if (empty($currency)) {
-            $currency = $quote->getStoreCurrencyCode();
-        }
-        if (empty($currency)) {
-            $currency = $this->config->getQuoteBaseCurrency();
-        }
-        
         $billing_address = $this->config->getQuoteBillingAddress();
-//        $this->config->createLog($billing_address, 'UpdateOrder $billing_address $billing_address');
         
         $params = array_merge_recursive(
             parent::getParams(),
             [
-                'currency'          => $currency,
-                'amount'            => (string) number_format($quote->getGrandTotal(), 2, '.', ''),
+                'currency'          => $this->config->getQuoteBaseCurrency(),
+                'amount'            => (string) number_format($quote->getBaseGrandTotal(), 2, '.', ''),
                 'billingAddress'    => $billing_address,
                 'shippingAddress'   => $this->config->getQuoteShippingAddress(),
                 
