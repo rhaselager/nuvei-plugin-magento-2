@@ -861,10 +861,55 @@ class Config
         
         return $countryCode;
     }
-
+    
+    /**
+     * Get base currency code from the Quote. This must be same as the Magento Base currency.
+     * 
+     * @return string
+     */
     public function getQuoteBaseCurrency()
     {
         return $this->checkoutSession->getQuote()->getBaseCurrencyCode();
+    }
+    
+    /**
+     * Get currency code from the Quote. This must be same as the Magento store Visual currency.
+     * 
+     * @return string
+     */
+    public function getQuoteCurrency()
+    {
+        return $this->checkoutSession->getQuote()->getQuoteCurrencyCode();
+    }
+    
+    /**
+     * Get store currency code. Use this when Quote is not available.
+     * 
+     * @return string
+     */
+    public function getStoreCurrency()
+    {
+        return trim($this->storeManager->getStore()->getCurrentCurrencyCode());
+    }
+    
+    /**
+     * Get the Quote Base Grand Total, based on Display currency.
+     * 
+     * @return string
+     */
+    public function getQuoteTotal()
+    {
+        return (string) number_format($this->checkoutSession->getQuote()->getBaseGrandTotal(), 2, '.', '');
+    }
+    
+    /**
+     * Get grand total in base currency.
+     *
+     * @return string
+     */
+    public function getQuoteGrandTotal()
+    {
+        return (string) number_format($this->checkoutSession->getQuote()->getGrandTotal(), 2, '.', '');
     }
     
     public function getQuoteBillingAddress()

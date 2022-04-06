@@ -75,12 +75,6 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
         return $this;
     }
     
-//    public function setBillingAddress($billingAddress)
-//    {
-//        $this->billingAddress = $billingAddress;
-//        return $this;
-//    }
-    
     /**
      * @return AbstractResponse
      * @throws \Magento\Framework\Exception\LocalizedException
@@ -117,32 +111,33 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
             throw new PaymentException(__('There is no Cart data.'));
         }
         
-        // check in the cart for Nuvei Payment Plan
-        $quote = $this->cart->getQuote();
         // iterate over Items and search for Subscriptions
         $items_data = $this->config->getProductPlanData();
         
         $this->config->setNuveiUseCcOnly(!empty($items_data['subs_data']) ? true : false);
         
-        $billing_address = $this->config->getQuoteBillingAddress();
+        $billing_address    = $this->config->getQuoteBillingAddress();
+//        $amount             = $this->config->getQuoteBaseTotal();
+        $amount             = $this->config->getQuoteTotal();
         
         $params = array_merge_recursive(
             parent::getParams(),
             [
-                'currency'          => $this->config->getQuoteBaseCurrency(),
-                'amount'            => (string) number_format($quote->getBaseGrandTotal(), 2, '.', ''),
+//                'currency'          => $this->config->getQuoteBaseCurrency(),
+                'currency'          => $this->config->getQuoteCurrency(),
+                'amount'            => $amount,
                 'billingAddress'    => $billing_address,
                 'shippingAddress'   => $this->config->getQuoteShippingAddress(),
                 
                 'items'             => [[
                     'name'      => 'magento_order',
-                    'price'     => (string) number_format($quote->getGrandTotal(), 2, '.', ''),
+                    'price'     => $amount,
                     'quantity'  => 1,
                 ]],
                 
                 'merchantDetails'   => [
                     // pass amount
-                    'customField1'  => (string) number_format($quote->getGrandTotal(), 2, '.', ''),
+                    'customField1'  => $amount,
                     // subscription data
                     'customField2'  => isset($items_data['subs_data'])
                         ? json_encode($items_data['subs_data']) : '',

@@ -141,23 +141,11 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
             $country_code = $this->config->getQuoteCountryCode();
         }
         
-        $currencyCode = $this->config->getQuoteBaseCurrency();
-        
-        if ((empty($currencyCode) || null === $currencyCode)
-            && $this->cart
-        ) {
-            $this->config->createLog($this->cart->getQuote()->getOrderCurrencyCode(), 'getOrderCurrencyCode');
-            $this->config->createLog($this->cart->getQuote()->getStoreCurrencyCode(), 'getStoreCurrencyCode');
-            
-            $currencyCode = empty($this->cart->getQuote()->getOrderCurrencyCode())
-                ? $this->cart->getQuote()->getStoreCurrencyCode() : $this->cart->getQuote()->getOrderCurrencyCode();
-        }
-        
         $params = array_merge_recursive(
             parent::getParams(),
             [
                 'sessionToken'  => !empty($tokenResponse['sessionToken']) ? $tokenResponse['sessionToken'] : '',
-                "currencyCode"  => $currencyCode,
+                "currencyCode"  => $this->config->getStoreCurrency(),
                 "countryCode"   => $country_code,
                 "languageCode"  => $languageCode,
             ]
