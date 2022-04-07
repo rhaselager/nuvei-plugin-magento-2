@@ -182,12 +182,9 @@ class ConfigProvider extends CcGenericConfigProvider
                         'env'                       => $this->moduleConfig->isTestModeEnabled() ? 'test' : 'prod',
                         'merchantId'                => $this->moduleConfig->getMerchantId(),
                         'merchantSiteId'            => $this->moduleConfig->getMerchantSiteId(),
-//                        'country'                   => '', // set it in the js
                         'country'                   => $billing_address['country'],
-//                        'currency'                  => $this->moduleConfig->getQuoteBaseCurrency(),
-                        'currency'                  => $this->moduleConfig->getQuoteCurrency(),
-//                        'amount'                    => 0, // set it in the js
-                        'amount'                    => $this->moduleConfig->getQuoteTotal(),
+                        'currency'                  => $this->moduleConfig->getQuoteVisualCurrency(),
+                        'amount'                    => $this->moduleConfig->getQuoteVisualTotal(),
                         'renderTo'                  => '#nuvei_checkout',
                         'useDCC'                    =>  $this->moduleConfig->useDCC(),
                         'strict'                    => false,

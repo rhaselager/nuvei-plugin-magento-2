@@ -161,10 +161,8 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         
         $params = [
             'clientUniqueId'    => $this->config->getCheckoutSession()->getQuoteId(),
-//            'currency'          => $this->config->getQuoteBaseCurrency(),
-            'currency'          => $this->config->getQuoteCurrency(),
-//            'amount'            => $this->config->getQuoteBaseTotal(),
-            'amount'            => $this->config->getQuoteTotal(),
+            'currency'          => $this->config->getQuoteVisualCurrency(),
+            'amount'            => $this->config->getQuoteVisualTotal(),
             'deviceDetails'     => $this->config->getDeviceDetails(),
             'shippingAddress'   => $this->config->getQuoteShippingAddress(),
             'billingAddress'    => $billing_address,

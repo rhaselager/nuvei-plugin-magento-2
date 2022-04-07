@@ -877,7 +877,7 @@ class Config
      * 
      * @return string
      */
-    public function getQuoteCurrency()
+    public function getQuoteVisualCurrency()
     {
         return $this->checkoutSession->getQuote()->getQuoteCurrencyCode();
     }
@@ -897,17 +897,17 @@ class Config
      * 
      * @return string
      */
-    public function getQuoteTotal()
+    public function getQuoteBaseTotal()
     {
         return (string) number_format($this->checkoutSession->getQuote()->getBaseGrandTotal(), 2, '.', '');
     }
     
     /**
-     * Get grand total in base currency.
+     * Get quote visual.
      *
      * @return string
      */
-    public function getQuoteGrandTotal()
+    public function getQuoteVisualTotal()
     {
         return (string) number_format($this->checkoutSession->getQuote()->getGrandTotal(), 2, '.', '');
     }
