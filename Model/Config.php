@@ -288,7 +288,7 @@ class Config
         $string .= $record_time . $tab
             . $log_level . $tab
             . $this->traceId . $tab
-            . 'Magento 2 Nuvei Checkout v' . $this->moduleList->getOne(self::MODULE_NAME)['setup_version'] . '|'
+            . 'Checkout ' . $this->getSourcePlatformField() . '|'
             . $source_file_name
             . $member_name
             . $source_line_number;
@@ -637,6 +637,10 @@ class Config
         return $this->getConfigValue('use_dcc');
     }
     
+    public function useDevSdk() {
+        return $this->getConfigValue('use_dev_sdk');
+    }
+    
     public function getBlockedCards()
     {
         return $this->getConfigValue('block_cards', 'advanced');
@@ -675,7 +679,12 @@ class Config
 
     public function getSourcePlatformField()
     {
-        return "Magento Plugin {$this->moduleList->getOne(self::MODULE_NAME)['setup_version']}";
+        try {
+            return "Magento Plugin {$this->moduleList->getOne(self::MODULE_NAME)['setup_version']}";
+        }
+        catch(Exception $ex) {
+            return 'Magento Plugin';
+        }
     }
     
     public function getMagentoVersion()

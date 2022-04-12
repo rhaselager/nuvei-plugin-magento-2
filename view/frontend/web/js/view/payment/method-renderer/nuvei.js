@@ -5,16 +5,17 @@
  * @package  Nuvei_Checkout
  */
 
-var nuveiSetPaymentInformation; // we will attach Magento setPaymentInformation method here
-var nuveiMessageContainer; // we will attach Magento messageContainer here
-var nuveiMagentoSelf;
+//var nuveiSetPaymentInformation; // we will attach Magento setPaymentInformation method here
+//var nuveiMessageContainer; // we will attach Magento messageContainer here
+//var nuveiMagentoSelf;
 
-var nuveiAgreementsConfig		= window.checkoutConfig ? window.checkoutConfig.checkoutAgreements : {};
-var nuveiCheckoutSdkParams		= {};
-var nuveiSelectedProvider		= '';
-var nuveiOrderFullName			= '';
-var nuveiAgreementErrorMsg		= '';
-var nuveiUseCcOnly              = false; // set it true when have product with a Payment plan
+var nuveiAgreementsConfig   = window.checkoutConfig ? window.checkoutConfig.checkoutAgreements : {};
+//var nuveiCheckoutSdkParams  = {};
+//var nuveiSelectedProvider   = '';
+//var nuveiOrderFullName      = '';
+//var nuveiAgreementErrorMsg  = '';
+//var nuveiUseCcOnly          = false; // set it true when have product with a Payment plan
+//var nuveiChangedAmout       = 0;
 
 /**
  * Get the code of the module.
@@ -54,22 +55,20 @@ function nuveiValidateAgreement(hideError) {
 	return isValid;
 };
 
+/**
+ * 
+ * @returns {undefined}
+ * 
+ * @deprecated
+ */
 function nuveiGetSessionToken() {
+    /*
 	console.log('nuveiGetSessionToken()');
 	
 	jQuery('body').trigger('processStart');
 	
-	if(nuveiCheckoutSdkParams.hasOwnProperty('sessionToken')
-		&& '' != nuveiCheckoutSdkParams.nuveiCheckoutSdkParams
-	) {
-		console.log('nuveiGetSessionToken() - checkout data is already set');
-		jQuery('body').trigger('processStop');
-		return;
-	}
-
-	// load Nuvei Checkout
-	nuveiCheckoutSdkParams = window.checkoutConfig.payment[nuveiGetCode()].nuveiCheckoutParams;
-	
+	nuveiCheckoutSdkParams = JSON.parse(JSON.stringify(window.checkoutConfig.payment[nuveiGetCode()].nuveiCheckoutParams));
+    
 	// call openOrder here and get the session token
 	 jQuery.ajax({
 		dataType: 'json',
@@ -87,44 +86,63 @@ function nuveiGetSessionToken() {
 		return;
 	})
 	.success(function(resp) {
-		nuveiLoadCheckout(resp.sessionToken);
+        nuveiCheckoutSdkParams.sessionToken = resp.sessionToken;
+		nuveiLoadCheckout();
 		jQuery('body').trigger('processStop');
 		return;
 	});
+    */
 }
 
 /**
  * Load the Chekout content into its container
  * 
  * @returns {void}
+ * 
+ * @deprecated
  */
 //function nuveiLoadCheckout(resp) {
-function nuveiLoadCheckout(sessionToken) {
-	console.log('nuveiLoadCheckout sessionToken', sessionToken);
+function nuveiLoadCheckout() {
+    /*
+	console.log('nuveiLoadCheckout');
 
-    if(!nuveiCheckoutSdkParams.hasOwnProperty('sessionToken') || '' == nuveiCheckoutSdkParams.sessionToken) {
-        if(typeof sessionToken == 'undefined' || '' == sessionToken) {
-            console.log('nuveiLoadCheckout update order sessionToken problem, reload the page');
+    if(!nuveiCheckoutSdkParams.hasOwnProperty('sessionToken')
+        || typeof nuveiCheckoutSdkParams.sessionToken == 'undefined'
+        || '' == nuveiCheckoutSdkParams.sessionToken
+    ) {
+        console.log('nuveiLoadCheckout update order sessionToken problem, reload the page');
 
-            alert(jQuery.mage.__('Missing mandatory payment details. Please reload the page and try again!'));
+        alert(jQuery.mage.__('Missing mandatory payment details. Please reload the page and try again!'));
 
-            jQuery('body').trigger('processStop');
-            return;
-        }
+        jQuery('body').trigger('processStop');
+        return;
     }
-	
-	nuveiCheckoutSdkParams.sessionToken	= sessionToken;
-	nuveiCheckoutSdkParams.fullName		= nuveiOrderFullName;
-	
+    
+    nuveiCheckoutSdkParams.fullName = nuveiOrderFullName;
+    
     if(nuveiUseCcOnly) {
         nuveiCheckoutSdkParams.pmBlacklist  = null;
         nuveiCheckoutSdkParams.pmWhitelist  = ['cc_card'];
         nuveiCheckoutSdkParams.savePM       = true;
     }
+    // reset this, becasue we do not pass it from the server
+//    else if(nuveiCheckoutSdkParams.hasOwnProperty('pmWhitelist')) {
+//        console.log('remove pmWhitelist')
+//        delete nuveiCheckoutSdkParams.pmWhitelist;
+//    }
+//    else if(window.checkoutConfig.payment[nuveiGetCode()].nuveiCheckoutParams.hasOwnProperty('pmWhitelist')) {
+//        delete window.checkoutConfig.payment[nuveiGetCode()].nuveiCheckoutParams.pmWhitelist;
+//        console.log('remove pmWhitelist 2', window.checkoutConfig.payment[nuveiGetCode()].nuveiCheckoutParams.pmWhitelist)
+//    }
     
 	if(nuveiCheckoutSdkParams.savePM) {
 		nuveiCheckoutSdkParams.userTokenId = nuveiCheckoutSdkParams.email;
 	}
+    
+    // check for changed amout
+    if(nuveiChangedAmout > 0 && nuveiChangedAmout != nuveiCheckoutSdkParams.amount) {
+        nuveiCheckoutSdkParams.amount = nuveiChangedAmout;
+    }
 	
 	console.log('nuveiLoadCheckout', nuveiCheckoutSdkParams);
 
@@ -133,6 +151,7 @@ function nuveiLoadCheckout(sessionToken) {
 
 	nuveiCheckoutSdk(nuveiCheckoutSdkParams);
 	return;
+    */
 };
 
 /**
@@ -265,7 +284,7 @@ define(
 		}
 
         var self            = null;
-		nuveiOrderFullName  = quote.billingAddress().firstname + ' ' + quote.billingAddress().lastname;
+//		nuveiOrderFullName  = quote.billingAddress().firstname + ' ' + quote.billingAddress().lastname;
 		
         return Component.extend({
             defaults: {
@@ -273,8 +292,18 @@ define(
                 chosenApmMethod: '',
                 countryId: ''
             },
+            
+            changedOrderAmout: 0,
+            
+            changedOrderCountry: '',
+            
+            useCcOnly: false, // set it true when have product with a Payment plan
+            
+            orderFullName: '',
+            
+            checkoutSdkParams: {},
 			
-			nuveiSelectedProvider: '',
+			selectedProvider: '',
 			
             initObservable: function() {
                 self = this;
@@ -291,7 +320,8 @@ define(
                     }
                     
 					if(quote.paymentMethod._latestValue != null) {
-						self.nuveiSelectedProvider = nuveiSelectedProvider = quote.paymentMethod._latestValue.method;
+//						self.selectedProvider = nuveiSelectedProvider = quote.paymentMethod._latestValue.method;
+						self.selectedProvider = quote.paymentMethod._latestValue.method;
 						self.scUpdateQuotePM();
 					}
                     
@@ -336,7 +366,8 @@ define(
 			
 			getSessionToken: function() {
                 if(window.checkoutConfig.payment[self.getCode()].isPaymentPlan) {
-                    nuveiUseCcOnly = true;
+//                    nuveiUseCcOnly = true;
+                    self.useCcOnly = true;
                     
                     if(quote.getItems().length > 1) {
                         self.showGeneralError('You can not combine a Product with Nuvei Payment with another product. To continue, please remove some of the Product in your Cart!');
@@ -345,7 +376,83 @@ define(
                 }
                 
                 console.log('getSessionToken() calls nuveiGetSessionToken()')
-                nuveiGetSessionToken();
+//                nuveiGetSessionToken();
+//                
+                ///////////////////////////////////
+                
+//                console.log('nuveiGetSessionToken()');
+	
+                jQuery('body').trigger('processStart');
+
+                self.checkoutSdkParams = JSON.parse(JSON.stringify(window.checkoutConfig.payment[nuveiGetCode()].nuveiCheckoutParams));
+
+                // call openOrder here and get the session token
+                 jQuery.ajax({
+                    dataType: 'json',
+                    url: window.checkoutConfig.payment[nuveiGetCode()].getUpdateOrderUrl
+                })
+                .error(function(jqXHR, textStatus, errorThrown){
+                    // TODO show unexpected error
+            //		console.log('nuveiLoadCheckout update order fail jqXHR', jqXHR);
+                    console.log('nuveiLoadCheckout update order fail textStatus', textStatus);
+                    console.log('nuveiLoadCheckout update order fail errorThrown', errorThrown);
+
+                    //window.location.reload();
+
+                    jQuery('body').trigger('processStop');
+                    return;
+                })
+                .success(function(resp) {
+                    self.checkoutSdkParams.sessionToken = resp.sessionToken;
+//                    nuveiLoadCheckout();
+
+                    if(!self.checkoutSdkParams.hasOwnProperty('sessionToken')
+                        || typeof self.checkoutSdkParams.sessionToken == 'undefined'
+                        || '' == self.checkoutSdkParams.sessionToken
+                    ) {
+                        console.log('nuveiLoadCheckout update order sessionToken problem, reload the page');
+
+                        alert(jQuery.mage.__('Missing mandatory payment details. Please reload the page and try again!'));
+
+                        jQuery('body').trigger('processStop');
+                        return;
+                    }
+                    
+//                    jQuery('#nuvei_checkout').html('');
+
+                    self.checkoutSdkParams.fullName
+                        = quote.billingAddress().firstname + ' ' + quote.billingAddress().lastname;
+
+                    if(self.useCcOnly) {
+                        self.checkoutSdkParams.pmBlacklist  = null;
+                        self.checkoutSdkParams.pmWhitelist  = ['cc_card'];
+                        self.checkoutSdkParams.savePM       = true;
+                    }
+
+                    if(self.checkoutSdkParams.savePM) {
+                        self.checkoutSdkParams.userTokenId = self.checkoutSdkParams.email;
+                    }
+
+                    // check for changed amout
+                    if(self.changedOrderAmout > 0 && self.changedOrderAmout != self.checkoutSdkParams.amount) {
+                        self.checkoutSdkParams.amount = self.changedOrderAmout;
+                    }
+                    
+                    // check for changed country
+                    if(self.changedOrderCountry != '' && self.changedOrderCountry != self.checkoutSdkParams.country) {
+                        self.checkoutSdkParams.country = self.changedOrderCountry;
+                    }
+
+                    console.log('nuveiLoadCheckout', self.checkoutSdkParams);
+
+                    self.checkoutSdkParams.prePayment	= nuveiPrePayment;
+                    self.checkoutSdkParams.onResult		= nuveiAfterSdkResponse;
+
+                    nuveiCheckoutSdk(self.checkoutSdkParams);
+
+                    jQuery('body').trigger('processStop');
+                    return;
+                });
 			},
 			
 			showGeneralError: function(msg) {
@@ -362,10 +469,8 @@ define(
 					return;
 				}
 				
-                console.log('scBillingAddrChange', nuveiCheckoutSdkParams);
-                
-				if(typeof nuveiCheckoutSdkParams.sessionToken == 'undefined' 
-                    || quote.billingAddress().countryId == nuveiCheckoutSdkParams.country
+				if(typeof self.checkoutSdkParams.sessionToken == 'undefined' 
+                    || quote.billingAddress().countryId == self.checkoutSdkParams.country
                 ) {
 					self.writeLog('scBillingAddrChange() - the country is same. Stop here.');
 					return;
@@ -374,8 +479,10 @@ define(
 				self.writeLog('scBillingAddrChange() - the country was changed to', quote.billingAddress().countryId);
 				
 				// reload the checkout
-                nuveiCheckoutSdkParams.country = quote.billingAddress().countryId;
-                nuveiLoadCheckout();
+//                self.checkoutSdkParams.country = quote.billingAddress().countryId;
+                self.changedOrderCountry = quote.billingAddress().countryId;
+//                nuveiLoadCheckout();
+                self.getSessionToken();
 			},
 			
 			scTotalsChange: function() {
@@ -383,10 +490,8 @@ define(
 				
 				var currentTotal = parseFloat(quote.totals().base_grand_total).toFixed(2);
 				
-                console.log('scTotalsChange', nuveiCheckoutSdkParams);
-                
-				if(typeof nuveiCheckoutSdkParams.sessionToken == 'undefined'
-                    || currentTotal == nuveiCheckoutSdkParams.amount
+				if(typeof self.checkoutSdkParams.sessionToken == 'undefined'
+                    || currentTotal == self.checkoutSdkParams.amount
                 ) {
 					self.writeLog('scTotalsChange() - the total is same. Stop here.');
 					return;
@@ -395,32 +500,37 @@ define(
 				self.writeLog('scTotalsChange() - the total was changed to', currentTotal);
 				
 				// reload the checkout
-                nuveiCheckoutSdkParams.amount = currentTotal;
-                nuveiLoadCheckout();
+//                self.checkoutSdkParams.amount = currentTotal;
+//                nuveiLoadCheckout();
+//                nuveiChangedAmout = currentTotal
+                self.changedOrderAmout = currentTotal
+//                nuveiGetSessionToken();
+                self.getSessionToken();
 			},
 			
 			changePaymentProvider: function() {
-				console.log('changePaymentProvider', quote.paymentMethod._latestValue.method)
+                self.writeLog('changePaymentProvider()', quote.paymentMethod._latestValue.method);
 				
 				if(quote.paymentMethod._latestValue != null
-					&& self.nuveiSelectedProvider != quote.paymentMethod._latestValue.method
+					&& self.selectedProvider != quote.paymentMethod._latestValue.method
 				) {
-					self.nuveiSelectedProvider = nuveiSelectedProvider = quote.paymentMethod._latestValue.method;
+//					self.selectedProvider = nuveiSelectedProvider = quote.paymentMethod._latestValue.method;
+					self.selectedProvider = quote.paymentMethod._latestValue.method;
 					self.scUpdateQuotePM();
 				}
 			},
 			
 			scUpdateQuotePM: function() {
-				self.writeLog('scUpdateQuotePM()', self.nuveiSelectedProvider);
+				self.writeLog('scUpdateQuotePM()', self.selectedProvider);
 				
 				// update new payment method
-				if('' != self.nuveiSelectedProvider) {
+				if('' != self.selectedProvider) {
 					var scAjaxQuoteUpdateParams = {
 						dataType	: "json",
 						url			: self.getUpdateQuotePM(),
 						cache		: false,
 						showLoader	: true,
-						data		: { paymentMethod: self.nuveiSelectedProvider }
+						data		: { paymentMethod: self.selectedProvider }
 					};
 
 					$.ajax(scAjaxQuoteUpdateParams)

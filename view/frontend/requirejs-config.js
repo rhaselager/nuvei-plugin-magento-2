@@ -1,7 +1,4 @@
 var config = {
-//    paths: {
-//        'jquery.redirect': "Nuvei_Checkout/js/jquery.redirect"
-//    },
     shim: {
         'jquery.redirect': {
             deps: ['jquery']
@@ -13,5 +10,6 @@ var config = {
                 'Nuvei_Checkout/js/scShippingHook': true
             }
 		}
-	}
+	},
+    urlArgs: "bust=" + (new Date()).getTime() // Disable require js cache
 };

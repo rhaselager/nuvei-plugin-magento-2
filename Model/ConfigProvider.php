@@ -135,13 +135,7 @@ class ConfigProvider extends CcGenericConfigProvider
         }
         # blocked_cards END
         
-        // get email
-//        $email = $this->cart->getQuote()->getBillingAddress()->getEmail();
-//        
-//        if (empty($email)) {
-//            $email = $this->cart->getQuote()->getCustomerEmail();
-//        }
-        // get email END
+        $blocked_pms = $this->moduleConfig->getPMsBlackList();
         
         $billing_address    = $this->moduleConfig->getQuoteBillingAddress();
         $payment_plan_data  = $this->moduleConfig->getProductPlanData();
@@ -175,10 +169,11 @@ class ConfigProvider extends CcGenericConfigProvider
 //                        && !empty($payment_plan_data) ) ? 1 : 0,
                     
                     'isPaymentPlan'             => !empty($payment_plan_data) ? 1 : 0,
+                    'useDevSdk'                 => $this->moduleConfig->useDevSdk(),
                     
                     // we will set some of the parameters in the JS file
                     'nuveiCheckoutParams' => [
-                        'sessionToken'              => '',
+//                        'sessionToken'              => '',
                         'env'                       => $this->moduleConfig->isTestModeEnabled() ? 'test' : 'prod',
                         'merchantId'                => $this->moduleConfig->getMerchantId(),
                         'merchantSiteId'            => $this->moduleConfig->getMerchantSiteId(),
@@ -190,11 +185,10 @@ class ConfigProvider extends CcGenericConfigProvider
                         'strict'                    => false,
                         'savePM'                    => $save_pm,
                         'showUserPaymentOptions'    => $show_upo,
-                        'pmBlacklist'               => $this->moduleConfig->getPMsBlackList(),
-                        'pmWhitelist'               => null,
+//                        'pmBlacklist'               => $this->moduleConfig->getPMsBlackList(),
+//                        'pmWhitelist'               => null,
                         'alwaysCollectCvv'          => true,
                         'fullName'                  => '', // set it in the js
-//                        'email'                 => $email,
                         'email'                     => $billing_address['email'],
                         'payButton'                 => $this->moduleConfig->getPayButtnoText(),
                         'showResponseMessage'       => false, // shows/hide the response popups
@@ -209,6 +203,14 @@ class ConfigProvider extends CcGenericConfigProvider
                 ],
             ],
         ];
+        
+        if(!empty($blocked_pms) && null !== $blocked_pms) {
+            $config['payment'][Payment::METHOD_CODE]['nuveiCheckoutParams']['pmBlacklist'] = $blocked_pms;
+        }
+        
+        if(1 == $config['payment'][Payment::METHOD_CODE]['useDevSdk']) {
+            $config['payment'][Payment::METHOD_CODE]['nuveiCheckoutParams']['webSdkEnv'] = 'dev';
+        }
         
         $this->moduleConfig->createLog($config, 'config for the checkout');
         

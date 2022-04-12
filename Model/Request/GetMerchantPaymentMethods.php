@@ -145,8 +145,8 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
             parent::getParams(),
             [
                 'sessionToken'  => !empty($tokenResponse['sessionToken']) ? $tokenResponse['sessionToken'] : '',
-                "currencyCode"  => $this->config->getStoreCurrency(),
-                "countryCode"   => $country_code,
+//                "currencyCode"  => $this->config->getStoreCurrency(),
+//                "countryCode"   => $country_code,
                 "languageCode"  => $languageCode,
             ]
         );
