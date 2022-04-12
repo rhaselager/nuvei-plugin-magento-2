@@ -159,10 +159,12 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             $billing_address['country'] = $this->billingAddress['countryId'] ?: $billing_address['country'];
         }
         
+        $amount = (string) number_format($this->config->getQuoteVisualTotal(), 2, '.', '');
+        
         $params = [
             'clientUniqueId'    => $this->config->getCheckoutSession()->getQuoteId(),
             'currency'          => $this->config->getQuoteVisualCurrency(),
-            'amount'            => $this->config->getQuoteVisualTotal(),
+            'amount'            => $amount,
             'deviceDetails'     => $this->config->getDeviceDetails(),
             'shippingAddress'   => $this->config->getQuoteShippingAddress(),
             'billingAddress'    => $billing_address,
@@ -178,7 +180,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
 
             'merchantDetails'    => [
                 // pass amount
-                'customField1' => (string) number_format($this->quote->getGrandTotal(), 2, '.', ''),
+                'customField1' => $amount,
                 // subscription data
                 'customField2' => isset($items_data['subs_data'])
                     ? json_encode($items_data['subs_data']) : '',
