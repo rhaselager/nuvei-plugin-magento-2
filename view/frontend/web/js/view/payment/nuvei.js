@@ -24,10 +24,6 @@ define(
             ? 'https://srv-bsf-devpppjs.gw-4u.com/checkoutNext/checkout.js'
                 : 'https://cdn.safecharge.com/safecharge_resources/v1/checkout/checkout.js';
                 
-        console.log(window.checkoutConfig.payment['nuvei'].useDevSdk
-            ? 'https://srv-bsf-devpppjs.gw-4u.com/checkoutNext/checkout.js'
-                : 'https://cdn.safecharge.com/safecharge_resources/v1/checkout/checkout.js');
-                
 		document.head.appendChild(nuveiCheckoutSdkScr);
 		// Load Nuvei Chekout SDK and add it ot a local variable
 		
