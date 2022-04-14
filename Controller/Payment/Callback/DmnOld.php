@@ -389,7 +389,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             }
             
             // compare them later
-            $order_total    = round((float) $this->order->getBaseGrandTotal(), 2);
+            $order_total    = round((float) $this->order->getGrandTotal(), 2); // the Visual total
             $dmn_total      = round((float) $params['totalAmount'], 2);
             
             // APPROVED TRANSACTION
@@ -584,13 +584,12 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         
         $this->sc_transaction_type  = Payment::SC_SETTLED;
         $invCollection              = $this->order->getInvoiceCollection();
-        $inv_amount                 = round(floatval($this->order->getBaseGrandTotal()), 2);
+//        $inv_amount                 = round(floatval($this->order->getBaseGrandTotal()), 2);
         $dmn_inv_id                 = $this->httpRequest->getParam('invoice_id');
         $is_cpanel_settle           = false;
         
         if (!empty($params["merchant_unique_id"])
             && $params["merchant_unique_id"] != $params["order"]
-//            && (float) $params['totalAmount'] < $inv_amount
         ) {
             $is_cpanel_settle = true;
         }
@@ -613,7 +612,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         
         // add Partial Settle flag
         if ('settle' == $tr_type_param
-            && ($inv_amount - round(floatval($params['totalAmount']), 2) > 0.00)
+            && ($order_total - round(floatval($params['totalAmount']), 2) > 0.00)
         ) {
             $this->is_partial_settle = true;
         } elseif ($order_total != $dmn_total) { // amount check for Sale only
@@ -693,15 +692,15 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 ->setState(Invoice::STATE_PAID);
             
             // in case of Cpanel Partial Settle
-            if ($is_cpanel_settle && (float) $params['totalAmount'] < $inv_amount) {
-                $inv_amount = round((float) $params['totalAmount'], 2);
+            if ($is_cpanel_settle && (float) $params['totalAmount'] < $order_total) {
+                $order_total = round((float) $params['totalAmount'], 2);
             }
             
             $invoice
-                ->setSubtotal($inv_amount)
-                ->setBaseSubtotal($inv_amount)
-                ->setBaseGrandTotal($inv_amount)
-                ->setGrandTotal($inv_amount);
+                ->setBaseSubtotal($this->order->getBaseSubtotal())
+                ->setSubtotal($this->order->getSubtotal())
+                ->setBaseGrandTotal($this->order->getBaseGrandTotal())
+                ->setGrandTotal($this->order->getGrandTotal());
             
             $invoice->register();
             $invoice->getOrder()->setIsInProcess(true);
