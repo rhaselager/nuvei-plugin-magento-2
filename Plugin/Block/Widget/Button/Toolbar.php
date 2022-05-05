@@ -39,11 +39,12 @@ class Toolbar
         
         try {
             $orderId                = $this->request->getParam('order_id');
-            $order                    = $this->orderRepository->get($orderId);
-            $ord_status                = $order->getStatus();
-            $orderPayment            = $order->getPayment();
-            $ord_trans_addit_info    = $orderPayment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
-            $payment_method            = '';
+            $order                  = $this->orderRepository->get($orderId);
+            $ord_status             = $order->getStatus();
+            $order_total            = round((float) $order->getBaseGrandTotal(), 2);
+            $orderPayment           = $order->getPayment();
+            $ord_trans_addit_info   = $orderPayment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
+            $payment_method         = '';
             
             if ($orderPayment->getMethod() !== Payment::METHOD_CODE) {
                 return [$context, $buttonList];
@@ -85,7 +86,12 @@ class Toolbar
                 $buttonList->remove('credit-memo');
             }
             
-            if (Payment::SC_VOIDED == $ord_status) {
+            if (Payment::SC_VOIDED == $ord_status
+                || ( // Rebilling with Zero Total and Auth status Order
+                    0 == $order_total
+                    && Payment::SC_AUTH == $ord_status
+                )
+            ) {
                 $buttonList->remove('order_invoice');
             }
             

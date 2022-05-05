@@ -575,6 +575,21 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                 $this->sc_transaction_type
             );
         }
+        
+        // check for Zero Total Order with Rebilling
+        $rebillling_data = json_decode($params['customField2'], true);
+        
+        if(0 == $order_total
+            && !empty($rebillling_data)
+            && is_array($rebillling_data)
+        ) {
+            $this->start_subscr = true;
+            
+            $this->order->addStatusHistoryComment(
+                __("This is Zero Total Auth Transaction, you no need to Settle it."),
+                $this->sc_transaction_type
+            );
+        }
 
         $this->orderPayment
             ->setAuthAmount($params['totalAmount'])
