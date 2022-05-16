@@ -476,7 +476,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                     $msg_transaction .= __("Partial ");
                 }
                 
-                $msg_transaction .= __($params['transactionType']) . ': </b> request.<br/>';
+                $msg_transaction .= __($params['transactionType']) . ' </b> request.<br/>';
 
                 $this->order->addStatusHistoryComment(
                     $msg_transaction
@@ -986,7 +986,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 }
             }
 
-            $checksum = hash($this->moduleConfig->getHash(), utf8_encode($concat));
+            $checksum = hash($this->moduleConfig->getHash(), $concat);
 
             if ($params["advanceResponseChecksum"] !== $checksum) {
                 $msg = 'Checksum validation failed for advanceResponseChecksum and Order #' . $orderIncrementId;
@@ -1004,15 +1004,9 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         }
         
         // subscription DMN with responsechecksum
-        $concat = '';
+        unset($params['responsechecksum']);
         
-        foreach ($params as $name => $value) {
-            if ('responsechecksum' == $name) {
-                continue;
-            }
-            
-            $concat .= $value;
-        }
+        $concat = implode('', $params);
         
         if (empty($concat)) {
             $msg = 'Checksum string before hash is empty for Order #' . $orderIncrementId;
@@ -1021,9 +1015,8 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             return $msg;
         }
         
-        $concat_final = $concat . $this->moduleConfig->getMerchantSecretKey();
-        
-        $checksum = hash($this->moduleConfig->getHash(), utf8_encode($concat_final));
+        $concat_final   = $concat . $this->moduleConfig->getMerchantSecretKey();
+        $checksum       = hash($this->moduleConfig->getHash(), $concat_final);
 
         if ($params["responsechecksum"] !== $checksum) {
             $msg = 'Checksum validation failed for responsechecksum and Order #' . $orderIncrementId;

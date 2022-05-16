@@ -496,7 +496,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                     $msg_transaction .= __("Partial ");
                 }
                 
-                $msg_transaction .= __($params['transactionType']) . ': </b> request.<br/>';
+                $msg_transaction .= __($params['transactionType']) . ' </b> request.<br/>';
 
                 $this->order->addStatusHistoryComment(
                     $msg_transaction
@@ -881,6 +881,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         $this->orderPayment->save();
         $this->orderResourceModel->save($this->order);
 
+        $this->moduleConfig->createLog('Process Subscr DMN ends for order #' . $orderIncrementId);
         return 'Process Subscr DMN ends for order #' . $orderIncrementId;
     }
 
@@ -1006,7 +1007,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                 }
             }
 
-            $checksum = hash($this->moduleConfig->getHash(), utf8_encode($concat));
+            $checksum = hash($this->moduleConfig->getHash(), $concat);
 
             if ($params["advanceResponseChecksum"] !== $checksum) {
                 $msg = 'Checksum validation failed for advanceResponseChecksum and Order #' . $orderIncrementId;
@@ -1024,15 +1025,10 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         }
         
         // subscription DMN with responsechecksum
-        $concat = '';
+        $param_responsechecksum = $params['responsechecksum'];
+        unset($params['responsechecksum']);
         
-        foreach ($params as $name => $value) {
-            if ('responsechecksum' == $name) {
-                continue;
-            }
-            
-            $concat .= $value;
-        }
+        $concat = implode('', $params);
         
         if (empty($concat)) {
             $msg = 'Checksum string before hash is empty for Order #' . $orderIncrementId;
@@ -1041,11 +1037,10 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             return $msg;
         }
         
-        $concat_final = $concat . $this->moduleConfig->getMerchantSecretKey();
-        
-        $checksum = hash($this->moduleConfig->getHash(), utf8_encode($concat_final));
+        $concat_final   = $concat . $this->moduleConfig->getMerchantSecretKey();
+        $checksum       = hash($this->moduleConfig->getHash(), $concat_final);
 
-        if ($params["responsechecksum"] !== $checksum) {
+        if ($param_responsechecksum !== $checksum) {
             $msg = 'Checksum validation failed for responsechecksum and Order #' . $orderIncrementId;
 
             if($this->moduleConfig->isTestModeEnabled() && null !== $this->order) {
