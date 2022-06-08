@@ -165,9 +165,6 @@ class ConfigProvider extends CcGenericConfigProvider
                     'updateQuotePM'             => $this->urlBuilder
                         ->getUrl('nuvei_checkout/payment/UpdateQuotePaymentMethod'),
                     
-//                    'submitUserTokenForGuest'   => ( $this->moduleConfig->allowGuestsSubscr()
-//                        && !empty($payment_plan_data) ) ? 1 : 0,
-                    
                     'isPaymentPlan'             => !empty($payment_plan_data) ? 1 : 0,
                     'useDevSdk'                 => $this->moduleConfig->useDevSdk(),
                     
@@ -199,6 +196,7 @@ class ConfigProvider extends CcGenericConfigProvider
                         'i18n'                      => $this->moduleConfig->getCheckoutTransl(),
                         'blockCards'                => $blocked_cards,
                         'billingAddress'            => $billing_address,
+                        'userData'                  => ['billingAddress' => $billing_address],
                     ],
                 ],
             ],
