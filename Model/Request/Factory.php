@@ -34,6 +34,7 @@ class Factory
         AbstractRequest::CREATE_MERCHANT_PAYMENT_PLAN       => \Nuvei\Checkout\Model\Request\CreatePlan::class,
         AbstractRequest::PAYMENT_SETTLE_METHOD              => \Nuvei\Checkout\Model\Request\Settle::class,
         AbstractRequest::GET_SESSION_TOKEN                  => \Nuvei\Checkout\Model\Request\GetSessionToken::class,
+        AbstractRequest::CANCEL_SUBSCRIPTION_METHOD         => \Nuvei\Checkout\Model\Request\CancelSubscription::class,
     ];
 
     /**
@@ -70,7 +71,7 @@ class Factory
 
         if ($className === null) {
             throw new LocalizedException(
-                __('%1 method is not supported.', $method)
+                __('%1 request method is not supported.', $method)
             );
         }
 

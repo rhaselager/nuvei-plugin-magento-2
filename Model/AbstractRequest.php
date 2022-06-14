@@ -33,7 +33,6 @@ abstract class AbstractRequest extends AbstractApi
     const CREATE_MERCHANT_PAYMENT_PLAN          = 'createPlan';
     const CREATE_SUBSCRIPTION_METHOD            = 'createSubscription';
     const CANCEL_SUBSCRIPTION_METHOD            = 'cancelSubscription';
-//    const SETTLE_METHOD                         = 'settleTransaction';
     const GET_SESSION_TOKEN                     = 'getSessionToken';
 
     /**
@@ -425,8 +424,8 @@ abstract class AbstractRequest extends AbstractApi
     /**
      * Function sendRequest
      *
-     * @param bool $continue_process when is true return the response parameters to the sender
-     * @param bool $accept_error_status when is true, do not throw exception if get error response
+     * @param bool $continue_process When is true return the response parameters to the sender
+     * @param bool $accept_error_status When is true, do not throw exception if get error response
      *
      * @return AbstractRequest
      * @throws \Magento\Framework\Exception\LocalizedException

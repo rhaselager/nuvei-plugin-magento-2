@@ -182,6 +182,8 @@ class Payment extends Cc implements TransparentInterface
      * @var CheckoutSession
      */
     private $checkoutSession;
+    
+    private $orderResourceModel;
 
     /**
      * Payment constructor.
@@ -219,6 +221,7 @@ class Payment extends Cc implements TransparentInterface
         CheckoutSession $checkoutSession,
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
+        \Magento\Sales\Model\ResourceModel\Order $orderResourceModel,
         array $data = []
     ) {
         parent::__construct(
@@ -237,9 +240,10 @@ class Payment extends Cc implements TransparentInterface
         );
 
         $this->paymentRequestFactory    = $paymentRequestFactory;
-        $this->customerSession            = $customerSession;
-        $this->moduleConfig                = $moduleConfig;
-        $this->checkoutSession            = $checkoutSession;
+        $this->customerSession          = $customerSession;
+        $this->moduleConfig             = $moduleConfig;
+        $this->checkoutSession          = $checkoutSession;
+        $this->orderResourceModel       = $orderResourceModel;
     }
 
     /**
@@ -369,6 +373,24 @@ class Payment extends Cc implements TransparentInterface
      */
     public function void(InfoInterface $payment)
     {
+        $total  = $payment->getOrder()->getBaseGrandTotal();
+        $status = $payment->getOrder()->getStatus();
+        
+        $this->moduleConfig->createLog([$total, $status]);
+        
+        // Void of Zero Total amount
+        if(0 == (float) $total && self::SC_AUTH == $status) {
+            $success = $this->cancelSubscription($payment);
+            
+            if(!$success) {
+                throw new LocalizedException(__('This Order can not be Cancelled.'));
+            }
+            
+            return $this;
+            
+        }
+        // /Void of Zero Total amount
+        
         parent::void($payment);
         
         /** @var RequestInterface $request */
@@ -379,6 +401,74 @@ class Payment extends Cc implements TransparentInterface
         
         $request->process();
         return $this;
+    }
+    
+    /**
+     * Cancel Subscriptions.
+     *
+     * @param object $payment
+     * @return bool
+     */
+    public function cancelSubscription($payment)
+    {
+        try {
+            $ord_trans_addit_info = $payment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
+
+            if(empty($ord_trans_addit_info) || !is_array($ord_trans_addit_info)) {
+                $this->moduleConfig->createLog(
+                    $ord_trans_addit_info,
+                    'cancelSubscription() Error - $ord_trans_addit_info is empty or not an array.'
+                );
+                return false;
+            }
+
+            $last_record    = end($ord_trans_addit_info);
+            $subsc_ids      = json_decode($last_record[self::SUBSCR_IDS]);
+            
+            $this->moduleConfig->createLog(
+                [$ord_trans_addit_info], 
+                'cancelSubscription()'
+            );
+
+            if (empty($subsc_ids) || !is_array($subsc_ids)) {
+                $this->moduleConfig->createLog(
+                    $subsc_ids,
+                    'cancelSubscription() Error - $subsc_ids is empty or not an array.'
+                );
+                return false;
+            }
+
+            $request = $this->paymentRequestFactory->create(
+                AbstractRequest::CANCEL_SUBSCRIPTION_METHOD,
+                $payment
+            );
+
+            $order  = $payment->getOrder();
+            $msg    = '';
+
+            foreach ($subsc_ids as $id) {
+                $resp = $request
+                    ->setSubscrId($id)
+                    ->process();
+
+                // add note to the Order - Success
+                if (!$resp || !is_array($resp) || 'SUCCESS' != $resp['status']) {
+                    $msg = __("<b>Error</b> when try to Cancel Subscription by this Order. ");
+
+                    if (!empty($resp['reason'])) {
+                        $msg .= '<br/>' . __('Reason: ') . $resp['reason'];
+                    }
+                }
+
+                $order->addStatusHistoryComment($msg);
+                $this->orderResourceModel->save($order);
+            }
+
+            return empty($msg) ? true : false;
+        }
+        catch(Exception $ex) {
+            $this->moduleConfig->createLog($ex->getMessage());
+        }
     }
 
     /**

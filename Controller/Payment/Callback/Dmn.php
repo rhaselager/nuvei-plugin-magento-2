@@ -58,6 +58,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
     private $transactionType;
     private $sc_transaction_type;
     private $jsonOutput;
+    private $paymentModel;
     private $start_subscr       = false;
     private $is_partial_settle  = false;
     private $curr_trans_info    = []; // collect the info for the current transaction (action)
@@ -83,7 +84,8 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
         \Magento\Sales\Model\ResourceModel\Order $orderResourceModel,
         \Nuvei\Checkout\Model\Request\Factory $requestFactory,
-        \Magento\Framework\App\Request\Http $httpRequest
+        \Magento\Framework\App\Request\Http $httpRequest,
+        \Nuvei\Checkout\Model\Payment $paymentModel
     ) {
         $this->moduleConfig             = $moduleConfig;
         $this->captureCommand           = $captureCommand;
@@ -102,6 +104,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         $this->orderResourceModel       = $orderResourceModel;
         $this->requestFactory           = $requestFactory;
         $this->httpRequest              = $httpRequest;
+        $this->paymentModel             = $paymentModel;
         
         parent::__construct($context);
     }
@@ -469,9 +472,12 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                     // mark the Order Invoice as Canceld END
                     
                     // Cancel active Subscriptions, if there are any
-                    $this->cancelSubscription($last_record);
+//                    $this->cancelSubscription($last_record);
+                    $succsess = $this->paymentModel->cancelSubscription($this->orderPayment);
                     
-                    $this->order->setData('state', Order::STATE_CLOSED);
+                    if($succsess) {
+                        $this->order->setData('state', Order::STATE_CLOSED);
+                    }
                 } elseif (in_array($tr_type_param, ['credit', 'refund'])) { // REFUND / CREDIT
                     $this->transactionType        = Transaction::TYPE_REFUND;
                     $this->sc_transaction_type    = Payment::SC_REFUNDED;
@@ -832,8 +838,8 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             );
 
             // Save the Subscription ID
-            foreach ($ord_trans_addit_info as $key => $data) {
-                if (!in_array(strtolower($data['transaction_type']), ['sale', 'settle'])) {
+            foreach (array_reverse($ord_trans_addit_info) as $key => $data) {
+                if (!in_array(strtolower($data['transaction_type']), ['sale', 'settle', 'auth'])) {
                     $this->moduleConfig->createLog($data['transaction_type'], 'processSubscrDmn() active continue');
                     continue;
                 }
@@ -881,7 +887,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         $this->orderPayment->save();
         $this->orderResourceModel->save($this->order);
 
-        $this->moduleConfig->createLog('Process Subscr DMN ends for order #' . $orderIncrementId);
+        $this->moduleConfig->createLog($ord_trans_addit_info, 'Process Subscr DMN ends for order #' . $orderIncrementId);
         return 'Process Subscr DMN ends for order #' . $orderIncrementId;
     }
 
@@ -1158,50 +1164,6 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             
             $subscr_count--;
         } while ($subscr_count > 0);
-        
-        return true;
-    }
-    
-    /**
-     * Cancel a Subscription.
-     *
-     * @param array $last_record
-     * @return bool
-     */
-    private function cancelSubscription($last_record)
-    {
-        $this->moduleConfig->createLog('cancelSubscription()');
-        
-        $subsc_ids = json_decode($last_record[Payment::SUBSCR_IDS]);
-
-        if (empty($subsc_ids) || !is_array($subsc_ids)) {
-            $this->moduleConfig->createLog(
-                $subsc_ids,
-                'cancelSubscription() Error - $subsc_ids is empty or not an array.'
-            );
-            return false;
-        }
-
-        $request    = $this->requestFactory->create(AbstractRequest::CANCEL_SUBSCRIPTION_METHOD);
-        $msg        = '';
-
-        foreach ($subsc_ids as $id) {
-            $resp = $request
-                ->setSubscrId($id)
-                ->process();
-
-            // add note to the Order - Success
-            if (!$resp || !is_array($resp) || 'SUCCESS' != $resp['status']) {
-                $msg = __("<b>Error</b> when try to create Subscription by this Order. ");
-
-                if (!empty($resp['reason'])) {
-                    $msg .= '<br/>' . __('Reason: ') . $resp['reason'];
-                }
-            }
-
-            $this->order->addStatusHistoryComment($msg, $this->sc_transaction_type);
-            $this->orderResourceModel->save($this->order);
-        }
         
         return true;
     }

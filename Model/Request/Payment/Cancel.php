@@ -133,7 +133,7 @@ class Cancel extends AbstractPayment implements RequestInterface
         
         $this->config->createLog($trans_to_void_data, 'Transaction to Cancel');
         
-        $amount     = floatval($trans_to_void_data[Payment::TRANSACTION_TOTAL_AMOUN]);
+        $amount     = (float) $trans_to_void_data[Payment::TRANSACTION_TOTAL_AMOUN];
         $auth_code  = !empty($trans_to_void_data[Payment::TRANSACTION_AUTH_CODE])
             ? $trans_to_void_data[Payment::TRANSACTION_AUTH_CODE] : '';
         

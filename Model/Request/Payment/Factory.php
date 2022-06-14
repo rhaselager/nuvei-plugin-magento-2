@@ -18,9 +18,10 @@ class Factory
      * @var array
      */
     private $invokableClasses = [
-        AbstractRequest::PAYMENT_SETTLE_METHOD  => \Nuvei\Checkout\Model\Request\Payment\Settle::class,
-        AbstractRequest::PAYMENT_REFUND_METHOD  => \Nuvei\Checkout\Model\Request\Payment\Refund::class,
-        AbstractRequest::PAYMENT_VOID_METHOD    => \Nuvei\Checkout\Model\Request\Payment\Cancel::class,
+        AbstractRequest::PAYMENT_SETTLE_METHOD      => \Nuvei\Checkout\Model\Request\Payment\Settle::class,
+        AbstractRequest::PAYMENT_REFUND_METHOD      => \Nuvei\Checkout\Model\Request\Payment\Refund::class,
+        AbstractRequest::PAYMENT_VOID_METHOD        => \Nuvei\Checkout\Model\Request\Payment\Cancel::class,
+        AbstractRequest::CANCEL_SUBSCRIPTION_METHOD => \Nuvei\Checkout\Model\Request\CancelSubscription::class,
     ];
 
     /**
@@ -62,7 +63,7 @@ class Factory
 
         if ($className === null) {
             throw new LocalizedException(
-                __('%1 method is not supported.', $method)
+                __('%1 request payment method is not supported.', $method)
             );
         }
 

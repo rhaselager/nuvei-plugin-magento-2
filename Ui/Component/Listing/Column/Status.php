@@ -73,7 +73,7 @@ class Status extends Column
                     }
                         
                     foreach (array_reverse($ord_trans_data) as $data) {
-                        if (!in_array(strtolower($data['transaction_type']), ['sale', 'settle'])) {
+                        if (!in_array(strtolower($data['transaction_type']), ['sale', 'settle', 'auth'])) {
                             continue;
                         }
                         
