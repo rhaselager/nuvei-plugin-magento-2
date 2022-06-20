@@ -303,7 +303,6 @@ define(
                     if(self.useCcOnly) {
                         self.checkoutSdkParams.pmBlacklist  = null;
                         self.checkoutSdkParams.pmWhitelist  = ['cc_card'];
-                        self.checkoutSdkParams.savePM       = true;
                     }
 
                     if(self.checkoutSdkParams.savePM) {

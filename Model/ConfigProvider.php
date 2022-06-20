@@ -141,10 +141,10 @@ class ConfigProvider extends CcGenericConfigProvider
         $payment_plan_data  = $this->moduleConfig->getProductPlanData();
         $save_pm            = $show_upo
                             = $this->moduleConfig->canUseUpos();
-        // TODO uncomment this when sdk team is reay
-//        if(!empty($payment_plan_data)) {
-//            $save_pm = 'always';
-//        }
+        
+        if(!empty($payment_plan_data)) {
+            $save_pm = 'always';
+        }
         
         $checkout_logo = $this->moduleConfig->showCheckoutLogo()
             ? $this->assetRepo->getUrl("Nuvei_Payments::images/nuvei.png") : '#';
