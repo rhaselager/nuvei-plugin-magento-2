@@ -216,6 +216,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             $order_status       = '';
             $order_tr_type      = '';
             $last_record        = []; // last transaction data
+            
             // last saved Additional Info for the transaction
             $ord_trans_addit_info = $this->orderPayment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
             
@@ -271,7 +272,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             if (!empty($params['customField2'])) {
                 $this->curr_trans_info['start_subscr_data'] = $params['customField2'];
             }
-            # prepare current transaction data for save END
+            # /prepare current transaction data for save
             
             # check for Subscription State DMN
             $resp = $this->processSubscrDmn($params, $orderIncrementId, $ord_trans_addit_info);
@@ -318,7 +319,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
 
                 return $this->jsonOutput;
             }
-            # Subscription transaction DMN END
+            # /Subscription transaction DMN
             
             # do not overwrite Order status
             // default - same transaction type, order was approved, but DMN status is different
@@ -368,6 +369,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                 return $this->jsonOutput;
             }
             
+            // after Refund allow only refund, this is in case of Partial Refunds
             if (in_array(strtolower($order_tr_type), ['refund', 'credit'])
                 && strtolower($order_status) == 'approved'
                 && !in_array(strtolower($params['transactionType']), ['refund', 'credit'])
@@ -412,7 +414,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             }
             
             // compare them later
-            $order_total    = round((float) $this->order->getGrandTotal(), 2); // the Visual total
+            $order_total    = round((float) $this->order->getBaseGrandTotal(), 2);
             $dmn_total      = round((float) $params['totalAmount'], 2);
             
             // APPROVED TRANSACTION
@@ -472,9 +474,9 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                     // mark the Order Invoice as Canceld END
                     
                     // Cancel active Subscriptions, if there are any
-//                    $this->cancelSubscription($last_record);
                     $succsess = $this->paymentModel->cancelSubscription($this->orderPayment);
                     
+                    // if we cancel any subscription set state Close
                     if($succsess) {
                         $this->order->setData('state', Order::STATE_CLOSED);
                     }

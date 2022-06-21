@@ -193,6 +193,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             $order_status       = '';
             $order_tr_type      = '';
             $last_record        = []; // last transaction data
+            
             // last saved Additional Info for the transaction
             $ord_trans_addit_info = $this->orderPayment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
             
@@ -248,7 +249,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             if (!empty($params['customField2'])) {
                 $this->curr_trans_info['start_subscr_data'] = $params['customField2'];
             }
-            # prepare current transaction data for save END
+            # /prepare current transaction data for save
             
             # check for Subscription State DMN
             $resp = $this->processSubscrDmn($params, $orderIncrementId, $ord_trans_addit_info);
@@ -295,7 +296,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
 
                 return $this->jsonOutput;
             }
-            # Subscription transaction DMN END
+            # /Subscription transaction DMN
             
             # do not overwrite Order status
             // default - same transaction type, order was approved, but DMN status is different
@@ -345,6 +346,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 return $this->jsonOutput;
             }
             
+            // after Refund allow only refund, this is in case of Partial Refunds
             if (in_array(strtolower($order_tr_type), ['refund', 'credit'])
                 && strtolower($order_status) == 'approved'
                 && !in_array(strtolower($params['transactionType']), ['refund', 'credit'])
@@ -389,7 +391,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             }
             
             // compare them later
-            $order_total    = round((float) $this->order->getGrandTotal(), 2); // the Visual total
+            $order_total    = round((float) $this->order->getBaseGrandTotal(), 2);
             $dmn_total      = round((float) $params['totalAmount'], 2);
             
             // APPROVED TRANSACTION
@@ -449,9 +451,12 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                     // mark the Order Invoice as Canceld END
                     
                     // Cancel active Subscriptions, if there are any
-                    $this->cancelSubscription($last_record);
+                    $succsess = $this->paymentModel->cancelSubscription($this->orderPayment);
                     
-                    $this->order->setData('state', Order::STATE_CLOSED);
+                    // if we cancel any subscription set state Close
+                    if($succsess) {
+                        $this->order->setData('state', Order::STATE_CLOSED);
+                    }
                 } elseif (in_array($tr_type_param, ['credit', 'refund'])) { // REFUND / CREDIT
                     $this->transactionType        = Transaction::TYPE_REFUND;
                     $this->sc_transaction_type    = Payment::SC_REFUNDED;
@@ -812,8 +817,8 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             );
 
             // Save the Subscription ID
-            foreach ($ord_trans_addit_info as $key => $data) {
-                if (!in_array(strtolower($data['transaction_type']), ['sale', 'settle'])) {
+            foreach (array_reverse($ord_trans_addit_info) as $key => $data) {
+                if (!in_array(strtolower($data['transaction_type']), ['sale', 'settle', 'auth'])) {
                     $this->moduleConfig->createLog($data['transaction_type'], 'processSubscrDmn() active continue');
                     continue;
                 }
@@ -861,6 +866,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         $this->orderPayment->save();
         $this->orderResourceModel->save($this->order);
 
+        $this->moduleConfig->createLog($ord_trans_addit_info, 'Process Subscr DMN ends for order #' . $orderIncrementId);
         return 'Process Subscr DMN ends for order #' . $orderIncrementId;
     }
 
@@ -1004,6 +1010,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         }
         
         // subscription DMN with responsechecksum
+        $param_responsechecksum = $params['responsechecksum'];
         unset($params['responsechecksum']);
         
         $concat = implode('', $params);
@@ -1018,7 +1025,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         $concat_final   = $concat . $this->moduleConfig->getMerchantSecretKey();
         $checksum       = hash($this->moduleConfig->getHash(), $concat_final);
 
-        if ($params["responsechecksum"] !== $checksum) {
+        if ($param_responsechecksum !== $checksum) {
             $msg = 'Checksum validation failed for responsechecksum and Order #' . $orderIncrementId;
 
             if($this->moduleConfig->isTestModeEnabled() && null !== $this->order) {
@@ -1136,50 +1143,6 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             
             $subscr_count--;
         } while ($subscr_count > 0);
-        
-        return true;
-    }
-    
-    /**
-     * Cancel a Subscription.
-     *
-     * @param array $last_record
-     * @return bool
-     */
-    private function cancelSubscription($last_record)
-    {
-        $this->moduleConfig->createLog('cancelSubscription()');
-        
-        $subsc_ids = json_decode($last_record[Payment::SUBSCR_IDS]);
-
-        if (empty($subsc_ids) || !is_array($subsc_ids)) {
-            $this->moduleConfig->createLog(
-                $subsc_ids,
-                'cancelSubscription() Error - $subsc_ids is empty or not an array.'
-            );
-            return false;
-        }
-
-        $request    = $this->requestFactory->create(AbstractRequest::CANCEL_SUBSCRIPTION_METHOD);
-        $msg        = '';
-
-        foreach ($subsc_ids as $id) {
-            $resp = $request
-                ->setSubscrId($id)
-                ->process();
-
-            // add note to the Order - Success
-            if (!$resp || !is_array($resp) || 'SUCCESS' != $resp['status']) {
-                $msg = __("<b>Error</b> when try to create Subscription by this Order. ");
-
-                if (!empty($resp['reason'])) {
-                    $msg .= '<br/>' . __('Reason: ') . $resp['reason'];
-                }
-            }
-
-            $this->order->addStatusHistoryComment($msg, $this->sc_transaction_type);
-            $this->orderResourceModel->save($this->order);
-        }
         
         return true;
     }

@@ -295,7 +295,7 @@ class Config
         
         if (!empty($title)) {
             if (is_string($title)) {
-                $string .= $title;
+                $string .= $title . $tab;
             } else {
                 if($this->isTestModeEnabled()) {
                     $string .= "\r\n" . json_encode($title, JSON_PRETTY_PRINT) . "\r\n";

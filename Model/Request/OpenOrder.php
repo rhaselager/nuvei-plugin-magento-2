@@ -159,11 +159,11 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             $billing_address['country'] = $this->billingAddress['countryId'] ?: $billing_address['country'];
         }
         
-        $amount = (string) number_format($this->config->getQuoteVisualTotal(), 2, '.', '');
+        $amount = $this->config->getQuoteBaseTotal();
         
         $params = [
             'clientUniqueId'    => $this->config->getCheckoutSession()->getQuoteId(),
-            'currency'          => $this->config->getQuoteVisualCurrency(),
+            'currency'          => $this->config->getQuoteBaseCurrency(),
             'amount'            => $amount,
             'deviceDetails'     => $this->config->getDeviceDetails(),
             'shippingAddress'   => $this->config->getQuoteShippingAddress(),
