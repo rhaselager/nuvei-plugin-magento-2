@@ -11,7 +11,6 @@ use Magento\Framework\Exception\PaymentException;
 class SettleTransaction extends AbstractRequest implements RequestInterface
 {
     protected $config;
-    protected $amount;
     protected $payment;
     
     private $invoice_id;
@@ -55,13 +54,6 @@ class SettleTransaction extends AbstractRequest implements RequestInterface
         return $this;
     }
     
-    public function setInvoiceAmount($ivoice_amount)
-    {
-        $this->amount = $ivoice_amount;
-        
-        return $this;
-    }
-    
     public function setPayment($payment)
     {
         $this->payment = $payment;
@@ -77,6 +69,7 @@ class SettleTransaction extends AbstractRequest implements RequestInterface
     protected function getParams()
     {
         $order                  = $this->payment->getOrder();
+        $order_total            = round((float) $order->getBaseGrandTotal(), 2);
         $ord_trans_addit_info   = $this->payment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
         $trans_to_settle        = [];
         
@@ -105,20 +98,21 @@ class SettleTransaction extends AbstractRequest implements RequestInterface
         
         $getIncrementId = $order->getIncrementId();
 
-        $params = [
-            'clientUniqueId'            => $getIncrementId,
-            'amount'                    => (float) $this->amount,
-            'currency'                  => $order->getBaseCurrencyCode(),
-            'relatedTransactionId'      => $trans_to_settle[Payment::TRANSACTION_ID],
-            'authCode'                  => $trans_to_settle[Payment::TRANSACTION_AUTH_CODE],
-            'urlDetails'                => [
-                'notificationUrl' => $this->config
-                    ->getCallbackDmnUrl($getIncrementId, null, ['invoice_id' => $this->invoice_id]),
-            ],
-        ];
-        
-        $params = array_merge_recursive(parent::getParams(), $params);
-
+        $params = array_merge_recursive(
+            parent::getParams(),
+            [
+                'clientUniqueId'            => $getIncrementId,
+                'amount'                    => $order_total,
+                'currency'                  => $order->getBaseCurrencyCode(),
+                'relatedTransactionId'      => $trans_to_settle[Payment::TRANSACTION_ID],
+                'authCode'                  => $trans_to_settle[Payment::TRANSACTION_AUTH_CODE],
+                'urlDetails'                => [
+                    'notificationUrl' => $this->config
+                        ->getCallbackDmnUrl($getIncrementId, null, ['invoice_id' => $this->invoice_id]),
+                ],
+            ]
+        );
+                
         return $params;
     }
     

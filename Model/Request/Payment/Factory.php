@@ -18,7 +18,7 @@ class Factory
      * @var array
      */
     private $invokableClasses = [
-        AbstractRequest::PAYMENT_SETTLE_METHOD      => \Nuvei\Checkout\Model\Request\Payment\Settle::class,
+//        AbstractRequest::PAYMENT_SETTLE_METHOD      => \Nuvei\Checkout\Model\Request\Payment\Settle::class,
         AbstractRequest::PAYMENT_REFUND_METHOD      => \Nuvei\Checkout\Model\Request\Payment\Refund::class,
         AbstractRequest::PAYMENT_VOID_METHOD        => \Nuvei\Checkout\Model\Request\Payment\Cancel::class,
         AbstractRequest::CANCEL_SUBSCRIPTION_METHOD => \Nuvei\Checkout\Model\Request\CancelSubscription::class,

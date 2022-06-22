@@ -4,6 +4,7 @@
 
 # 1.0.0
 ```
+    * Removed Invoice Pay Observer.
     * When call Checkokut SDK, pass the billing address and into userData block.
     * Removed nuveiLoadCheckout() method from frontend JS.
     * Removed nuveiGetSessionToken() method from frontend JS.
