@@ -158,8 +158,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
 //            return $this->jsonOutput;
             ### DEBUG
             
-            $orderIncrementId   = 0;
-            $status             = !empty($params['Status']) ? strtolower($params['Status']) : null;
+            $status = !empty($params['Status']) ? strtolower($params['Status']) : null;
             
             // modify it because of the PayPal Sandbox problem with duplicate Orders IDs
             // we modify it also in Class PaymenAPM getParams().
@@ -178,7 +177,8 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                 && !empty($params['clientRequestId'])
                 && false!== strpos($params['clientRequestId'], '_')
             ) {
-                $clientRequestId_arr = explode('_', $params["clientRequestId"]);
+                $orderIncrementId       = 0;
+                $clientRequestId_arr    = explode('_', $params["clientRequestId"]);
                 
                 if (!empty($clientRequestId_arr[1]) && is_numeric($clientRequestId_arr[1])) {
                     $orderIncrementId = $clientRequestId_arr[1];
@@ -199,7 +199,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             
             /**
              * Try to create the Order.
-             * With this call if there are no errors we will set:
+             * With this call if there are no errors we set:
              *
              * $this->order
              * $this->orderPayment
@@ -534,35 +534,19 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                 $this->jsonOutput->setData('DMN for Order #' . $orderIncrementId . ' was not recognized.');
             }
             
-            // check for duplicate additional info data
-            $is_data_duplicate = false;
+            $ord_trans_addit_info[] = $this->curr_trans_info;
             
-            foreach($ord_trans_addit_info as $data) {
-                if($data[Payment::TRANSACTION_ID] == $this->curr_trans_info[Payment::TRANSACTION_ID]
-                    && $data[Payment::TRANSACTION_STATUS] == $this->curr_trans_info[Payment::TRANSACTION_STATUS]
-                ) {
-                    $is_data_duplicate = true;
-                }
-            }
-            
-            if(!$is_data_duplicate) {
-                $ord_trans_addit_info[] = $this->curr_trans_info;
-            
-                $this->moduleConfig->createLog($ord_trans_addit_info, 'Before save orderPayment', 'DEBUG');
-            
-                $this->orderPayment
-                    ->setAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA, $ord_trans_addit_info)
-                    ->save();
-            }
-            // /check for duplicate additional info data
+            $this->orderPayment
+                ->setAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA, $ord_trans_addit_info)
+                ->save();
             
             $this->orderResourceModel->save($this->order);
             
-            // try to create Subscription plans
-            $resp = $this->createSubscription($params, $last_record, $orderIncrementId);
-            
             $this->moduleConfig->createLog('DMN process end for order #' . $orderIncrementId);
             $this->jsonOutput->setData('DMN process end for order #' . $orderIncrementId);
+            
+            # try to create Subscription plans
+            $resp = $this->createSubscription($params, $last_record, $orderIncrementId);
         } catch (Exception $e) {
             $msg = $e->getMessage();
 
@@ -643,6 +627,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         
         $this->sc_transaction_type  = Payment::SC_SETTLED;
         $invCollection              = $this->order->getInvoiceCollection();
+//        $inv_amount                 = round(floatval($this->order->getBaseGrandTotal()), 2);
         $dmn_inv_id                 = $this->httpRequest->getParam('invoice_id');
         $is_cpanel_settle           = false;
         
@@ -741,8 +726,6 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                 ->setIsTransactionPending(0)
                 ->setIsTransactionClosed(0);
             
-            $this->moduleConfig->createLog($params, 'Start create invoice');
-            
             $invoice = $this->invoiceService->prepareInvoice($this->order);
             $invoice->setCanVoidFlag(true);
             
@@ -771,8 +754,6 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                 ->addObject($invoice->getOrder());
             
             $transactionSave->save();
-            
-            $this->moduleConfig->createLog('End create invoice');
 
             $this->curr_trans_info['invoice_id'] = $invoice->getId();
 
@@ -801,83 +782,34 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
     private function processDeclinedSaleOrSettleDmn($params)
     {
         $invCollection  = $this->order->getInvoiceCollection();
-        $dmn_inv_id     = (int) $this->httpRequest->getParam('invoice_id');
-        
-        if (count($invCollection) < 1) {
-            return;
-        }
+        $dmn_inv_id     = 0;
         
         // there are invoices
-        $this->moduleConfig->createLog(
-            [
-                '$invCollection count'  => count($invCollection),
-                '$dmn_inv_id'           => $dmn_inv_id,
-            ], 
-        );
+        if (count($invCollection) > 0) {
+            $this->moduleConfig->createLog(count($invCollection), 'The Invoices count is');
 
-        // in case of Sale, there must be only one invoice
-        if (0 == $dmn_inv_id && count($invCollection) == 1) {
-            $invoice = current($invCollection);
+            foreach ($this->order->getInvoiceCollection() as $invoice) {
+                // Sale
+                if (0 == $dmn_inv_id) {
+                    $this->curr_trans_info['invoice_id'][] = $invoice->getId();
+                    
+                    $invoice
+                        ->setTransactionId($params['TransactionID'])
+                        ->setState(Invoice::STATE_CANCELED)
+                        ->pay()
+                        ->save();
+                } elseif ($dmn_inv_id == $invoice->getId()) { // Settle
+                    $this->curr_trans_info['invoice_id'] = $invoice->getId();
 
-            $this->curr_trans_info['invoice_id'][] = $invoice->getId();
-
-            $invoice
-                ->setTransactionId($params['TransactionID'])
-                ->setState(Invoice::STATE_CANCELED)
-                ->setRequestedCaptureCase(Invoice::NOT_CAPTURE)
-//                ->pay()
-                ->save();
-
-            return;
-        }
-
-        foreach ($this->order->getInvoiceCollection() as $invoice) {
-            $inv_id = $invoice->getId();
-
-            if ($dmn_inv_id == $inv_id) { // Settle
-                $this->curr_trans_info['invoice_id'] = $inv_id;
-
-                $invoice
-                    ->setTransactionId($params['TransactionID'])
-                    ->setState(Invoice::STATE_CANCELED)
-                    ->setRequestedCaptureCase(Invoice::NOT_CAPTURE)
-//                    ->pay()
-                    ->save();
-
-                break;
+                    $invoice
+                        ->setTransactionId($params['TransactionID'])
+                        ->setState(Invoice::STATE_CANCELED)
+                        ->pay()
+                        ->save();
+                    
+                    break;
+                }
             }
-
-            // Sale
-//                if (0 == $dmn_inv_id) {
-//                    $this->curr_trans_info['invoice_id'][] = $inv_id;
-//                    
-//                    $invoice
-//                        ->setTransactionId($params['TransactionID'])
-//                        ->setState(Invoice::STATE_CANCELED)
-//                        ->pay()
-//                        ->save();
-//                } elseif ($dmn_inv_id == $inv_id) { // Settle
-//                    try {
-//                        $invoiceData    = $this->invoiceRepository->get($inv_id);
-//                        $deleteInvoice  = $this->invoiceRepository->delete($invoiceData);
-//                        
-//                        $this->moduleConfig->createLog($deleteInvoice, '$deleteInvoice');
-//                    }
-//                    catch(Exception $ex) {
-//                        $this->moduleConfig->createLog($ex->getMessage(), 'Exception');
-//                    }
-//                    
-//                    
-////                    $this->curr_trans_info['invoice_id'] = $invoice->getId();
-////
-////                    $invoice
-////                        ->setTransactionId($params['TransactionID'])
-////                        ->setState(Invoice::STATE_CANCELED)
-////                        ->pay()
-////                        ->save();
-//                    
-//                    break;
-//                }
         }
     }
     

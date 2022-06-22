@@ -604,6 +604,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         
         $this->sc_transaction_type  = Payment::SC_SETTLED;
         $invCollection              = $this->order->getInvoiceCollection();
+//        $inv_amount                 = round(floatval($this->order->getBaseGrandTotal()), 2);
         $dmn_inv_id                 = $this->httpRequest->getParam('invoice_id');
         $is_cpanel_settle           = false;
         
@@ -702,8 +703,6 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 ->setIsTransactionPending(0)
                 ->setIsTransactionClosed(0);
             
-            $this->moduleConfig->createLog($params, 'Start create invoice');
-            
             $invoice = $this->invoiceService->prepareInvoice($this->order);
             $invoice->setCanVoidFlag(true);
             
@@ -732,8 +731,6 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 ->addObject($invoice->getOrder());
             
             $transactionSave->save();
-            
-            $this->moduleConfig->createLog('End create invoice');
 
             $this->curr_trans_info['invoice_id'] = $invoice->getId();
 
@@ -762,83 +759,34 @@ class DmnOld extends \Magento\Framework\App\Action\Action
     private function processDeclinedSaleOrSettleDmn($params)
     {
         $invCollection  = $this->order->getInvoiceCollection();
-        $dmn_inv_id     = (int) $this->httpRequest->getParam('invoice_id');
-        
-        if (count($invCollection) < 1) {
-            return;
-        }
+        $dmn_inv_id     = 0;
         
         // there are invoices
-        $this->moduleConfig->createLog(
-            [
-                '$invCollection count'  => count($invCollection),
-                '$dmn_inv_id'           => $dmn_inv_id,
-            ], 
-        );
+        if (count($invCollection) > 0) {
+            $this->moduleConfig->createLog(count($invCollection), 'The Invoices count is');
 
-        // in case of Sale, there must be only one invoice
-        if (0 == $dmn_inv_id && count($invCollection) == 1) {
-            $invoice = current($invCollection);
+            foreach ($this->order->getInvoiceCollection() as $invoice) {
+                // Sale
+                if (0 == $dmn_inv_id) {
+                    $this->curr_trans_info['invoice_id'][] = $invoice->getId();
+                    
+                    $invoice
+                        ->setTransactionId($params['TransactionID'])
+                        ->setState(Invoice::STATE_CANCELED)
+                        ->pay()
+                        ->save();
+                } elseif ($dmn_inv_id == $invoice->getId()) { // Settle
+                    $this->curr_trans_info['invoice_id'] = $invoice->getId();
 
-            $this->curr_trans_info['invoice_id'][] = $invoice->getId();
-
-            $invoice
-                ->setTransactionId($params['TransactionID'])
-                ->setState(Invoice::STATE_CANCELED)
-                ->setRequestedCaptureCase(Invoice::NOT_CAPTURE)
-//                ->pay()
-                ->save();
-
-            return;
-        }
-
-        foreach ($this->order->getInvoiceCollection() as $invoice) {
-            $inv_id = $invoice->getId();
-
-            if ($dmn_inv_id == $inv_id) { // Settle
-                $this->curr_trans_info['invoice_id'] = $inv_id;
-
-                $invoice
-                    ->setTransactionId($params['TransactionID'])
-                    ->setState(Invoice::STATE_CANCELED)
-                    ->setRequestedCaptureCase(Invoice::NOT_CAPTURE)
-//                    ->pay()
-                    ->save();
-
-                break;
+                    $invoice
+                        ->setTransactionId($params['TransactionID'])
+                        ->setState(Invoice::STATE_CANCELED)
+                        ->pay()
+                        ->save();
+                    
+                    break;
+                }
             }
-
-            // Sale
-//                if (0 == $dmn_inv_id) {
-//                    $this->curr_trans_info['invoice_id'][] = $inv_id;
-//                    
-//                    $invoice
-//                        ->setTransactionId($params['TransactionID'])
-//                        ->setState(Invoice::STATE_CANCELED)
-//                        ->pay()
-//                        ->save();
-//                } elseif ($dmn_inv_id == $inv_id) { // Settle
-//                    try {
-//                        $invoiceData    = $this->invoiceRepository->get($inv_id);
-//                        $deleteInvoice  = $this->invoiceRepository->delete($invoiceData);
-//                        
-//                        $this->moduleConfig->createLog($deleteInvoice, '$deleteInvoice');
-//                    }
-//                    catch(Exception $ex) {
-//                        $this->moduleConfig->createLog($ex->getMessage(), 'Exception');
-//                    }
-//                    
-//                    
-////                    $this->curr_trans_info['invoice_id'] = $invoice->getId();
-////
-////                    $invoice
-////                        ->setTransactionId($params['TransactionID'])
-////                        ->setState(Invoice::STATE_CANCELED)
-////                        ->pay()
-////                        ->save();
-//                    
-//                    break;
-//                }
         }
     }
     

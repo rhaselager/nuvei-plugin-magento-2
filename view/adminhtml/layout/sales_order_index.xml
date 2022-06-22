@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+	Modification for Admin > Order Sales Grid > Status column.
+	Mark the Orders with Nuvei Payment Plan.
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	  xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="styles"/>
+    <head>
+        <css src="Nuvei_Checkout::css/status-color.css" />
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <uiComponent name="sales_order_grid"/>
+        </referenceContainer>
+    </body>
+</page>

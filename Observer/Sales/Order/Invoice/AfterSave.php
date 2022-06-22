@@ -130,6 +130,7 @@ class AfterSave implements ObserverInterface
             $request
                 ->setPayment($payment)
                 ->setInvoiceId($invoice->getId())
+                ->setInvoiceAmount($invoice->getGrandTotal())
                 ->process();
             // Settle request END
         } catch (Exception $e) {
