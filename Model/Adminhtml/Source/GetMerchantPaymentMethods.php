@@ -57,6 +57,15 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
             return [];
         }
         
+        if(empty($this->moduleConfig->getMerchantId())
+            || empty($this->moduleConfig->getMerchantSiteId())
+            || empty($this->moduleConfig->getMerchantSecretKey())
+        ) {
+            $this->moduleConfig->createLog('Missing mandatory merchant data.');
+            
+            return [];
+        }
+        
         $pms_array      = [];
         $pms_array[]    = [
             'value' => '',
@@ -97,6 +106,10 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
                 ->setBillingAddress($this->getRequest()->getParam('billingAddress'))
                 ->process();
 
+            if(!is_object($apmMethods)) {
+                return [];
+            }
+            
             return $apmMethods->getPaymentMethods();
         } catch (Exception $e) {
             $this->moduleConfig->createLog($e->getMessage(), 'Get APMs exception');
