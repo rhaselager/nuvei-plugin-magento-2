@@ -9,7 +9,8 @@ use Nuvei\Checkout\Model\Logger as Logger;
 /**
  * Nuvei Checkout abstract response model.
  */
-abstract class AbstractResponse extends AbstractApi
+//abstract class AbstractResponse extends AbstractApi
+abstract class AbstractResponse
 {
     /**
      * Response handlers.
@@ -70,13 +71,12 @@ abstract class AbstractResponse extends AbstractApi
         $requestId,
         Curl $curl
     ) {
-        parent::__construct(
-            $logger,
-            $config
-        );
+        //parent::__construct($logger, $config);
 
-        $this->requestId = $requestId;
-        $this->curl = $curl;
+        $this->requestId    = $requestId;
+        $this->curl         = $curl;
+        $this->config       = $config;
+        $this->logger       = $logger;
     }
 
     /**

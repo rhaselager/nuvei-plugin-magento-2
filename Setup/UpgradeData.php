@@ -35,10 +35,10 @@ class UpgradeData extends \Nuvei\Checkout\Setup\InstallSchema implements Upgrade
         \Magento\Framework\Setup\SchemaSetupInterface $install
     ) {
         $this->orderStatusFactory   = $orderStatusFactory;
-        $this->resourceConnection    = $resourceConnection;
+        $this->resourceConnection   = $resourceConnection;
         $this->eavSetupFactory      = $eavSetupFactory;
-        $this->attributeSetFactory    = $attributeSetFactory;
-        $this->install                = $install;
+        $this->attributeSetFactory  = $attributeSetFactory;
+        $this->install              = $install;
     }
 
     /**
@@ -72,8 +72,19 @@ class UpgradeData extends \Nuvei\Checkout\Setup\InstallSchema implements Upgrade
 //            'nuvei_test_attr'
 //        );
         
+        /**
+         * example for update
+        if (version_compare($context->getVersion(), '3.0.1', '<')) {
+            $this->resourceConnection->getConnection()->query(
+                "UPDATE sales_order_status "
+                . "SET status = 'nuvei_voided' "
+                . "WHERE sales_order_status.status = 'vmes';"
+            );
+        }
+         */
+        
         // add few new Order States
-        if (version_compare($context->getVersion(), '1.0.0', '=')) {
+        if (version_compare($context->getVersion(), '1.0.0') < 0) {
             $scVoided = $this->orderStatusFactory->create()
                 ->setData('status', 'nuvei_voided')
                 ->setData('label', 'Nuvei Voided')
@@ -103,20 +114,7 @@ class UpgradeData extends \Nuvei\Checkout\Setup\InstallSchema implements Upgrade
                 ->setData('label', 'Nuvei Refunded')
                 ->save();
             $scRefunded->assignState(Order::STATE_PROCESSING, false, true);
-        }
-        
-        /**
-         * example for update
-        if (version_compare($context->getVersion(), '3.0.1', '<')) {
-            $this->resourceConnection->getConnection()->query(
-                "UPDATE sales_order_status "
-                . "SET status = 'nuvei_voided' "
-                . "WHERE sales_order_status.status = 'vmes';"
-            );
-        }
-         */
-        
-        if (version_compare($context->getVersion(), '1.0.0', '=')) {
+            
             # Admin > Product > Nuvei Subscription details
             // Enable subscription
             $eavSetup->addAttribute(

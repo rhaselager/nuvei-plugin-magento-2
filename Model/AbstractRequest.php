@@ -11,7 +11,8 @@ use Nuvei\Checkout\Model\Response\Factory as ResponseFactory;
 /**
  * Nuvei Checkout abstract request model.
  */
-abstract class AbstractRequest extends AbstractApi
+//abstract class AbstractRequest extends AbstractApi
+abstract class AbstractRequest
 {
     /**
      * Payment gateway endpoints.
@@ -172,10 +173,12 @@ abstract class AbstractRequest extends AbstractApi
         Curl $curl,
         ResponseFactory $responseFactory
     ) {
-        parent::__construct($logger, $config);
+        //parent::__construct($logger, $config);
 
         $this->curl             = $curl;
+        $this->config           = $config;
         $this->responseFactory  = $responseFactory;
+        $this->logger           = $logger;
     }
 
     /**
