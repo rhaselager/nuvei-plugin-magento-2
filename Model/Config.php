@@ -125,7 +125,8 @@ class Config
     private $productRepository;
     private $configurable;
     private $eavAttribute;
-    private $fileSystem;
+//    private $fileSystem;
+    private $readerWriter;
     
     private $clientUniqueIdPostfix = '_sandbox_apm'; // postfix for Sandbox APM payments
 
@@ -156,7 +157,8 @@ class Config
         \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
         \Magento\ConfigurableProduct\Model\Product\Type\Configurable $configurable,
         \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute,
-        \Magento\Framework\Filesystem\DriverInterface $fileSystem
+//        \Magento\Framework\Filesystem\DriverInterface $fileSystem,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->scopeConfig      = $scopeConfig;
         $this->storeManager     = $storeManager;
@@ -169,7 +171,6 @@ class Config
         $this->customerSession  = $customerSession;
 
         $this->storeId              = $this->getStoreId();
-        $this->storeId              = $this->getStoreId();
         $this->versionNum           = (int) str_replace('.', '', $this->productMetadata->getVersion());
         $this->formKey              = $formKey;
         $this->directory            = $directory;
@@ -178,7 +179,8 @@ class Config
         $this->productRepository    = $productRepository;
         $this->configurable         = $configurable;
         $this->eavAttribute         = $eavAttribute;
-        $this->fileSystem           = $fileSystem;
+//        $this->fileSystem           = $fileSystem;
+        $this->readerWriter         = $readerWriter;
     }
 
     /**
@@ -190,157 +192,6 @@ class Config
     private function getConfigPath()
     {
         return sprintf('payment/%s/', Payment::METHOD_CODE);
-    }
-    
-    /**
-     * Prepare and save log.
-     * 
-     * @param mixed $data
-     * @param string $title
-     * @param string $log_level
-     * 
-     * @return void
-     */
-    public function createLog($data, $title = '', $log_level = 'TRACE')
-    {
-        if (! $this->isDebugEnabled()) {
-            return;
-        }
-        
-        $logsPath   = $this->directory->getPath('log');
-        $d          = $data;
-        $string     = '';
-        
-        if (is_bool($data)) {
-            $d = $data ? 'true' : 'false';
-        } elseif (is_string($data) || is_numeric($data)) {
-            $d = $data;
-        } elseif ('' === $data) {
-            $d = 'Data is Empty.';
-        } elseif (is_array($data)) {
-            // do not log accounts if on prod
-            if (!$this->isTestModeEnabled()) {
-                if (isset($data['userAccountDetails']) && is_array($data['userAccountDetails'])) {
-                    $data['userAccountDetails'] = 'account details';
-                }
-                if (isset($data['userPaymentOption']) && is_array($data['userPaymentOption'])) {
-                    $data['userPaymentOption'] = 'user payment options details';
-                }
-                if (isset($data['paymentOption']) && is_array($data['paymentOption'])) {
-                    $data['paymentOption'] = 'payment options details';
-                }
-            }
-            // do not log accounts if on prod
-
-            if (!empty($data['paymentMethods']) && is_array($data['paymentMethods'])) {
-                $data['paymentMethods'] = json_encode($data['paymentMethods']);
-            }
-            if (!empty($data['Response data']['paymentMethods'])
-                && is_array($data['Response data']['paymentMethods'])
-            ) {
-                $data['Response data']['paymentMethods'] = json_encode($data['Response data']['paymentMethods']);
-            }
-
-            if (!empty($data['plans']) && is_array($data['plans'])) {
-                $data['plans'] = json_encode($data['plans']);
-            }
-
-            $d = $this->isTestModeEnabled() ? json_encode($data, JSON_PRETTY_PRINT) : json_encode($data);
-        } elseif (is_object($data)) {
-            $d = $this->isTestModeEnabled() ? json_encode($data, JSON_PRETTY_PRINT) : json_encode($data);
-        } else {
-            $d = $this->isTestModeEnabled() ? json_encode($data, JSON_PRETTY_PRINT) : json_encode($data);
-        }
-        
-        $tab            = '    ';
-        $utimestamp     = microtime(true);
-        $timestamp      = floor($utimestamp);
-        $milliseconds   = round(($utimestamp - $timestamp) * 1000000);
-        $record_time    = date('Y-m-d') . 'T' . date('H:i:s') . '.' . $milliseconds . date('P');
-        
-        if(!$this->traceId) {
-            $this->traceId = bin2hex(random_bytes(16));
-        }
-        
-        $source_file_name   = '';
-        $member_name        = '';
-        $source_line_number = '';
-        
-        $backtrace = debug_backtrace();
-        if(!empty($backtrace)) {
-            if(!empty($backtrace[0]['file'])) {
-                $file_path_arr  = explode(DS, $backtrace[0]['file']);
-                
-                if(!empty($file_path_arr)) {
-                    $source_file_name = end($file_path_arr) . '|';
-                }
-            }
-            
-//            if(!empty($backtrace[0]['function'])) {
-//                $member_name = $backtrace[0]['function'] . '|';
-//            }
-            
-            if(!empty($backtrace[0]['line'])) {
-                $source_line_number = $backtrace[0]['line'] . $tab;
-            }
-        }
-        
-        $string .= $record_time . $tab
-            . $log_level . $tab
-            . $this->traceId . $tab
-            . 'Checkout ' . $this->getSourcePlatformField() . '|'
-            . $source_file_name
-            . $member_name
-            . $source_line_number;
-        
-        if (!empty($title)) {
-            if (is_string($title)) {
-                $string .= $title . $tab;
-            } else {
-                if($this->isTestModeEnabled()) {
-                    $string .= "\r\n" . json_encode($title, JSON_PRETTY_PRINT) . "\r\n";
-                } else{
-                    $string .= json_encode($title) . $tab;
-                }
-            }
-        }
-
-        $string .= $d . "\r\n\r\n";
-        
-        try {
-            switch ($this->isDebugEnabled(true)) {
-                case 3: // save log file per days
-                    $log_file_name = 'Nuvei-' . date('Y-m-d');
-                    break;
-                
-                case 2: // save single log file
-                    $log_file_name = 'Nuvei';
-                    break;
-                
-                case 1: // save both files
-                    $log_file_name = 'Nuvei';
-                    
-                    $this->fileSystem->filePutContents(
-                        $logsPath . DIRECTORY_SEPARATOR . 'Nuvei-' . date('Y-m-d') . '.log',
-                        $string,
-                        FILE_APPEND
-                    );
-                    break;
-                
-                default:
-                    return;
-            }
-            
-            if ($this->fileSystem->isDirectory($logsPath)) {
-                return $this->fileSystem->filePutContents(
-                    $logsPath . DIRECTORY_SEPARATOR . $log_file_name . '.log',
-                    $string,
-                    FILE_APPEND
-                );
-            }
-        } catch (exception $e) {
-            return;
-        }
     }
     
     public function getTempPath()
@@ -387,7 +238,7 @@ class Config
             $device_details['ipAddress']    = (string) $this->remoteIp->getRemoteAddress();
             $ua                                = $this->httpHeader->getHttpUserAgent();
         } catch (Exception $ex) {
-            $this->createLog($ex->getMessage(), 'getDeviceDetails Exception');
+            $this->readerWriter->createLog($ex->getMessage(), 'getDeviceDetails Exception');
             return $device_details;
         }
         
@@ -1077,7 +928,7 @@ class Config
                 $items = $this->checkoutSession->getQuote()->getItems();
             
                 if (empty($items) || !is_array($items)) {
-                    $this->createLog(
+                    $this->readerWriter->createLog(
                         $items,
                         'getProductPlanData() - there are no Items in the Cart or $items is not an array'
                     );
@@ -1087,7 +938,7 @@ class Config
                 
                 // if there are more than 1 products in the Cart we assume there are no product with a Plan
 //                if (count($items) > 1) {
-//                    $this->createLog('getProductPlanData() - the Items in the Cart are more than 1. '
+//                    $this->readerWriter->createLog('getProductPlanData() - the Items in the Cart are more than 1. '
 //                        . 'We assume there is no Product with a plan amongs them.');
 //                    return $return_arr;
 //                }
@@ -1096,14 +947,14 @@ class Config
 //                    $item = current($items);
 
                     if (!is_object($item)) {
-                        $this->createLog('getProductPlanData() Error - the Item in the Cart is not an Object.');
+                        $this->readerWriter->createLog('getProductPlanData() Error - the Item in the Cart is not an Object.');
 //                        return $return_arr;
                         continue;
                     }
 
                     $options = $item->getProduct()->getTypeInstance(true)->getOrderOptions($item->getProduct());
 
-                    $this->createLog($options, 'getProductPlanData $options');
+                    $this->readerWriter->createLog($options, 'getProductPlanData $options');
 
                     // stop the proccess
                     if (empty($options['info_buyRequest'])
@@ -1120,7 +971,7 @@ class Config
                         $product    = $this->productObj->load($product_id);
 
                         $nuvei_sub_enabled = $product->getCustomAttribute('nuvei_sub_enabled');
-                        $this->createLog(
+                        $this->readerWriter->createLog(
                             $nuvei_sub_enabled,
                             'getProductPlanData get nuvei_sub_enabled on configurable product'
                         );
@@ -1142,7 +993,7 @@ class Config
                         $product_id = $product->getId();
 
                         $nuvei_sub_enabled = $product->getCustomAttribute('nuvei_sub_enabled');
-                        $this->createLog(
+                        $this->readerWriter->createLog(
                             $nuvei_sub_enabled,
                             'getProductPlanData get nuvei_sub_enabled on configurable product'
                         );
@@ -1160,7 +1011,7 @@ class Config
                             'price'     => round((float) $item->getPrice(), 2),
                         ];
 
-                        $this->createLog(
+                        $this->readerWriter->createLog(
                             $plan_data,
                             'getProductPlanData $plan_data'
                         );
@@ -1180,7 +1031,7 @@ class Config
                     $product = $this->productObj->load($options['info_buyRequest']['product']);
                     $nuvei_sub_enabled  = $product->getCustomAttribute('nuvei_sub_enabled');
 
-                    $this->createLog(
+                    $this->readerWriter->createLog(
                         $product->getCustomAttribute('nuvei_sub_enabled'),
                         'getProductPlanData get nuvei_sub_enabled on simple product'
                     );
@@ -1249,14 +1100,14 @@ class Config
             
 //            $nuvei_sub_enabled  = $product->getCustomAttribute('nuvei_sub_enabled');
 //                
-//            $this->createLog(
+//            $this->readerWriter->createLog(
 //                $product->getCustomAttribute('nuvei_sub_enabled'),
 //                'getProductPlanData get nuvei_sub_enabled on simple product'
 //            );
 
             $plan_data = $this->buildPlanDetailsArray($product);
             
-            $this->createLog(
+            $this->readerWriter->createLog(
                 $plan_data,
                 'getProductPlanData $plan_data of incoming product'
             );
@@ -1267,7 +1118,7 @@ class Config
 
             return $return_arr;
         } catch (Exception $e) {
-            $this->createLog($e->getMessage(), 'getProductPlanData() Exception:');
+            $this->readerWriter->createLog($e->getMessage(), 'getProductPlanData() Exception:');
             return [];
         }
     }
@@ -1284,14 +1135,14 @@ class Config
         $attr = $product->getCustomAttribute(self::PAYMENT_SUBS_ENABLE);
         
         if (null === $attr) {
-            $this->createLog('buildPlanDetailsArray() - there is no subscription attribute PAYMENT_SUBS_ENABLE');
+            $this->readerWriter->createLog('buildPlanDetailsArray() - there is no subscription attribute PAYMENT_SUBS_ENABLE');
             return [];
         }
         
         $subscription_enabled = $attr->getValue();
         
         if (0 == $subscription_enabled) {
-            $this->createLog('buildPlanDetailsArray() - for this product the Subscription is not enabled or not set.');
+            $this->readerWriter->createLog('buildPlanDetailsArray() - for this product the Subscription is not enabled or not set.');
             return [];
         }
         
@@ -1325,11 +1176,11 @@ class Config
                 'endAfter'          => [strtolower($end_after_unit) => $end_after_period],
             ];
 
-            $this->createLog($return_arr, 'buildPlanDetailsArray()');
+            $this->readerWriter->createLog($return_arr, 'buildPlanDetailsArray()');
 
             return $return_arr;
         } catch (Exception $e) {
-            $this->createLog($e->getMessage(), 'buildPlanDetailsArray() Exception');
+            $this->readerWriter->createLog($e->getMessage(), 'buildPlanDetailsArray() Exception');
             return [];
         }
     }

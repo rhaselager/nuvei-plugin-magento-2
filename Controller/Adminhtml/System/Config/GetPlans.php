@@ -10,18 +10,21 @@ class GetPlans extends \Magento\Backend\App\Action
     protected $moduleConfig;
     protected $requestFactory;
     protected $objManager;
+    protected $readerWriter;
     
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
         \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory,
         \Nuvei\Checkout\Model\Config $moduleConfig,
-        \Nuvei\Checkout\Model\Request\Factory $requestFactory
+        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct($context);
         
         $this->jsonResultFactory    = $jsonResultFactory;
         $this->moduleConfig         = $moduleConfig;
         $this->requestFactory       = $requestFactory;
+        $this->readerWriter         = $readerWriter;
     }
     
     public function execute()
@@ -30,7 +33,7 @@ class GetPlans extends \Magento\Backend\App\Action
             ->setHttpResponseCode(\Magento\Framework\Webapi\Response::HTTP_OK);
 
         if (!$this->moduleConfig->isActive()) {
-            $this->moduleConfig->createLog('Nuvei payments module is not active at the moment!');
+            $this->readerWriter->createLog('Nuvei payments module is not active at the moment!');
            
             return $result->setData([
                 'error_message' => __('Nuvei payments module is not active at the moment!')
@@ -42,7 +45,7 @@ class GetPlans extends \Magento\Backend\App\Action
         try {
             $resp = $request->process();
         } catch (PaymentException $e) {
-            $this->moduleConfig->createLog($e->getMessage(), 'GetPlans Exception:');
+            $this->readerWriter->createLog($e->getMessage(), 'GetPlans Exception:');
             
             return $result->setData([
                 "success"  => 0,

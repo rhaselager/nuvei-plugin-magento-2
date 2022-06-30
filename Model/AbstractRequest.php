@@ -35,6 +35,8 @@ abstract class AbstractRequest
     const CANCEL_SUBSCRIPTION_METHOD            = 'cancelSubscription';
     const GET_SESSION_TOKEN                     = 'getSessionToken';
 
+    public $readerWriter;
+    
     /**
      * @var Curl
      */
@@ -50,7 +52,6 @@ abstract class AbstractRequest
      */
     protected $requestId;
     
-    protected $readerWriter;
     protected $config;
     
     // array details to validate request parameters
@@ -164,10 +165,10 @@ abstract class AbstractRequest
     /**
      * Object constructor.
      *
-     * @param Logger          $logger
-     * @param Config          $config
-     * @param Curl            $curl
+     * @param Config $config
+     * @param Curl $curl
      * @param ResponseFactory $responseFactory
+     * @param ReaderWriter $readerWriter
      */
     public function __construct(
         Config $config,
@@ -295,12 +296,12 @@ abstract class AbstractRequest
         $params = $this->getParams();
         
         // validate params
-        $this->config->createLog('Try to validate request parameters.');
+        $this->readerWriter->createLog('Try to validate request parameters.');
         
         // directly check the mails
         if (isset($params['billingAddress']['email'])) {
             if (!filter_var($params['billingAddress']['email'], $this->params_validation_email['flag'])) {
-                $this->config->createLog('REST API ERROR: The parameter Billing Address Email is not valid.');
+                $this->readerWriter->createLog('REST API ERROR: The parameter Billing Address Email is not valid.');
                 
                 return [
                     'status' => 'ERROR',
@@ -309,7 +310,7 @@ abstract class AbstractRequest
             }
             
             if (strlen($params['billingAddress']['email']) > $this->params_validation_email['length']) {
-                $this->config->createLog('REST API ERROR: The parameter Billing Address Email must be maximum '
+                $this->readerWriter->createLog('REST API ERROR: The parameter Billing Address Email must be maximum '
                     . $this->params_validation_email['length'] . ' symbols.');
                 
                 return [
@@ -322,7 +323,7 @@ abstract class AbstractRequest
         
         if (isset($params['shippingAddress']['email'])) {
             if (!filter_var($params['shippingAddress']['email'], $this->params_validation_email['flag'])) {
-                $this->config->createLog('REST API ERROR: The parameter Shipping Address Email is not valid.');
+                $this->readerWriter->createLog('REST API ERROR: The parameter Shipping Address Email is not valid.');
                 
                 return [
                     'status' => 'ERROR',
@@ -331,7 +332,7 @@ abstract class AbstractRequest
             }
             
             if (strlen($params['shippingAddress']['email']) > $this->params_validation_email['length']) {
-                $this->config->createLog('REST API ERROR: The parameter Shipping Address Email must be maximum '
+                $this->readerWriter->createLog('REST API ERROR: The parameter Shipping Address Email must be maximum '
                     . $this->params_validation_email['length'] . ' symbols.');
                 
                 return [
@@ -350,7 +351,7 @@ abstract class AbstractRequest
                 if (mb_strlen($val1) > $this->params_validation[$key1]['length']) {
                     $new_val = mb_substr($val1, 0, $this->params_validation[$key1]['length']);
                     
-                    $this->config->createLog($key1, 'Limit');
+                    $this->readerWriter->createLog($key1, 'Limit');
                 }
                 
                 $params[$key1] = str_replace('\\', ' ', filter_var($new_val, $this->params_validation[$key1]['flag']));
@@ -362,7 +363,7 @@ abstract class AbstractRequest
                         if (mb_strlen($val2) > $this->params_validation[$key2]['length']) {
                             $new_val = mb_substr($val2, 0, $this->params_validation[$key2]['length']);
                             
-                            $this->config->createLog($key2, 'Limit');
+                            $this->readerWriter->createLog($key2, 'Limit');
                         }
 
                         $params[$key1][$key2] = str_replace(
@@ -485,7 +486,7 @@ abstract class AbstractRequest
         $resp_body        = json_decode($this->curl->getBody(), true);
         $requestStatus    = $this->getResponseStatus($resp_body);
         
-        $this->config->createLog([
+        $this->readerWriter->createLog([
             'Request Status'    => $requestStatus,
             'Response data'     => $resp_body
         ]);
@@ -498,7 +499,7 @@ abstract class AbstractRequest
         }
         
         if (empty($resp_body['status'])) {
-            $this->config->createLog('Mising response status!');
+            $this->readerWriter->createLog('Mising response status!');
             
             throw new PaymentException(__('Mising response status!'));
         }
@@ -521,14 +522,14 @@ abstract class AbstractRequest
         $subs_data  = [];
         $items      = $quote->getItems();
         
-        $this->config->createLog(count($items), 'order items count');
+        $this->readerWriter->createLog(count($items), 'order items count');
         
         if (is_array($items)) {
             foreach ($items as $item) {
                 $product    = $item->getProduct();
                 $options    = $product->getTypeInstance(true)->getOrderOptions($product);
                 
-                $this->config->createLog($options, '$item $options');
+                $this->readerWriter->createLog($options, '$item $options');
                 
                 $items_data[$item->getId()] = [
                     'quantity'  => $item->getQty(),

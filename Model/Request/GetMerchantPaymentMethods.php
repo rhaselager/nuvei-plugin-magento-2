@@ -28,7 +28,7 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
     protected $store;
     
     private $billing_address;
-    private $cart;
+//    private $cart;
     
     /**
      * @param Logger $logger
@@ -43,7 +43,7 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
         ResponseFactory $responseFactory,
         RequestFactory $requestFactory,
         \Magento\Store\Api\Data\StoreInterface $store,
-        \Magento\Checkout\Model\Cart $cart,
+//        \Magento\Checkout\Model\Cart $cart,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         
@@ -56,7 +56,7 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
 
         $this->requestFactory   = $requestFactory;
         $this->store            = $store;
-        $this->cart             = $cart;
+//        $this->cart             = $cart;
     }
 
     /**
@@ -87,24 +87,24 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
     public function process()
     {
         if (!$this->config->isActive()) {
-            $this->config->createLog('GetMerchantPaymentMethods Error - '
+            $this->readerWriter->createLog('GetMerchantPaymentMethods Error - '
                 . 'Nuvei payments module is not active at the moment!');
             return [];
         }
         if (empty($this->config->getMerchantId())) {
-            $this->config->createLog('GetMerchantPaymentMethods Error - merchantId is empty!');
+            $this->readerWriter->createLog('GetMerchantPaymentMethods Error - merchantId is empty!');
             return [];
         }
         if (empty($this->config->getMerchantSiteId())) {
-            $this->config->createLog('GetMerchantPaymentMethods Error - merchantSiteId is empty!');
+            $this->readerWriter->createLog('GetMerchantPaymentMethods Error - merchantSiteId is empty!');
             return [];
         }
         if (empty($this->config->getMerchantSecretKey())) {
-            $this->config->createLog('GetMerchantPaymentMethods Error - merchant secret key is empty!');
+            $this->readerWriter->createLog('GetMerchantPaymentMethods Error - merchant secret key is empty!');
             return [];
         }
         if (empty($this->config->getHash())) {
-            $this->config->createLog('GetMerchantPaymentMethods Error - merchant hash is empty!');
+            $this->readerWriter->createLog('GetMerchantPaymentMethods Error - merchant hash is empty!');
             return [];
         }
         

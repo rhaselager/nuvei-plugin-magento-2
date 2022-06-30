@@ -40,7 +40,6 @@ abstract class AbstractPayment extends AbstractRequest
     /**
      * AbstractPayment constructor.
      *
-     * @param Logger      $logger
      * @param Config                $config
      * @param Curl                  $curl
      * @param RequestFactory        $requestFactory

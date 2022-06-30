@@ -32,25 +32,24 @@ class GetMerchantPaymentMethods extends AbstractResponse implements ResponseInte
     /**
      * AbstractResponse constructor.
      *
-     * @param Logger $logger
      * @param Config $config
      * @param int $requestId
      * @param Curl $curl
      * @param Resolver $localeResolver
      */
     public function __construct(
-        \Nuvei\Checkout\Model\Logger $logger,
         Config $config,
         $requestId,
         Curl $curl,
         Resolver $localeResolver,
-        \Magento\Framework\View\Asset\Repository $assetRepo
+        \Magento\Framework\View\Asset\Repository $assetRepo,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct(
-            $logger,
             $config,
             $requestId,
-            $curl
+            $curl,
+            $readerWriter
         );
 
         $this->localeResolver   = $localeResolver;

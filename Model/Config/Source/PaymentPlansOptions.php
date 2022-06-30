@@ -7,21 +7,21 @@ class PaymentPlansOptions extends \Magento\Eav\Model\Entity\Attribute\Source\Abs
 //    protected $eavConfig;
     
     private $directory;
-    private $config;
     private $file;
     private $driverManager;
     private $fileSystem;
+    private $readerWriter;
     
     public function __construct(
         \Magento\Framework\Filesystem\DirectoryList $directory,
-        \Nuvei\Checkout\Model\Config $config,
         \Magento\Framework\Filesystem\Io\File $file,
-        \Magento\Framework\Filesystem\DriverInterface $fileSystem
+        \Magento\Framework\Filesystem\DriverInterface $fileSystem,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->directory    = $directory;
-        $this->config       = $config;
         $this->file         = $file;
         $this->fileSystem   = $fileSystem;
+        $this->readerWriter = $readerWriter;
     }
     
     public function getAllOptions()
@@ -50,12 +50,12 @@ class PaymentPlansOptions extends \Magento\Eav\Model\Entity\Attribute\Source\Abs
                     }
                 }
             } catch (Exception $e) {
-                $this->config->createLog($e->getMessage(), 'PaymentPlansOptions Exception');
+                $this->readerWriter->createLog($e->getMessage(), 'PaymentPlansOptions Exception');
             }
         } elseif ($this->file->fileExists($file_name)) {
-            $this->config->createLog('PaymentPlansOptions Error - ' . $file_name . ' exists, but is not readable.');
+            $this->readerWriter->createLog('PaymentPlansOptions Error - ' . $file_name . ' exists, but is not readable.');
         } else {
-            $this->config->createLog('PaymentPlansOption - ' . $file_name . ' does not exists.');
+            $this->readerWriter->createLog('PaymentPlansOption - ' . $file_name . ' does not exists.');
         }
         # json version END
 

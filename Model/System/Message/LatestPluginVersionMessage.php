@@ -19,17 +19,20 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
     private $directory;
     private $modulConfig;
     private $fileSystem;
+    private $readerWriter;
     
     public function __construct(
         \Magento\Framework\Filesystem\DirectoryList $directory,
         \Nuvei\Checkout\Model\Config $modulConfig,
         \Magento\Framework\Filesystem\DriverInterface $fileSystem,
-        \Nuvei\Checkout\Lib\Http\Client\Curl $curl
+        \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->directory    = $directory;
         $this->modulConfig  = $modulConfig;
         $this->fileSystem   = $fileSystem;
         $this->curl         = $curl;
+        $this->readerWriter = $readerWriter;
     }
 
     /**
@@ -50,7 +53,7 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
     public function isDisplayed()
     {
         if ($this->modulConfig->isActive() === false) {
-            $this->modulConfig->createLog('LatestPluginVersionMessage Error - the module is not active.');
+            $this->readerWriter->createLog('LatestPluginVersionMessage Error - the module is not active.');
             return;
         }
         
@@ -69,7 +72,7 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
                 $array  = json_decode($result, true);
 
                 if (empty($array['version'])) {
-                    $this->modulConfig->createLog($result, 'LatestPluginVersionMessage Error - missing version.');
+                    $this->readerWriter->createLog($result, 'LatestPluginVersionMessage Error - missing version.');
                     return;
                 }
 
@@ -77,20 +80,20 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
                 $res            = $this->fileSystem->filePutContents($file, $array['version']);
 
                 if (!$res) {
-                    $this->modulConfig->createLog('LatestPluginVersionMessage Error - file was not created.');
+                    $this->readerWriter->createLog('LatestPluginVersionMessage Error - file was not created.');
                 }
             }
         } catch (Exception $ex) {
-            $this->modulConfig->createLog($ex->getMessage(), 'LatestPluginVersionMessage Exception:');
+            $this->readerWriter->createLog($ex->getMessage(), 'LatestPluginVersionMessage Exception:');
         }
         
         if (!$this->fileSystem->isFile($file) && 0 == $git_version) {
-            $this->modulConfig->createLog('LatestPluginVersionMessage - version file does not exists.');
+            $this->readerWriter->createLog('LatestPluginVersionMessage - version file does not exists.');
             return false;
         }
         
         if (!$this->fileSystem->isReadable($file)) {
-            $this->modulConfig->createLog('LatestPluginVersionMessage Error - '
+            $this->readerWriter->createLog('LatestPluginVersionMessage Error - '
                 . 'version file exists, but is not readable!');
             
             if(0 == $git_version) {

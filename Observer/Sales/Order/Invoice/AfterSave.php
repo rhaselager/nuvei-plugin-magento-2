@@ -7,7 +7,7 @@ use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Event\Observer;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Invoice;
-use Magento\Sales\Model\Order\Payment as OrderPayment;
+//use Magento\Sales\Model\Order\Payment as OrderPayment;
 
 /**
  * Nuvei Checkout sales order invoice after save observer.
@@ -17,24 +17,15 @@ use Magento\Sales\Model\Order\Payment as OrderPayment;
 class AfterSave implements ObserverInterface
 {
     protected $objectManager;
-    protected $jsonResultFactory;
     
-    private $config;
-    private $paymentRequestFactory;
-    private $requestFactory;
+    private $readerWriter;
     
     public function __construct(
-        \Nuvei\Checkout\Model\Config $config,
-        \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
-        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
         \Magento\Framework\ObjectManagerInterface $objectManager,
-        \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
-        $this->config                   = $config;
-        $this->paymentRequestFactory    = $paymentRequestFactory;
-        $this->requestFactory           = $requestFactory;
         $this->objectManager            = $objectManager;
-        $this->jsonResultFactory        = $jsonResultFactory;
+        $this->readerWriter             = $readerWriter;
     }
     
     /**
@@ -49,13 +40,13 @@ class AfterSave implements ObserverInterface
             $invoice = $observer->getInvoice();
             
             if (!is_object($invoice)) {
-                $this->config->createLog('Invoice AfterSave Observer - $invoice is not an object.');
+                $this->readerWriter->createLog('Invoice AfterSave Observer - $invoice is not an object.');
                 return $this;
             }
             
             // if the invoice is Paid, we already made Settle request.
             if (in_array($invoice->getState(), [Invoice::STATE_PAID, Invoice::STATE_CANCELED])) {
-                $this->config->createLog(
+                $this->readerWriter->createLog(
                     $invoice->getId(),
                     'Invoice AfterSave Observer - the invoice already paid or canceled.'
                 );
@@ -67,7 +58,7 @@ class AfterSave implements ObserverInterface
             $order = $invoice->getOrder();
             
             if (!is_object($order)) {
-                $this->config->createLog('Invoice AfterSave Observer - $order is not an object.');
+                $this->readerWriter->createLog('Invoice AfterSave Observer - $order is not an object.');
                 return $this;
             }
 
@@ -75,12 +66,12 @@ class AfterSave implements ObserverInterface
             $payment = $order->getPayment();
             
             if (!is_object($payment)) {
-                $this->config->createLog('Invoice AfterSave Observer - $payment is not an object.');
+                $this->readerWriter->createLog('Invoice AfterSave Observer - $payment is not an object.');
                 return $this;
             }
 
             if ($payment->getMethod() !== Payment::METHOD_CODE) {
-                $this->config->createLog(
+                $this->readerWriter->createLog(
                     $payment->getMethod(),
                     'Invoice AfterSave Observer Error - payment method is'
                 );
@@ -103,12 +94,12 @@ class AfterSave implements ObserverInterface
             foreach ($ord_trans_addit_info as $trans) {
                 if (strtolower($trans[Payment::TRANSACTION_STATUS]) == 'approved') {
                     if (strtolower($trans[Payment::TRANSACTION_TYPE]) == 'sale') {
-                        $this->config->createLog('After Save Invoice observer - Sale');
+                        $this->readerWriter->createLog('After Save Invoice observer - Sale');
                         return $this;
                     }
 
                     if (strtolower($trans[Payment::TRANSACTION_TYPE]) == 'auth') {
-                        $this->config->createLog('After Save Invoice observer - Auth');
+                        $this->readerWriter->createLog('After Save Invoice observer - Auth');
                         $authCode = $trans[Payment::TRANSACTION_AUTH_CODE];
                         break;
                     }
@@ -116,7 +107,7 @@ class AfterSave implements ObserverInterface
             }
             
             if (empty($authCode)) {
-                $this->config->createLog(
+                $this->readerWriter->createLog(
                     $ord_trans_addit_info,
                     'Invoice AfterSave Observer - $authCode is empty.'
                 );
@@ -134,7 +125,7 @@ class AfterSave implements ObserverInterface
                 ->process();
             // Settle request END
         } catch (Exception $e) {
-            $this->config->createLog($e->getMessage(), 'Invoice AfterSave Exception');
+            $this->readerWriter->createLog($e->getMessage(), 'Invoice AfterSave Exception');
         }
         
         return $this;

@@ -2,10 +2,11 @@
 
 ---
 
-# 1.0.1
+# 1.1.0
 ```
     * Removed AbstractApi class.
     * Added new class - ReaderWriter, to create logs and save some plugin help files.
+    * createLog method was moved from Config to ReaderWriter class.
 ```
 
 # 1.0.0

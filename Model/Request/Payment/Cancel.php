@@ -25,22 +25,22 @@ class Cancel extends AbstractPayment implements RequestInterface
      * @param OrderPayment                      $orderPayment
      * @param TransactionRepositoryInterface    $transactionRepository
      * @param Http                              $request
+     * @param ReaderWriter                      $readerWriter
      * @param float                             $amount
      */
     public function __construct(
-        \Nuvei\Checkout\Model\Logger $logger,
         \Nuvei\Checkout\Model\Config $config,
         \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
         \Nuvei\Checkout\Model\Request\Factory $requestFactory,
         \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
         \Nuvei\Checkout\Model\Response\Factory $responseFactory,
         \Magento\Sales\Model\Order\Payment $orderPayment,
-        \Magento\Sales\Api\TransactionRepositoryInterface $transactionRepository,
+//        \Magento\Sales\Api\TransactionRepositoryInterface $transactionRepository,
         \Magento\Framework\App\Request\Http $request,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         $amount = 0.0
     ) {
         parent::__construct(
-            $logger,
             $config,
             $curl,
             $requestFactory,
@@ -50,7 +50,7 @@ class Cancel extends AbstractPayment implements RequestInterface
             $amount
         );
 
-        $this->transactionRepository    = $transactionRepository;
+//        $this->transactionRepository    = $transactionRepository;
         $this->request                  = $request;
     }
     
@@ -120,7 +120,7 @@ class Cancel extends AbstractPayment implements RequestInterface
         }
         
         if (empty($trans_to_void_data)) {
-            $this->config->createLog(
+            $this->readerWriter->createLog(
                 [
                     '$ord_trans_addit_info' => $ord_trans_addit_info,
                     '$trans_to_void_data'    => $trans_to_void_data,
@@ -131,14 +131,14 @@ class Cancel extends AbstractPayment implements RequestInterface
             throw new PaymentException(__('Void Error - Missing mandatory data for the Void.'));
         }
         
-        $this->config->createLog($trans_to_void_data, 'Transaction to Cancel');
+        $this->readerWriter->createLog($trans_to_void_data, 'Transaction to Cancel');
         
         $amount     = (float) $trans_to_void_data[Payment::TRANSACTION_TOTAL_AMOUN];
         $auth_code  = !empty($trans_to_void_data[Payment::TRANSACTION_AUTH_CODE])
             ? $trans_to_void_data[Payment::TRANSACTION_AUTH_CODE] : '';
         
         if (empty($amount) || $amount < 0) {
-            $this->config->createLog(
+            $this->readerWriter->createLog(
                 $trans_to_void_data,
                 'Void error - Transaction does not contain total amount.'
             );

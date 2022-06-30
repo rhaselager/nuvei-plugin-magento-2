@@ -55,25 +55,28 @@ abstract class AbstractResponse
      * @var array
      */
     protected $body;
+    
+    protected $config;
+    protected $readerWriter;
 
     /**
      * AbstractResponse constructor.
      *
-     * @param Logger $logger
      * @param Config $config
-     * @param int    $requestId
-     * @param Curl   $curl
+     * @param int $requestId
+     * @param Curl $curl
+     * @param ReaderWriter $readerWriter
      */
     public function __construct(
-        Logger $logger,
         Config $config,
         $requestId,
-        Curl $curl
+        Curl $curl,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->requestId    = $requestId;
         $this->curl         = $curl;
         $this->config       = $config;
-        $this->logger       = $logger;
+        $this->readerWriter = $readerWriter;
     }
 
     /**
@@ -85,7 +88,7 @@ abstract class AbstractResponse
         $requestStatus    = $this->getRequestStatus();
         $resp_data        = $this->prepareResponseData();
         
-        $this->config->createLog($resp_data['Body'], 'Response data:');
+        $this->readerWriter->createLog($resp_data['Body'], 'Response data:');
 
         if ($requestStatus === false) {
             throw new PaymentException($this->getErrorMessage(
@@ -229,7 +232,7 @@ abstract class AbstractResponse
         $diff = array_diff($requiredKeys, $bodyKeys);
         
         if (!empty($diff)) {
-            $this->config->createLog($diff, 'Mising response parameters:');
+            $this->config->readerWriter($diff, 'Mising response parameters:');
             
             throw new PaymentException(
                 __(

@@ -135,7 +135,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
     protected function getParams()
     {
         if (null === $this->cart || empty($this->cart)) {
-            $this->config->createLog('OpenOrder class Error - mising Cart data.');
+            $this->readerWriter->createLog('OpenOrder class Error - mising Cart data.');
             throw new PaymentException(__('There is no Cart data.'));
         }
         
@@ -273,7 +273,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             
             return $return;
         } catch (Exception $e) {
-            $this->config->createLog($e->getMessage(), 'getOptions() Exception');
+            $this->readerWriter->createLog($e->getMessage(), 'getOptions() Exception');
         }
 
         return $return;

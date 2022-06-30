@@ -10,18 +10,12 @@ use Magento\Framework\App\RequestInterface;
 /**
  * Nuvei Checkout redirect success controller.
  */
-//class Success extends Action
 class Complete extends \Magento\Framework\App\Action\Action implements \Magento\Framework\App\CsrfAwareActionInterface
 {
     /**
-     * @var ModuleConfig
-     */
-    private $moduleConfig;
-
-    /**
      * @var PaymentRequestFactory
      */
-    private $paymentRequestFactory;
+//    private $paymentRequestFactory;
 
     /**
      * @var DataObjectFactory
@@ -42,35 +36,37 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
      * @var Onepage
      */
     private $onepageCheckout;
+    
+    private $readerWriter;
 
     /**
      * Object constructor.
      *
      * @param Context                 $context
      * @param PaymentRequestFactory   $paymentRequestFactory
-     * @param ModuleConfig            $moduleConfig
      * @param DataObjectFactory       $dataObjectFactory
      * @param CartManagementInterface $cartManagement
      * @param CheckoutSession         $checkoutSession
      * @param Onepage                 $onepageCheckout
+     * @param ReaderWriter            $readerWriter
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
-        \Nuvei\Checkout\Model\Config $moduleConfig,
+//        \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
         \Magento\Framework\DataObjectFactory $dataObjectFactory,
         \Magento\Quote\Api\CartManagementInterface $cartManagement,
         \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Checkout\Model\Type\Onepage $onepageCheckout
+        \Magento\Checkout\Model\Type\Onepage $onepageCheckout,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct($context);
 
-        $this->moduleConfig             = $moduleConfig;
-        $this->paymentRequestFactory    = $paymentRequestFactory;
+//        $this->paymentRequestFactory    = $paymentRequestFactory;
         $this->dataObjectFactory        = $dataObjectFactory;
         $this->cartManagement           = $cartManagement;
         $this->checkoutSession          = $checkoutSession;
         $this->onepageCheckout          = $onepageCheckout;
+        $this->readerWriter             = $readerWriter;
     }
     
     /**
@@ -98,21 +94,21 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
     public function execute()
     {
         $params = $this->getRequest()->getParams();
-        $this->moduleConfig->createLog($params, 'Success params:');
+        $this->readerWriter->createLog($params, 'Success params:');
         
         $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
         $form_key       = filter_input(INPUT_GET, 'form_key');
 
         try {
 //                $reservedOrderId = $this->checkoutSession->getQuote()->getReservedOrderId();
-//                $this->moduleConfig->createLog($reservedOrderId, '$reservedOrderId');
+//                $this->readerWriter->createLog($reservedOrderId, '$reservedOrderId');
                 
             if ((int) $this->checkoutSession->getQuote()->getIsActive() === 1) {
                 // if the option for save the order in the Redirect is ON, skip placeOrder !!!
                 $result = $this->placeOrder();
                 
                 if ($result->getSuccess() !== true) {
-                    $this->moduleConfig->createLog(
+                    $this->readerWriter->createLog(
                         $result->getMessage(),
                         'Complete Callback error - place order error',
                         'WARN'
@@ -121,7 +117,7 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
                     throw new PaymentException(__($result->getMessage()));
                 }
             } else {
-                $this->moduleConfig->createLog('Attention - the Quote is not active! '
+                $this->readerWriter->createLog('Attention - the Quote is not active! '
                     . 'The Order can not be created here. May be it is already placed.');
             }
             
@@ -131,7 +127,7 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
                 throw new PaymentException(__('Your payment failed.'));
             }
         } catch (PaymentException $e) {
-            $this->moduleConfig->createLog($e->getMessage(), 'Complete Callback Process Error:');
+            $this->readerWriter->createLog($e->getMessage(), 'Complete Callback Process Error:');
             $this->messageManager->addErrorMessage($e->getMessage());
             
             $resultRedirect->setUrl(
@@ -178,7 +174,7 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
                 ]
             );
         } catch (\Exception $exception) {
-            $this->moduleConfig->createLog(
+            $this->readerWriter->createLog(
                 $exception->getMessage(),
                 'Success Callback Response Exception',
                 'WARN'
@@ -208,7 +204,7 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
             return $quoteId;
         }
         
-        $this->moduleConfig->createLog('Success error: Session has expired, order has been not placed.');
+        $this->readerWriter->createLog('Success error: Session has expired, order has been not placed.');
 
         throw new PaymentException(
             __('Session has expired, order has been not placed.')

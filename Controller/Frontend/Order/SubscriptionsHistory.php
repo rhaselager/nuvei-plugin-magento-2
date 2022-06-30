@@ -13,13 +13,14 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
     
     private $httpRequest;
     private $jsonResultFactory;
-    private $productRepository;
+//    private $productRepository;
     private $request;
-    private $configurable;
+//    private $configurable;
     private $helper;
     private $eavAttribute;
     private $config;
     private $zendUri;
+    private $readerWriter;
 
     /**
      * @param Context $context
@@ -30,24 +31,26 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
         \Magento\Framework\View\Result\PageFactory $resultPageFactory,
         \Magento\Framework\App\Request\Http $httpRequest,
         \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory,
-        \Magento\Catalog\Model\ProductRepository $productRepository,
+//        \Magento\Catalog\Model\ProductRepository $productRepository,
         \Magento\Framework\App\RequestInterface $request,
-        \Magento\ConfigurableProduct\Model\Product\Type\Configurable $configurable,
+//        \Magento\ConfigurableProduct\Model\Product\Type\Configurable $configurable,
         \Magento\Framework\Pricing\Helper\Data $helper,
         \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute,
         Config $config,
-        \Zend\Uri\Uri $zendUri
+        \Zend\Uri\Uri $zendUri,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->resultPageFactory    = $resultPageFactory;
         $this->httpRequest          = $httpRequest;
         $this->jsonResultFactory    = $jsonResultFactory;
-        $this->productRepository    = $productRepository;
+        //$this->productRepository    = $productRepository;
         $this->request              = $request;
-        $this->configurable         = $configurable;
+//        $this->configurable         = $configurable;
         $this->helper               = $helper;
         $this->eavAttribute         = $eavAttribute;
         $this->config               = $config;
         $this->zendUri              = $zendUri;
+        $this->readerWriter         = $readerWriter;
         
         parent::__construct($context);
     }
@@ -108,7 +111,7 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
             $hash_params    = [];
             $prod_options   = []; // the final array to pass
 
-            $this->config->createLog($params, 'SubscriptionsHistory $params');
+            $this->readerWriter->createLog($params, 'SubscriptionsHistory $params');
             
             if (empty($params)
                 || empty($params['prodId'])
@@ -119,7 +122,6 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
             }
             
             if (is_string($params['params'])) {
-//                parse_str($params['params'], $hash_params);
                 $this->zendUri->setQuery($params['params']);
                 $hash_params = $this->zendUri->getQueryAsArray();
             } else {
@@ -143,7 +145,7 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
                 $attributeId = $this->eavAttribute->getIdByCode('catalog_product', $key);
                 
                 if (!$attributeId) {
-                    $this->config->createLog($attributeId, 'SubscriptionsHistory Error - attribute ID must be int.');
+                    $this->readerWriter->createLog($attributeId, 'SubscriptionsHistory Error - attribute ID must be int.');
                     continue;
                 }
                 
@@ -216,7 +218,7 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
                 ),
             ];
         } catch (Exception $e) {
-            $this->config->createLog($e->getMessage(), 'SubscriptionsHistory getProductDetails() Exception:');
+            $this->readerWriter->createLog($e->getMessage(), 'SubscriptionsHistory getProductDetails() Exception:');
             return [];
         }
     }

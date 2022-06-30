@@ -24,6 +24,8 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
      * @var RequestFactory
      */
     private $requestFactory;
+    
+    private $readerWriter;
 
     /**
      * Redirect constructor.
@@ -31,18 +33,21 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
      * @param Context            $context
      * @param ModuleConfig       $moduleConfig
      * @param RequestFactory     $requestFactory
+     * @param ReaderWriter      $readerWriter
      */
     public function __construct(
         Context $context,
         ModuleConfig $moduleConfig,
-        RequestFactory $requestFactory
+        RequestFactory $requestFactory,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct($context);
 
         $this->moduleConfig     = $moduleConfig;
         $this->requestFactory   = $requestFactory;
+        $this->readerWriter     = $readerWriter;
         
-        $this->moduleConfig->createLog('GetMerchantPaymentMethods()');
+        $this->readerWriter->createLog('GetMerchantPaymentMethods()');
     }
 
     /**
@@ -51,7 +56,7 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
     public function execute()
     {
         if (!$this->moduleConfig->isActive()) {
-            $this->moduleConfig->createLog('GetMerchantPaymentMethods error - '
+            $this->readerWriter->createLog('GetMerchantPaymentMethods error - '
                 . 'Nuvei checkout module is not active at the moment!');
             
             return [];
@@ -61,7 +66,7 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
             || empty($this->moduleConfig->getMerchantSiteId())
             || empty($this->moduleConfig->getMerchantSecretKey())
         ) {
-            $this->moduleConfig->createLog('Missing mandatory merchant data.');
+            $this->readerWriter->createLog('Missing mandatory merchant data.');
             
             return [];
         }
@@ -112,7 +117,7 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
             
             return $apmMethods->getPaymentMethods();
         } catch (Exception $e) {
-            $this->moduleConfig->createLog($e->getMessage(), 'Get APMs exception');
+            $this->readerWriter->createLog($e->getMessage(), 'Get APMs exception');
             return [];
         }
     }
@@ -120,7 +125,7 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
     public function toOptionArray(): array
     {
         $pms = $this->execute();
-//        $this->moduleConfig->createLog($pms);
+//        $this->readerWriter->createLog($pms);
         return $pms;
     }
 }

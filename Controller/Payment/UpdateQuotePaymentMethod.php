@@ -22,6 +22,8 @@ class UpdateQuotePaymentMethod extends Action
      * @var JsonFactory
      */
     private $jsonResultFactory;
+    
+    private $readerWriter;
 
     /**
      * Redirect constructor.
@@ -33,12 +35,14 @@ class UpdateQuotePaymentMethod extends Action
     public function __construct(
         Context $context,
         ModuleConfig $moduleConfig,
-        JsonFactory $jsonResultFactory
+        JsonFactory $jsonResultFactory,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct($context);
 
         $this->moduleConfig         = $moduleConfig;
         $this->jsonResultFactory    = $jsonResultFactory;
+        $this->readerWriter         = $readerWriter;
     }
 
     /**
@@ -46,12 +50,11 @@ class UpdateQuotePaymentMethod extends Action
      */
     public function execute()
     {
-        $result = $this
-            ->jsonResultFactory
+        $result = $this->jsonResultFactory
             ->create()
             ->setHttpResponseCode(\Magento\Framework\Webapi\Response::HTTP_OK);
         
-        $this->moduleConfig->createLog(
+        $this->readerWriter->createLog(
             $this->getRequest()->getParam('paymentMethod'),
             'Class UpdateQuotePaymentMethod'
         );

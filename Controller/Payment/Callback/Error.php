@@ -11,24 +11,21 @@ use Magento\Framework\App\RequestInterface;
  */
 class Error extends \Magento\Framework\App\Action\Action implements \Magento\Framework\App\CsrfAwareActionInterface
 {
-    /**
-     * @var ModuleConfig
-     */
-    private $moduleConfig;
+    private $readerWriter;
 
     /**
      * Error constructor.
      *
      * @param Context          $context
-     * @param ModuleConfig     $moduleConfig
+     * @param ReaderWriter     $readerWriter
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Nuvei\Checkout\Model\Config $moduleConfig
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct($context);
 
-        $this->moduleConfig = $moduleConfig;
+        $this->readerWriter = $readerWriter;
     }
     
     /**
@@ -57,7 +54,7 @@ class Error extends \Magento\Framework\App\Action\Action implements \Magento\Fra
     {
         $params = $this->getRequest()->getParams();
 
-        $this->moduleConfig->createLog($params, 'Error Callback Response: ');
+        $this->readerWriter->createLog($params, 'Error Callback Response: ');
         $this->messageManager->addErrorMessage(
             __('Your payment failed.')
         );

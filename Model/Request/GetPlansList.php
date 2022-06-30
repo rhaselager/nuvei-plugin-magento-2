@@ -35,7 +35,7 @@ class GetPlansList extends AbstractRequest implements RequestInterface
     {
         $plans = $this->sendRequest(true);
         
-        $this->config->createLog($plans, 'Get Plans response');
+        $this->readerWriter->createLog($plans, 'Get Plans response');
         
         // there are no active plans, we must create at least one active
         if (!isset($plans['plans']) || !isset($plans['total']) || 0 == $plans['total']) {
@@ -95,7 +95,7 @@ class GetPlansList extends AbstractRequest implements RequestInterface
             if (empty($plans['status']) || $plans['status'] != 'SUCCESS'
                 || empty($plans['total']) || (int) $plans['total'] < 1
             ) {
-                $this->config->createLog('GetPlansList error - status error or missing plans. '
+                $this->readerWriter->createLog('GetPlansList error - status error or missing plans. '
                     . 'Check the response above!');
                 return false;
             }
@@ -105,7 +105,7 @@ class GetPlansList extends AbstractRequest implements RequestInterface
                 json_encode($plans)
             );
         } catch (Exception $e) {
-            $this->config->createLog($e->getMessage(), 'GetPlansList Exception');
+            $this->readerWriter->createLog($e->getMessage(), 'GetPlansList Exception');
             
             return false;
         }

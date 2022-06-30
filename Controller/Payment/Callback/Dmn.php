@@ -23,7 +23,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
     /**
      * @var CaptureCommand
      */
-    private $captureCommand;
+//    private $captureCommand;
 
     /**
      * @var DataObjectFactory
@@ -51,6 +51,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
     private $orderResourceModel;
     private $requestFactory;
     private $httpRequest;
+    private $readerWriter;
     
     // variables for the DMN process
     private $order;
@@ -69,7 +70,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Nuvei\Checkout\Model\Config $moduleConfig,
-        \Magento\Sales\Model\Order\Payment\State\CaptureCommand $captureCommand,
+//        \Magento\Sales\Model\Order\Payment\State\CaptureCommand $captureCommand,
         \Magento\Framework\DataObjectFactory $dataObjectFactory,
         \Magento\Quote\Api\CartManagementInterface $cartManagement,
         \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory,
@@ -85,10 +86,11 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         \Magento\Sales\Model\ResourceModel\Order $orderResourceModel,
         \Nuvei\Checkout\Model\Request\Factory $requestFactory,
         \Magento\Framework\App\Request\Http $httpRequest,
-        \Nuvei\Checkout\Model\Payment $paymentModel
+        \Nuvei\Checkout\Model\Payment $paymentModel,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->moduleConfig             = $moduleConfig;
-        $this->captureCommand           = $captureCommand;
+//        $this->captureCommand           = $captureCommand;
         $this->dataObjectFactory        = $dataObjectFactory;
         $this->cartManagement           = $cartManagement;
         $this->jsonResultFactory        = $jsonResultFactory;
@@ -105,6 +107,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         $this->requestFactory           = $requestFactory;
         $this->httpRequest              = $httpRequest;
         $this->paymentModel             = $paymentModel;
+        $this->readerWriter             = $readerWriter;
         
         parent::__construct($context);
     }
@@ -145,7 +148,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                 $this->request->getPostValue()
             );
             
-            $this->moduleConfig->createLog($params, 'DMN params:');
+            $this->readerWriter->createLog($params, 'DMN params:');
             
             if (!empty($params['type']) && 'CARD_TOKENIZATION' == $params['type']) {
                 $this->jsonOutput->setData('DMN report - this is Card Tokenization DMN.');
@@ -154,7 +157,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             
             ### DEBUG
 //            $this->jsonOutput->setData('DMN manually stopped.');
-//            $this->moduleConfig->createLog(http_build_query($params), 'DMN params string:');
+//            $this->readerWriter->createLog(http_build_query($params), 'DMN params string:');
 //            return $this->jsonOutput;
             ### DEBUG
             
@@ -184,7 +187,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                     $orderIncrementId = $clientRequestId_arr[1];
                 }
             } else {
-                $this->moduleConfig->createLog('DMN error - no Order ID parameter.');
+                $this->readerWriter->createLog('DMN error - no Order ID parameter.');
                 
                 $this->jsonOutput->setData('DMN error - no Order ID parameter.');
                 return $this->jsonOutput;
@@ -220,7 +223,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             // last saved Additional Info for the transaction
             $ord_trans_addit_info = $this->orderPayment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
             
-            $this->moduleConfig->createLog($ord_trans_addit_info, 'DMN $ord_trans_addit_info');
+            $this->readerWriter->createLog($ord_trans_addit_info, 'DMN $ord_trans_addit_info');
             
             if (empty($ord_trans_addit_info) || !is_array($ord_trans_addit_info)) {
                 $ord_trans_addit_info = [];
@@ -284,14 +287,14 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             # check for Subscription State DMN END
             
             if (empty($params['transactionType'])) {
-                $this->moduleConfig->createLog('DMN error - missing Transaction Type.');
+                $this->readerWriter->createLog('DMN error - missing Transaction Type.');
                 
                 $this->jsonOutput->setData('DMN error - missing Transaction Type.');
                 return $this->jsonOutput;
             }
             
             if (empty($params['TransactionID'])) {
-                $this->moduleConfig->createLog('DMN error - missing Transaction ID.');
+                $this->readerWriter->createLog('DMN error - missing Transaction ID.');
                 
                 $this->jsonOutput->setData('DMN error - missing Transaction ID.');
                 return $this->jsonOutput;
@@ -314,7 +317,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                 
                 $this->orderResourceModel->save($this->order);
 
-                $this->moduleConfig->createLog('DMN process end for order #' . $orderIncrementId);
+                $this->readerWriter->createLog('DMN process end for order #' . $orderIncrementId);
                 $this->jsonOutput->setData('DMN process end for order #' . $orderIncrementId);
 
                 return $this->jsonOutput;
@@ -331,7 +334,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                     . $params['Status'] . '", for Transaction type '. $order_tr_type
                     .'. Do not apply DMN data on the Order!';
                 
-                $this->moduleConfig->createLog($msg);
+                $this->readerWriter->createLog($msg);
                 $this->jsonOutput->setData($msg);
                 
                 return $this->jsonOutput;
@@ -349,7 +352,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             ) {
                 $msg = 'Duplicated Sale DMN. Stop DMN process!';
                 
-                $this->moduleConfig->createLog($msg);
+                $this->readerWriter->createLog($msg);
                 $this->jsonOutput->setData($msg);
                 
                 return $this->jsonOutput;
@@ -363,7 +366,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             ) {
                 $msg = 'No more actions are allowed for order #' . $this->order->getId();
                 
-                $this->moduleConfig->createLog($msg);
+                $this->readerWriter->createLog($msg);
                 $this->jsonOutput->setData($msg);
                 
                 return $this->jsonOutput;
@@ -376,7 +379,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             ) {
                 $msg = 'No more actions are allowed for order #' . $this->order->getId();
                 
-                $this->moduleConfig->createLog($msg);
+                $this->readerWriter->createLog($msg);
                 $this->jsonOutput->setData($msg);
                 
                 return $this->jsonOutput;
@@ -385,7 +388,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             if ($tr_type_param === 'auth' && strtolower($order_tr_type) === 'settle') {
                 $msg = 'Can not set Auth to Settled Order #' . $this->order->getId();
                 
-                $this->moduleConfig->createLog($msg);
+                $this->readerWriter->createLog($msg);
                 $this->jsonOutput->setData($msg);
                 
                 return $this->jsonOutput;
@@ -449,7 +452,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                     // mark the Order Invoice as Canceld
                     $invCollection = $this->order->getInvoiceCollection();
                     
-                    $this->moduleConfig->createLog(
+                    $this->readerWriter->createLog(
                         [
                             'invoice_id'        => $this->curr_trans_info['invoice_id'],
                             '$invCollection'    => count($invCollection)
@@ -459,10 +462,10 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                     
                     if (!empty($invCollection)) {
                         foreach ($invCollection as $invoice) {
-                            $this->moduleConfig->createLog($invoice->getId(), 'Invoice');
+                            $this->readerWriter->createLog($invoice->getId(), 'Invoice');
                             
                             if ($invoice->getId() == $this->curr_trans_info['invoice_id']) {
-                                $this->moduleConfig->createLog($invoice->getId(), 'Invoice to be Canceld');
+                                $this->readerWriter->createLog($invoice->getId(), 'Invoice to be Canceld');
                                 
                                 $invoice->setState(Invoice::STATE_CANCELED);
                                 $this->invoiceRepository->save($invoice);
@@ -530,7 +533,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                     . __('Reason: ') . $params['ExErrCode'] . '.'
                 );
             } else { // UNKNOWN DMN
-                $this->moduleConfig->createLog('DMN for Order #' . $orderIncrementId . ' was not recognized.');
+                $this->readerWriter->createLog('DMN for Order #' . $orderIncrementId . ' was not recognized.');
                 $this->jsonOutput->setData('DMN for Order #' . $orderIncrementId . ' was not recognized.');
             }
             
@@ -542,7 +545,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             
             $this->orderResourceModel->save($this->order);
             
-            $this->moduleConfig->createLog('DMN process end for order #' . $orderIncrementId);
+            $this->readerWriter->createLog('DMN process end for order #' . $orderIncrementId);
             $this->jsonOutput->setData('DMN process end for order #' . $orderIncrementId);
             
             # try to create Subscription plans
@@ -550,7 +553,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         } catch (Exception $e) {
             $msg = $e->getMessage();
 
-            $this->moduleConfig->createLog(
+            $this->readerWriter->createLog(
                 $msg . "\n\r" . $e->getTraceAsString(),
                 'DMN Excception:'
             );
@@ -623,7 +626,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
      */
     private function processSaleAndSettleDMN($params, $order_total, $dmn_total, $tr_type_param, $last_tr_record)
     {
-        $this->moduleConfig->createLog('processSaleAndSettleDMN()');
+        $this->readerWriter->createLog('processSaleAndSettleDMN()');
         
         $this->sc_transaction_type  = Payment::SC_SETTLED;
         $invCollection              = $this->order->getInvoiceCollection();
@@ -672,14 +675,14 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
 
         // there are invoices
         if (count($invCollection) > 0 && !$is_cpanel_settle) {
-            $this->moduleConfig->createLog('There are Invoices');
+            $this->readerWriter->createLog('There are Invoices');
             
             foreach ($this->order->getInvoiceCollection() as $invoice) {
                 // Settle
                 if ($dmn_inv_id == $invoice->getId()) {
                     $this->curr_trans_info['invoice_id'] = $invoice->getId();
 
-                    $this->moduleConfig->createLog([
+                    $this->readerWriter->createLog([
                         '$dmn_inv_id' => $dmn_inv_id,
                         '$invoice->getId()' => $invoice->getId()
                     ]);
@@ -701,11 +704,11 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         
         // Force Invoice creation when we have CPanel Partial Settle
         if (!$this->order->canInvoice() && !$is_cpanel_settle) {
-            $this->moduleConfig->createLog('We can NOT create invoice.');
+            $this->readerWriter->createLog('We can NOT create invoice.');
             return;
         }
         
-        $this->moduleConfig->createLog('There are no Invoices');
+        $this->readerWriter->createLog('There are no Invoices');
         
         // there are not invoices, but we can create
         if (
@@ -720,7 +723,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                 || $is_cpanel_settle
             )
         ) {
-            $this->moduleConfig->createLog('We can create Invoice');
+            $this->readerWriter->createLog('We can create Invoice');
             
             $this->orderPayment
                 ->setIsTransactionPending(0)
@@ -786,7 +789,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         
         // there are invoices
         if (count($invCollection) > 0) {
-            $this->moduleConfig->createLog(count($invCollection), 'The Invoices count is');
+            $this->readerWriter->createLog(count($invCollection), 'The Invoices count is');
 
             foreach ($this->order->getInvoiceCollection() as $invoice) {
                 // Sale
@@ -831,7 +834,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             return false;
         }
         
-        $this->moduleConfig->createLog('processSubscrDmn()');
+        $this->readerWriter->createLog('processSubscrDmn()');
         
         if ('active' == strtolower($params['subscriptionState'])) {
             $this->order->addStatusHistoryComment(
@@ -842,7 +845,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             // Save the Subscription ID
             foreach (array_reverse($ord_trans_addit_info) as $key => $data) {
                 if (!in_array(strtolower($data['transaction_type']), ['sale', 'settle', 'auth'])) {
-                    $this->moduleConfig->createLog($data['transaction_type'], 'processSubscrDmn() active continue');
+                    $this->readerWriter->createLog($data['transaction_type'], 'processSubscrDmn() active continue');
                     continue;
                 }
 
@@ -889,7 +892,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         $this->orderPayment->save();
         $this->orderResourceModel->save($this->order);
 
-        $this->moduleConfig->createLog($ord_trans_addit_info, 'Process Subscr DMN ends for order #' . $orderIncrementId);
+        $this->readerWriter->createLog($ord_trans_addit_info, 'Process Subscr DMN ends for order #' . $orderIncrementId);
         return 'Process Subscr DMN ends for order #' . $orderIncrementId;
     }
 
@@ -900,7 +903,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
      */
     private function placeOrder($params)
     {
-        $this->moduleConfig->createLog($params['quote'], 'PlaceOrder() quote');
+        $this->readerWriter->createLog($params['quote'], 'PlaceOrder() quote');
         
         $result = $this->dataObjectFactory->create();
         
@@ -914,7 +917,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             $quote = $this->quoteFactory->create()->loadByIdWithoutStore((int) $params['quote']);
             
             if (!is_object($quote)) {
-                $this->moduleConfig->createLog($quote, 'placeOrder error - the quote is not an object.');
+                $this->readerWriter->createLog($quote, 'placeOrder error - the quote is not an object.');
 
                 return $result
                     ->setData('error', true)
@@ -923,7 +926,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             
             $method = $quote->getPayment()->getMethod();
             
-            $this->moduleConfig->createLog(
+            $this->readerWriter->createLog(
                 [
                     'quote payment Method'  => $method,
                     'quote id'              => $quote->getEntityId(),
@@ -934,7 +937,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             );
 
             if ((int) $quote->getIsActive() == 0) {
-                $this->moduleConfig->createLog($quote->getQuoteId(), 'Quote ID');
+                $this->readerWriter->createLog($quote->getQuoteId(), 'Quote ID');
 
                 return $result
                     ->setData('error', true)
@@ -966,7 +969,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                 ]
             );
         } catch (Exception $exception) {
-            $this->moduleConfig->createLog($exception->getMessage(), 'DMN placeOrder Exception: ');
+            $this->readerWriter->createLog($exception->getMessage(), 'DMN placeOrder Exception: ');
             
             return $result
                 ->setData('error', true)
@@ -989,7 +992,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         if (empty($params["advanceResponseChecksum"]) && empty($params['responsechecksum'])) {
             $msg = 'Required keys advanceResponseChecksum and responsechecksum for checksum calculation are missing.';
             
-            $this->moduleConfig->createLog($msg);
+            $this->readerWriter->createLog($msg);
             return $msg;
         }
         
@@ -1002,7 +1005,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                 if (!isset($params[$checksumKey])) {
                     $msg = 'Required key '. $checksumKey .' for checksum calculation is missing.';
                     
-                    $this->moduleConfig->createLog($msg);
+                    $this->readerWriter->createLog($msg);
                     return $msg;
                 }
 
@@ -1025,7 +1028,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                         . ' ' . __('Transaction type ') . $params['type']);
                 }
                 
-                $this->moduleConfig->createLog($msg);
+                $this->readerWriter->createLog($msg);
                 return $msg;
             }
 
@@ -1041,7 +1044,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         if (empty($concat)) {
             $msg = 'Checksum string before hash is empty for Order #' . $orderIncrementId;
 
-            $this->moduleConfig->createLog($msg);
+            $this->readerWriter->createLog($msg);
             return $msg;
         }
         
@@ -1056,7 +1059,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                     . ' ' . __('Transaction type ') . $params['type']);
             }
             
-            $this->moduleConfig->createLog([$concat, $checksum], $msg);
+            $this->readerWriter->createLog([$concat, $checksum], $msg);
             return $msg;
         }
         
@@ -1075,7 +1078,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
     
     private function createSubscription($params, $last_record, $orderIncrementId)
     {
-        $this->moduleConfig->createLog($this->start_subscr, 'createSubscription()');
+        $this->readerWriter->createLog($this->start_subscr, 'createSubscription()');
         
         // no need to create a Subscription
         if (!$this->start_subscr) {
@@ -1114,7 +1117,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
 
         // Error - missing Subscription details
         if (empty($subsc_data) || 0 == $subscr_count) {
-            $this->moduleConfig->createLog(
+            $this->readerWriter->createLog(
                 [
                     'subsc_data'    => $subsc_data,
                     'subscr_count'  => $subscr_count,
@@ -1161,7 +1164,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                 $this->order->addStatusHistoryComment($msg, $this->sc_transaction_type);
                 $this->orderResourceModel->save($this->order);
             } catch (PaymentException $e) {
-                $this->moduleConfig->createLog('createSubscription - Error: ' . $e->getMessage());
+                $this->readerWriter->createLog('createSubscription - Error: ' . $e->getMessage());
             }
             
             $subscr_count--;
@@ -1201,7 +1204,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             $orderList = $this->orderRepo->getList($searchCriteria)->getItems();
 
             if (!$orderList || empty($orderList)) {
-                $this->moduleConfig->createLog('DMN try ' . $tryouts
+                $this->readerWriter->createLog('DMN try ' . $tryouts
                     . ' there is NO order for TransactionID ' . $params['TransactionID'] . ' yet.');
                 sleep(3);
             }
@@ -1214,28 +1217,28 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             if (in_array(strtolower($params['transactionType']), ['sale', 'auth'])
                 && strtolower($params['Status']) != 'approved'
             ) {
-                $this->moduleConfig->createLog('The Order '. $orderIncrementId .' is not approved, stop process.');
+                $this->readerWriter->createLog('The Order '. $orderIncrementId .' is not approved, stop process.');
                 
                 return 'getOrCreateOrder() error - The Order ' . $orderIncrementId .' is not approved, stop process.';
             }
             
-            $this->moduleConfig->createLog('Order '. $orderIncrementId .' not found, try to create it!');
+            $this->readerWriter->createLog('Order '. $orderIncrementId .' not found, try to create it!');
 
             $result = $this->placeOrder($params);
 
             if ($result->getSuccess() !== true) {
-                $this->moduleConfig->createLog('DMN Callback error - place order error: ' . $result->getMessage());
+                $this->readerWriter->createLog('DMN Callback error - place order error: ' . $result->getMessage());
 
                 return 'DMN Callback error - place order error: ' . $result->getMessage();
             }
 
             $orderList = $this->orderRepo->getList($searchCriteria)->getItems();
 
-            $this->moduleConfig->createLog('An Order with ID '. $orderIncrementId .' was created in the DMN page.');
+            $this->readerWriter->createLog('An Order with ID '. $orderIncrementId .' was created in the DMN page.');
         }
         
         if (!$orderList || empty($orderList)) {
-            $this->moduleConfig->createLog(
+            $this->readerWriter->createLog(
                 'DMN Callback error - there is no Order and the code did not success to create it.'
             );
             
@@ -1246,7 +1249,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         $this->order = current($orderList);
         
         if (null === $this->order) {
-            $this->moduleConfig->createLog($orderList, 'DMN error - Order object is null.');
+            $this->readerWriter->createLog($orderList, 'DMN error - Order object is null.');
 
             return 'DMN error - Order object is null.';
         }
@@ -1254,7 +1257,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         $this->orderPayment = $this->order->getPayment();
         
         if (null === $this->orderPayment) {
-            $this->moduleConfig->createLog('DMN error - Order Payment object is null.');
+            $this->readerWriter->createLog('DMN error - Order Payment object is null.');
 
             return 'DMN error - Order Payment object is null.';
         }
@@ -1263,7 +1266,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         $method = $this->orderPayment->getMethod();
 
         if ('nuvei' != $method) {
-            $this->moduleConfig->createLog(
+            $this->readerWriter->createLog(
                 [
                     'orderIncrementId' => $orderIncrementId,
                     'module' => $method,

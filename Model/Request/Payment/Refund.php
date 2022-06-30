@@ -18,7 +18,7 @@ class Refund extends AbstractPayment implements RequestInterface
     /**
      * @var TransactionRepositoryInterface
      */
-    private $transactionRepository;
+//    private $transactionRepository;
     private $request;
 
     /**
@@ -35,29 +35,29 @@ class Refund extends AbstractPayment implements RequestInterface
      * @param float                             $amount
      */
     public function __construct(
-        \Nuvei\Checkout\Model\Logger $logger,
         \Nuvei\Checkout\Model\Config $config,
         \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
         \Nuvei\Checkout\Model\Request\Factory $requestFactory,
         \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
         \Nuvei\Checkout\Model\Response\Factory $responseFactory,
         \Magento\Sales\Model\Order\Payment $orderPayment,
-        \Magento\Sales\Api\TransactionRepositoryInterface $transactionRepository,
+//        \Magento\Sales\Api\TransactionRepositoryInterface $transactionRepository,
         \Magento\Framework\App\Request\Http $request,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         $amount = 0.0
     ) {
         parent::__construct(
-            $logger,
             $config,
             $curl,
             $requestFactory,
             $paymentRequestFactory,
             $responseFactory,
             $orderPayment,
+            $readerWriter,
             $amount
         );
 
-        $this->transactionRepository    = $transactionRepository;
+//        $this->transactionRepository    = $transactionRepository;
         $this->request                  = $request;
     }
 
@@ -117,7 +117,7 @@ class Refund extends AbstractPayment implements RequestInterface
         }
         
         if (empty($trans_to_refund_data[Payment::TRANSACTION_ID])) {
-            $this->config->createLog(
+            $this->readerWriter->createLog(
                 [
                     '$ord_trans_addit_info' => $ord_trans_addit_info,
                     '$trans_to_refund_data' =>$trans_to_refund_data
@@ -133,7 +133,7 @@ class Refund extends AbstractPayment implements RequestInterface
         ) {
             $msg = 'Refund Error - CC Transaction does not contain authorization code.';
             
-            $this->config->createLog($trans_to_refund_data, $msg);
+            $this->readerWriter->createLog($trans_to_refund_data, $msg);
             
             throw new PaymentException(__($msg));
         }

@@ -92,7 +92,7 @@ class Settle extends AbstractPayment implements ResponseInterface
                 );
             }
         } catch (Exception $ex) {
-            $this->config->createLog($ex->getMessage(), 'updateTransaction exception:');
+            $this->readerWriter->createLog($ex->getMessage(), 'updateTransaction exception:');
         }
 
         $this->orderPayment

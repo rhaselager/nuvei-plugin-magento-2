@@ -19,7 +19,7 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
     /**
      * @var RequestFactory
      */
-    protected $requestFactory;
+//    protected $requestFactory;
 
     /**
      * @var array
@@ -38,7 +38,7 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
         Config $config,
         Curl $curl,
         ResponseFactory $responseFactory,
-        RequestFactory $requestFactory,
+//        RequestFactory $requestFactory,
         \Magento\Checkout\Model\Cart $cart,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
@@ -49,7 +49,7 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
             $readerWriter
         );
 
-        $this->requestFactory   = $requestFactory;
+//        $this->requestFactory   = $requestFactory;
         $this->cart             = $cart;
     }
 
