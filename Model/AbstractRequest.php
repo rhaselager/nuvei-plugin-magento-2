@@ -11,7 +11,6 @@ use Nuvei\Checkout\Model\Response\Factory as ResponseFactory;
 /**
  * Nuvei Checkout abstract request model.
  */
-//abstract class AbstractRequest extends AbstractApi
 abstract class AbstractRequest
 {
     /**
@@ -50,6 +49,9 @@ abstract class AbstractRequest
      * @var int
      */
     protected $requestId;
+    
+    protected $readerWriter;
+    protected $config;
     
     // array details to validate request parameters
     private $params_validation = [
@@ -168,17 +170,15 @@ abstract class AbstractRequest
      * @param ResponseFactory $responseFactory
      */
     public function __construct(
-        Logger $logger,
         Config $config,
         Curl $curl,
-        ResponseFactory $responseFactory
+        ResponseFactory $responseFactory,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
-        //parent::__construct($logger, $config);
-
         $this->curl             = $curl;
         $this->config           = $config;
         $this->responseFactory  = $responseFactory;
-        $this->logger           = $logger;
+        $this->readerWriter     = $readerWriter;
     }
 
     /**
@@ -210,13 +210,13 @@ abstract class AbstractRequest
     protected function initRequest()
     {
         if ($this->requestId === null) {
-            $requestLog = $this->logger->createRequest(
-                [
-                    'request' => [
-                        'Type' => 'POST',
-                    ],
-                ]
-            );
+//            $requestLog = $this->logger->createRequest(
+//                [
+//                    'request' => [
+//                        'Type' => 'POST',
+//                    ],
+//                ]
+//            );
             $this->requestId = $requestLog->getId();
         }
     }
@@ -441,7 +441,7 @@ abstract class AbstractRequest
 
         $this->curl->setHeaders($headers);
 
-        $this->config->createLog([
+        $this->readerWriter->createLog([
             'Request Endpoint'  => $endpoint,
             'Request params'    => $params
         ]);

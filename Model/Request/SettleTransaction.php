@@ -23,16 +23,16 @@ class SettleTransaction extends AbstractRequest implements RequestInterface
      * @param ResponseFactory  $responseFactory
      */
     public function __construct(
-        \Nuvei\Checkout\Model\Logger $logger,
         \Nuvei\Checkout\Model\Config $config,
         \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
-        \Nuvei\Checkout\Model\Response\Factory $responseFactory
+        \Nuvei\Checkout\Model\Response\Factory $responseFactory,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct(
-            $logger,
             $config,
             $curl,
-            $responseFactory
+            $responseFactory,
+            $readerWriter
         );
     }
     

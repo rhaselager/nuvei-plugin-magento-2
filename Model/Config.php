@@ -158,15 +158,15 @@ class Config
         \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute,
         \Magento\Framework\Filesystem\DriverInterface $fileSystem
     ) {
-        $this->scopeConfig = $scopeConfig;
-        $this->storeManager = $storeManager;
-        $this->productMetadata = $productMetadata;
-        $this->moduleList = $moduleList;
-        $this->checkoutSession = $checkoutSession;
-        $this->urlBuilder = $urlBuilder;
-        $this->httpHeader = $httpHeader;
-        $this->remoteIp = $remoteIp;
-        $this->customerSession = $customerSession;
+        $this->scopeConfig      = $scopeConfig;
+        $this->storeManager     = $storeManager;
+        $this->productMetadata  = $productMetadata;
+        $this->moduleList       = $moduleList;
+        $this->checkoutSession  = $checkoutSession;
+        $this->urlBuilder       = $urlBuilder;
+        $this->httpHeader       = $httpHeader;
+        $this->remoteIp         = $remoteIp;
+        $this->customerSession  = $customerSession;
 
         $this->storeId              = $this->getStoreId();
         $this->storeId              = $this->getStoreId();

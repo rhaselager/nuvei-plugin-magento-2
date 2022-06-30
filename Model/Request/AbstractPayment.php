@@ -50,20 +50,20 @@ abstract class AbstractPayment extends AbstractRequest
      * @param float|null            $amount
      */
     public function __construct(
-        Logger $logger,
         Config $config,
         Curl $curl,
         RequestFactory $requestFactory,
         PaymentRequestFactory $paymentRequestFactory,
         ResponseFactory $responseFactory,
         OrderPayment $orderPayment,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         $amount = 0.0
     ) {
         parent::__construct(
-            $logger,
             $config,
             $curl,
-            $responseFactory
+            $responseFactory,
+            $readerWriter
         );
 
         $this->requestFactory           = $requestFactory;

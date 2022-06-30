@@ -28,17 +28,17 @@ class CancelSubscription extends AbstractRequest implements RequestInterface
      * @param Factory          $requestFactory
      */
     public function __construct(
-        \Nuvei\Checkout\Model\Logger $logger,
         Config $config,
         Curl $curl,
         ResponseFactory $responseFactory,
-        RequestFactory $requestFactory
+        RequestFactory $requestFactory,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct(
-            $logger,
             $config,
             $curl,
-            $responseFactory
+            $responseFactory,
+            $readerWriter
         );
 
         $this->requestFactory = $requestFactory;

@@ -38,19 +38,20 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
      * @param Factory          $requestFactory
      */
     public function __construct(
-        \Nuvei\Checkout\Model\Logger $logger,
         Config $moduleConfig,
         Curl $curl,
         ResponseFactory $responseFactory,
         RequestFactory $requestFactory,
         \Magento\Store\Api\Data\StoreInterface $store,
-        \Magento\Checkout\Model\Cart $cart
+        \Magento\Checkout\Model\Cart $cart,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
+        
         parent::__construct(
-            $logger,
             $moduleConfig,
             $curl,
-            $responseFactory
+            $responseFactory,
+            $readerWriter
         );
 
         $this->requestFactory   = $requestFactory;

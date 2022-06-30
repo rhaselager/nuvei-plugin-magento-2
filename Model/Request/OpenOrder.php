@@ -44,18 +44,18 @@ class OpenOrder extends AbstractRequest implements RequestInterface
      * @param Factory          $requestFactory
      */
     public function __construct(
-        \Nuvei\Checkout\Model\Logger $logger,
         Config $config,
         Curl $curl,
         ResponseFactory $responseFactory,
         RequestFactory $requestFactory,
-        \Magento\Checkout\Model\Cart $cart
+        \Magento\Checkout\Model\Cart $cart,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct(
-            $logger,
             $config,
             $curl,
-            $responseFactory
+            $responseFactory,
+            $readerWriter
         );
 
         $this->requestFactory   = $requestFactory;

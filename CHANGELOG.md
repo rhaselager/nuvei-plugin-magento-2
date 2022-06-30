@@ -2,6 +2,12 @@
 
 ---
 
+# 1.0.1
+```
+    * Removed AbstractApi class.
+    * Added new class - ReaderWriter, to create logs and save some plugin help files.
+```
+
 # 1.0.0
 ```
     * In the admin added check for the merchant data before try to get merchant payment methods.
