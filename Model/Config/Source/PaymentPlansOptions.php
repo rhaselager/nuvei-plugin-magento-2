@@ -7,20 +7,20 @@ class PaymentPlansOptions extends \Magento\Eav\Model\Entity\Attribute\Source\Abs
 //    protected $eavConfig;
     
     private $directory;
-    private $file;
+//    private $file;
     private $driverManager;
-    private $fileSystem;
+//    private $fileSystem;
     private $readerWriter;
     
     public function __construct(
         \Magento\Framework\Filesystem\DirectoryList $directory,
-        \Magento\Framework\Filesystem\Io\File $file,
-        \Magento\Framework\Filesystem\DriverInterface $fileSystem,
+//        \Magento\Framework\Filesystem\Io\File $file,
+//        \Magento\Framework\Filesystem\DriverInterface $fileSystem,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->directory    = $directory;
-        $this->file         = $file;
-        $this->fileSystem   = $fileSystem;
+//        $this->file         = $file;
+//        $this->fileSystem   = $fileSystem;
         $this->readerWriter = $readerWriter;
     }
     
@@ -36,11 +36,14 @@ class PaymentPlansOptions extends \Magento\Eav\Model\Entity\Attribute\Source\Abs
         $file_name = $this->directory->getPath('tmp') . DIRECTORY_SEPARATOR
             . \Nuvei\Checkout\Model\Config::PAYMENT_PLANS_FILE_NAME;
         
-        if ($this->fileSystem->isReadable($file_name)) {
-            try {
-                $cont = json_decode($this->file->read($file_name), true);
-
-                if (!empty($cont['plans']) && is_array($cont['plans'])) {
+        $cont = json_decode($this->readerWriter->readFile($file_name), true);
+        
+        if(is_array($cont) && !empty($cont['plans']) && is_array($cont['plans'])) {
+//        if ($this->fileSystem->isReadable($file_name)) {
+//            try {
+//                $cont = json_decode($this->file->read($file_name), true);
+//
+//                if (!empty($cont['plans']) && is_array($cont['plans'])) {
                     foreach ($cont['plans'] as $data) {
                         $this->_options[] = [
                             'label' => $data['name'],
@@ -48,14 +51,16 @@ class PaymentPlansOptions extends \Magento\Eav\Model\Entity\Attribute\Source\Abs
 
                         ];
                     }
-                }
-            } catch (Exception $e) {
-                $this->readerWriter->createLog($e->getMessage(), 'PaymentPlansOptions Exception');
-            }
-        } elseif ($this->file->fileExists($file_name)) {
-            $this->readerWriter->createLog('PaymentPlansOptions Error - ' . $file_name . ' exists, but is not readable.');
+//                }
+//            } catch (Exception $e) {
+//                $this->readerWriter->createLog($e->getMessage(), 'PaymentPlansOptions Exception');
+//            }
+//        } elseif ($this->file->fileExists($file_name)) {
+//            $this->readerWriter->createLog('PaymentPlansOptions Error - ' . $file_name . ' exists, but is not readable.');
+//        } else {
+//            $this->readerWriter->createLog('PaymentPlansOption - ' . $file_name . ' does not exists.');
         } else {
-            $this->readerWriter->createLog('PaymentPlansOption - ' . $file_name . ' does not exists.');
+            $this->readerWriter->createLog('PaymentPlansOption Error - problem when try to extract plans from ' . $file_name);
         }
         # json version END
 

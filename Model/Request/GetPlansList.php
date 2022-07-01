@@ -10,14 +10,14 @@ class GetPlansList extends AbstractRequest implements RequestInterface
     protected $requestFactory;
     protected $config;
     
-    private $fileSystem;
+//    private $fileSystem;
     
     public function __construct(
         \Nuvei\Checkout\Model\Config $config,
         \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
         \Nuvei\Checkout\Model\Response\Factory $responseFactory,
         \Nuvei\Checkout\Model\Request\Factory $requestFactory,
-        \Magento\Framework\Filesystem\DriverInterface $fileSystem,
+//        \Magento\Framework\Filesystem\DriverInterface $fileSystem,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct(
@@ -28,7 +28,7 @@ class GetPlansList extends AbstractRequest implements RequestInterface
         );
 
         $this->requestFactory   = $requestFactory;
-        $this->fileSystem       = $fileSystem;
+//        $this->fileSystem       = $fileSystem;
     }
     
     public function process()
@@ -100,10 +100,17 @@ class GetPlansList extends AbstractRequest implements RequestInterface
                 return false;
             }
 
-            $this->fileSystem->filePutContents(
-                $tempPath. DIRECTORY_SEPARATOR . \Nuvei\Checkout\Model\Config::PAYMENT_PLANS_FILE_NAME,
+//            $this->fileSystem->filePutContents(
+//                $tempPath. DIRECTORY_SEPARATOR . \Nuvei\Checkout\Model\Config::PAYMENT_PLANS_FILE_NAME,
+//                json_encode($plans)
+//            );
+            
+            $this->readerWriter->saveFile(
+                $tempPath,
+                \Nuvei\Checkout\Model\Config::PAYMENT_PLANS_FILE_NAME,
                 json_encode($plans)
             );
+            
         } catch (Exception $e) {
             $this->readerWriter->createLog($e->getMessage(), 'GetPlansList Exception');
             

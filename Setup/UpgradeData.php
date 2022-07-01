@@ -19,8 +19,9 @@ class UpgradeData extends \Nuvei\Checkout\Setup\InstallSchema implements Upgrade
     private $orderStatusFactory;
     
     private $resourceConnection;
-    private $attributeSetFactory;
+//    private $attributeSetFactory;
     private $install;
+    private $readerWriter;
 
     /**
      * Object constructor.
@@ -31,14 +32,16 @@ class UpgradeData extends \Nuvei\Checkout\Setup\InstallSchema implements Upgrade
         OrderStatusFactory $orderStatusFactory,
         \Magento\Framework\App\ResourceConnection $resourceConnection,
         \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory,
-        \Magento\Eav\Model\Entity\Attribute\SetFactory $attributeSetFactory,
-        \Magento\Framework\Setup\SchemaSetupInterface $install
+//        \Magento\Eav\Model\Entity\Attribute\SetFactory $attributeSetFactory,
+        \Magento\Framework\Setup\SchemaSetupInterface $install,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->orderStatusFactory   = $orderStatusFactory;
         $this->resourceConnection   = $resourceConnection;
         $this->eavSetupFactory      = $eavSetupFactory;
-        $this->attributeSetFactory  = $attributeSetFactory;
+//        $this->attributeSetFactory  = $attributeSetFactory;
         $this->install              = $install;
+        $this->readerWriter         = $readerWriter;
     }
 
     /**
@@ -84,7 +87,12 @@ class UpgradeData extends \Nuvei\Checkout\Setup\InstallSchema implements Upgrade
          */
         
         // add few new Order States
-        if (version_compare($context->getVersion(), '1.0.0') < 0) {
+        if (version_compare($context->getVersion(), '1.1.0') < 0) {
+            $this->readerWriter->createLog(
+                $context->getVersion(),
+                'Existing plugin version is smaller than 1.1.0.'
+            );
+            
             $scVoided = $this->orderStatusFactory->create()
                 ->setData('status', 'nuvei_voided')
                 ->setData('label', 'Nuvei Voided')

@@ -179,20 +179,69 @@ class ReaderWriter
      * 
      * @return bool
      */
-    public function saveFile($path, $name, $data, $option)
+    public function saveFile($path, $name, $data, $option = null)
     {
-        if(is_object($this->fileSystem) && $this->fileSystem->isDirectory($path)) {
-            return $this->fileSystem->filePutContents(
-                $path . DIRECTORY_SEPARATOR . $name,
-                $data,
-                $option
-            );
+        try {
+            if(is_object($this->fileSystem) && $this->fileSystem->isDirectory($path)) {
+                return $this->fileSystem->filePutContents(
+                    $path . DIRECTORY_SEPARATOR . $name,
+                    $data,
+                    $option
+                );
+            }
+
+            if(is_dir($path)) {
+                return file_put_contents($path . DIRECTORY_SEPARATOR . $name, $data, $option);
+            }
+        } catch(Exception $ex) {
+            
+        }
+
+        return false;
+    }
+    
+    /**
+     * Get contents of Nuvei plugin help files. Usually the contains JSONs.
+     * 
+     * @param string $file_name
+     * @return string
+     */
+    public function readFile($file_name)
+    {
+        try {
+            if(is_object($this->fileSystem) && $this->isReadable($file_name)) {
+                return $this->fileSystem->fileGetContents($file_name);
+            }
+
+            if(is_readable($file_name)) {
+                return file_get_contents($file_name);
+            }
+        } catch(Exception $ex) {
+            
         }
         
-        if(is_dir($path)) {
-            return file_put_contents($path . DIRECTORY_SEPARATOR . $name, $data, $option);
+        return '';
+    }
+    
+    /**
+     * Is a file readable.
+     * 
+     * @param string $file
+     * @return bool
+     */
+    public function isReadable($file)
+    {
+        try {
+            if(is_object($this->fileSystem)) {
+                return $this->fileSystem->isReadable($file);
+            }
+
+            return is_readable($file);
+        } catch(Exception $ex) {
+            
         }
         
         return false;
     }
+    
 }

@@ -18,19 +18,19 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
     
     private $directory;
     private $modulConfig;
-    private $fileSystem;
+//    private $fileSystem;
     private $readerWriter;
     
     public function __construct(
         \Magento\Framework\Filesystem\DirectoryList $directory,
         \Nuvei\Checkout\Model\Config $modulConfig,
-        \Magento\Framework\Filesystem\DriverInterface $fileSystem,
+//        \Magento\Framework\Filesystem\DriverInterface $fileSystem,
         \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->directory    = $directory;
         $this->modulConfig  = $modulConfig;
-        $this->fileSystem   = $fileSystem;
+//        $this->fileSystem   = $fileSystem;
         $this->curl         = $curl;
         $this->readerWriter = $readerWriter;
     }
@@ -77,7 +77,12 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
                 }
 
                 $git_version    = (int) str_replace('.', '', $array['version']);
-                $res            = $this->fileSystem->filePutContents($file, $array['version']);
+//                $res            = $this->fileSystem->filePutContents($file, $array['version']);
+                $res            = $this->readerWriter->saveFile(
+                    $this->directory->getPath('tmp'),
+                    'nuvei-plugin-latest-version.txt',
+                    $array['version']
+                );
 
                 if (!$res) {
                     $this->readerWriter->createLog('LatestPluginVersionMessage Error - file was not created.');
@@ -87,12 +92,12 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
             $this->readerWriter->createLog($ex->getMessage(), 'LatestPluginVersionMessage Exception:');
         }
         
-        if (!$this->fileSystem->isFile($file) && 0 == $git_version) {
-            $this->readerWriter->createLog('LatestPluginVersionMessage - version file does not exists.');
-            return false;
-        }
+//        if (!$this->fileSystem->isFile($file) && 0 == $git_version) {
+//            $this->readerWriter->createLog('LatestPluginVersionMessage - version file does not exists.');
+//            return false;
+//        }
         
-        if (!$this->fileSystem->isReadable($file)) {
+        if (!$this->readerWriter->isReadable($file)) {
             $this->readerWriter->createLog('LatestPluginVersionMessage Error - '
                 . 'version file exists, but is not readable!');
             
@@ -102,7 +107,8 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
         }
         
         if(0 == $git_version) {
-            $git_version = (int) str_replace('.', '', trim($this->fileSystem->fileGetContents($file)));
+//            $git_version = (int) str_replace('.', '', trim($this->fileSystem->fileGetContents($file)));
+            $git_version = (int) str_replace('.', '', trim($this->readerWriter->readFile($file)));
         }
         
         $this_version = str_replace('Magento Plugin ', '', $this->modulConfig->getSourcePlatformField());
