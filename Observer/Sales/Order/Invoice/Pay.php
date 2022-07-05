@@ -14,11 +14,11 @@ use Nuvei\Checkout\Model\Payment;
  */
 class Pay implements ObserverInterface
 {
-    private $readerWriter;
+    private $config;
     
-    public function __construct(\Nuvei\Checkout\Model\ReaderWriter $readerWriter)
+    public function __construct(\Nuvei\Checkout\Model\Config $config)
     {
-        $this->readerWriter = $readerWriter;
+        $this->config = $config;
     }
     
     /**
@@ -28,7 +28,7 @@ class Pay implements ObserverInterface
      */
     public function execute(Observer $observer)
     {
-        $this->readerWriter->createLog('Invoice Pay Observer');
+        $this->config->createLog('Invoice Pay Observer');
         
         /** @var Invoice $invoice */
         $invoice = $observer->getInvoice();
@@ -41,13 +41,13 @@ class Pay implements ObserverInterface
         $payment = $order->getPayment();
 
         if ($payment->getMethod() !== Payment::METHOD_CODE) {
-            $this->readerWriter->createLog($payment->getMethod(), 'Invoice Pay Observer Error - payment method is');
+            $this->config->createLog($payment->getMethod(), 'Invoice Pay Observer Error - payment method is');
             
             return $this;
         }
 
         if ($invoice->getState() !== Invoice::STATE_PAID) {
-            $this->readerWriter->createLog($invoice->getState(), 'Invoice Pay Observer Error - $invoice state is');
+            $this->config->createLog($invoice->getState(), 'Invoice Pay Observer Error - $invoice state is');
             
             return $this;
         }

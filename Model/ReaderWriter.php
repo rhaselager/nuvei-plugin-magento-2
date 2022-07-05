@@ -15,16 +15,16 @@ class ReaderWriter
     private $traceId;
     
     public function __construct(
-        \Magento\Framework\ObjectManagerInterface $objectManager
-        ,\Nuvei\Checkout\Model\Config $config
-        ,\Magento\Framework\Filesystem\DirectoryList $directory
+//        \Magento\Framework\ObjectManagerInterface $objectManager,
+        \Nuvei\Checkout\Model\Config $config,
+        \Magento\Framework\Filesystem\DirectoryList $directory
     ) {
         try {
-            $this->fileSystem   = $objectManager->create(\Magento\Framework\Filesystem\DriverInterface::class);
+//            $this->fileSystem   = $objectManager->create(\Magento\Framework\Filesystem\DriverInterface::class);
             $this->config       = $config;
             $this->directory    = $directory;
         } catch(Exception $ex) {
-            $this->createLog($ex->getMessage(), 'ReaderWriter Exception');
+            
         }
     }
     
@@ -105,7 +105,7 @@ class ReaderWriter
         $backtrace = debug_backtrace();
         if(!empty($backtrace)) {
             if(!empty($backtrace[0]['file'])) {
-                $file_path_arr  = explode(DS, $backtrace[0]['file']);
+                $file_path_arr  = explode(DIRECTORY_SEPARATOR, $backtrace[0]['file']);
                 
                 if(!empty($file_path_arr)) {
                     $source_file_name = end($file_path_arr) . '|';
@@ -173,8 +173,8 @@ class ReaderWriter
      * A single place to save files.
      * 
      * @param string $path
-     * @param mixed $data
      * @param string $name The file name with extension. Append it to the $path.
+     * @param mixed $data
      * @param int $option A PHP constant like FILE_APPEND.
      * 
      * @return bool
@@ -237,6 +237,27 @@ class ReaderWriter
             }
 
             return is_readable($file);
+        } catch(Exception $ex) {
+            
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Do file exists.
+     * 
+     * @param string $file
+     * @return bool
+     */
+    public function fileExists($file)
+    {
+        try {
+            if(is_object($this->fileSystem)) {
+                return $this->fileSystem->isFile($file);
+            }
+
+            return file_exists($file);
         } catch(Exception $ex) {
             
         }

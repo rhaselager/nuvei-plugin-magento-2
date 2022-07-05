@@ -10,7 +10,8 @@ class GetPlans extends \Magento\Backend\App\Action
     protected $moduleConfig;
     protected $requestFactory;
     protected $objManager;
-    protected $readerWriter;
+    
+    private $readerWriter;
     
     public function __construct(
         \Magento\Backend\App\Action\Context $context,

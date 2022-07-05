@@ -2,48 +2,13 @@
 
 namespace Nuvei\Checkout\Model\Request;
 
-use Nuvei\Checkout\Lib\Http\Client\Curl;
-use Nuvei\Checkout\Model\AbstractRequest;
-use Nuvei\Checkout\Model\AbstractResponse;
-use Nuvei\Checkout\Model\Config;
-use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
-use Nuvei\Checkout\Model\RequestInterface;
-use Nuvei\Checkout\Model\Response\Factory as ResponseFactory;
-
 /**
  * Nuvei Checkout Cancel Subscription request model.
  */
-class CancelSubscription extends AbstractRequest implements RequestInterface
+class CancelSubscription extends \Nuvei\Checkout\Model\AbstractRequest implements \Nuvei\Checkout\Model\RequestInterface
 {
-    /**
-     * @var RequestFactory
-     */
-    protected $requestFactory;
     protected $subscr_id;
 
-    /**
-     * @param Config           $config
-     * @param Curl             $curl
-     * @param ResponseFactory  $responseFactory
-     * @param Factory          $requestFactory
-     */
-    public function __construct(
-        Config $config,
-        Curl $curl,
-        ResponseFactory $responseFactory,
-        RequestFactory $requestFactory,
-        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
-    ) {
-        parent::__construct(
-            $config,
-            $curl,
-            $responseFactory,
-            $readerWriter
-        );
-
-        $this->requestFactory = $requestFactory;
-    }
-    
     /**
      * @return AbstractResponse
      *

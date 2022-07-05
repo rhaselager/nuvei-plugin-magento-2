@@ -2,13 +2,13 @@
 
 namespace Nuvei\Checkout\Model\Response\Payment;
 
-use Nuvei\Checkout\Model\Response\AbstractPayment;
-use Nuvei\Checkout\Model\ResponseInterface;
+//use Nuvei\Checkout\Model\Response\AbstractPayment;
+//use Nuvei\Checkout\Model\ResponseInterface;
 
 /**
  * Nuvei Checkout payment refund response model.
  */
-class Refund extends AbstractPayment implements ResponseInterface
+class Refund extends \Nuvei\Checkout\Model\Response\AbstractPayment implements \Nuvei\Checkout\Model\ResponseInterface
 {
     /**
      * @var int

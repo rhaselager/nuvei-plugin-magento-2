@@ -48,7 +48,6 @@ class DmnOld extends \Magento\Framework\App\Action\Action
     private $orderResourceModel;
     private $requestFactory;
     private $httpRequest;
-    private $readerWriter;
     
     // variables for the DMN process
     private $order;
@@ -101,7 +100,6 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         $this->orderResourceModel       = $orderResourceModel;
         $this->requestFactory           = $requestFactory;
         $this->httpRequest              = $httpRequest;
-        $this->readerWriter              = $readerWriter;
         
         parent::__construct($context);
     }

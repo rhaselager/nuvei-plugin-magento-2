@@ -47,22 +47,22 @@ class Payment extends Cc implements TransparentInterface
     /**
      * Transaction keys const.
      */
-    const TRANSACTION_REQUEST_ID        = 'transaction_request_id';
-    const TRANSACTION_ORDER_ID          = 'nuvei_order_id';
-    const TRANSACTION_AUTH_CODE         = 'authorization_code';
-    const TRANSACTION_ID                = 'transaction_id';
-    const TRANSACTION_PAYMENT_SOLUTION  = 'payment_solution';
-    const TRANSACTION_PAYMENT_METHOD    = 'external_payment_method';
-    const TRANSACTION_STATUS            = 'status';
-    const TRANSACTION_TYPE              = 'transaction_type';
-    const SUBSCR_IDS                    = 'subscr_ids'; // list with subscription IDs
-    const TRANSACTION_UPO_ID            = 'upo_id';
-    const TRANSACTION_TOTAL_AMOUN       = 'total_amount';
-    const REFUND_TRANSACTION_AMOUNT     = 'refund_amount';
-    const AUTH_PARAMS                   = 'auth_params';
-    const SALE_SETTLE_PARAMS            = 'sale_settle_params';
-    const ORDER_TRANSACTIONS_DATA       = 'nuvei_order_transactions_data';
-    const CREATE_ORDER_DATA             = 'nuvei_create_order_data';
+    const TRANSACTION_REQUEST_ID                = 'transaction_request_id';
+    const TRANSACTION_ORDER_ID                  = 'nuvei_order_id';
+    const TRANSACTION_AUTH_CODE                 = 'authorization_code';
+    const TRANSACTION_ID                        = 'transaction_id';
+    const TRANSACTION_PAYMENT_SOLUTION          = 'payment_solution';
+    const TRANSACTION_PAYMENT_METHOD            = 'external_payment_method';
+    const TRANSACTION_STATUS                    = 'status';
+    const TRANSACTION_TYPE                      = 'transaction_type';
+    const SUBSCR_IDS                            = 'subscr_ids'; // list with subscription IDs
+    const TRANSACTION_UPO_ID                    = 'upo_id';
+    const TRANSACTION_TOTAL_AMOUN               = 'total_amount';
+    const REFUND_TRANSACTION_AMOUNT             = 'refund_amount';
+    const AUTH_PARAMS                           = 'auth_params';
+    const SALE_SETTLE_PARAMS                    = 'sale_settle_params';
+    const ORDER_TRANSACTIONS_DATA               = 'nuvei_order_transactions_data';
+    const CREATE_ORDER_DATA                     = 'nuvei_create_order_data';
 
     /**
      * Order statuses.
@@ -171,19 +171,17 @@ class Payment extends Cc implements TransparentInterface
     /**
      * @var CustomerSession
      */
-//    private $customerSession;
+    private $customerSession;
 
     /**
      * @var ModuleConfig
      */
-//    private $moduleConfig;
-    
-    private $readerWriter;
+    private $moduleConfig;
 
     /**
      * @var CheckoutSession
      */
-//    private $checkoutSession;
+    private $checkoutSession;
     
     private $orderResourceModel;
 
@@ -205,7 +203,6 @@ class Payment extends Cc implements TransparentInterface
      * @param CheckoutSession                 $checkoutSession
      * @param AbstractResource|null           $resource
      * @param AbstractDb|null                 $resourceCollection
-     * @param ReaderWriter                 $readerWriter
      * @param array                           $data
      */
     public function __construct(
@@ -219,13 +216,12 @@ class Payment extends Cc implements TransparentInterface
         ModuleListInterface $moduleList,
         TimezoneInterface $localeDate,
         PaymentRequestFactory $paymentRequestFactory,
-//        CustomerSession $customerSession,
-//        ModuleConfig $moduleConfig,
-//        CheckoutSession $checkoutSession,
+        CustomerSession $customerSession,
+        ModuleConfig $moduleConfig,
+        CheckoutSession $checkoutSession,
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
         \Magento\Sales\Model\ResourceModel\Order $orderResourceModel,
-        \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         array $data = []
     ) {
         parent::__construct(
@@ -244,11 +240,10 @@ class Payment extends Cc implements TransparentInterface
         );
 
         $this->paymentRequestFactory    = $paymentRequestFactory;
-//        $this->customerSession          = $customerSession;
-//        $this->moduleConfig             = $moduleConfig;
-//        $this->checkoutSession          = $checkoutSession;
+        $this->customerSession          = $customerSession;
+        $this->moduleConfig             = $moduleConfig;
+        $this->checkoutSession          = $checkoutSession;
         $this->orderResourceModel       = $orderResourceModel;
-        $this->readerWriter             = $readerWriter;
     }
 
     /**
@@ -381,7 +376,7 @@ class Payment extends Cc implements TransparentInterface
         $total  = $payment->getOrder()->getBaseGrandTotal();
         $status = $payment->getOrder()->getStatus();
         
-        $this->readerWriter->createLog([$total, $status]);
+        $this->moduleConfig->createLog([$total, $status]);
         
         // Void of Zero Total amount
         if(0 == (float) $total && self::SC_AUTH == $status) {
@@ -420,7 +415,7 @@ class Payment extends Cc implements TransparentInterface
             $ord_trans_addit_info = $payment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
 
             if(empty($ord_trans_addit_info) || !is_array($ord_trans_addit_info)) {
-                $this->readerWriter->createLog(
+                $this->moduleConfig->createLog(
                     $ord_trans_addit_info,
                     'cancelSubscription() Error - $ord_trans_addit_info is empty or not an array.'
                 );
@@ -430,13 +425,13 @@ class Payment extends Cc implements TransparentInterface
             $last_record    = end($ord_trans_addit_info);
             $subsc_ids      = json_decode($last_record[self::SUBSCR_IDS]);
             
-            $this->readerWriter->createLog(
+            $this->moduleConfig->createLog(
                 [$ord_trans_addit_info], 
                 'cancelSubscription()'
             );
 
             if (empty($subsc_ids) || !is_array($subsc_ids)) {
-                $this->readerWriter->createLog(
+                $this->moduleConfig->createLog(
                     $subsc_ids,
                     'cancelSubscription() Error - $subsc_ids is empty or not an array.'
                 );
@@ -472,7 +467,7 @@ class Payment extends Cc implements TransparentInterface
             return empty($msg) ? true : false;
         }
         catch(Exception $ex) {
-            $this->readerWriter->createLog($ex->getMessage());
+            $this->moduleConfig->createLog($ex->getMessage());
         }
     }
 

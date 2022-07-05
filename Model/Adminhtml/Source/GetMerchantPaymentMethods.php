@@ -15,24 +15,16 @@ use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
  */
 class GetMerchantPaymentMethods extends Action implements ArrayInterface
 {
-    /**
-     * @var ModuleConfig
-     */
     private $moduleConfig;
-
-    /**
-     * @var RequestFactory
-     */
     private $requestFactory;
-    
     private $readerWriter;
 
     /**
      * Redirect constructor.
      *
-     * @param Context            $context
-     * @param ModuleConfig       $moduleConfig
-     * @param RequestFactory     $requestFactory
+     * @param Context           $context
+     * @param ModuleConfig      $moduleConfig
+     * @param RequestFactory    $requestFactory
      * @param ReaderWriter      $readerWriter
      */
     public function __construct(
@@ -47,7 +39,7 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
         $this->requestFactory   = $requestFactory;
         $this->readerWriter     = $readerWriter;
         
-        $this->readerWriter->createLog('GetMerchantPaymentMethods()');
+        $this->readerWriter->createLog('GetMerchantPaymentMethods() __construct');
     }
 
     /**

@@ -16,11 +16,10 @@ class Status extends Column
     /**
      * @var string[]
      */
-//    protected $statuses;
+    protected $statuses;
     
-//    private $config;
+    private $config;
     private $collection;
-    private $readerWriter;
 
     /**
      * Constructor
@@ -28,7 +27,6 @@ class Status extends Column
      * @param ContextInterface $context
      * @param UiComponentFactory $uiComponentFactory
      * @param CollectionFactory $collectionFactory
-     * @param ReaderWriter $readerWriter
      * @param array $components
      * @param array $data
      */
@@ -36,16 +34,14 @@ class Status extends Column
         ContextInterface $context,
         UiComponentFactory $uiComponentFactory,
         CollectionFactory $collectionFactory,
-//        \Nuvei\Checkout\Model\Config $config,
+        \Nuvei\Checkout\Model\Config $config,
         \Magento\Sales\Model\Order $collection,
-        \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         array $components = [],
         array $data = []
     ) {
-//        $this->statuses     = $collectionFactory->create()->toOptionHash();
-//        $this->config       = $config;
+        $this->statuses     = $collectionFactory->create()->toOptionHash();
+        $this->config       = $config;
         $this->collection   = $collection;
-        $this->readerWriter = $readerWriter;
         
         parent::__construct($context, $uiComponentFactory, $components, $data);
     }
@@ -67,8 +63,8 @@ class Status extends Column
                     $subscr_ids     = '';
                     
                     if (2000000116 <= $item['increment_id']) {
-                        $this->readerWriter->createLog($item['increment_id']);
-                        $this->readerWriter->createLog($ord_trans_data);
+                        $this->config->createLog($item['increment_id']);
+                        $this->config->createLog($ord_trans_data);
                     }
                     
                     if (empty($ord_trans_data) || !is_array($ord_trans_data)) {
@@ -86,7 +82,7 @@ class Status extends Column
                     
                     $dataSource['data']['items'][$key]['has_nuvei_subscr'] = !empty($subscr_ids) ? 1 : 0;
                 } catch (Exception $e) {
-                    $this->readerWriter->createLog($e->getMessage(), 'Exeception in Order Grid Status class:');
+                    $this->config->createLog($e->getMessage(), 'Exeception in Order Grid Status class:');
                     $dataSource['data']['items'][$key]['has_nuvei_subscr'] = 0;
                 }
             }

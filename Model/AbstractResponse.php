@@ -4,7 +4,6 @@ namespace Nuvei\Checkout\Model;
 
 use Magento\Framework\Exception\PaymentException;
 use Nuvei\Checkout\Lib\Http\Client\Curl;
-use Nuvei\Checkout\Model\Logger as Logger;
 
 /**
  * Nuvei Checkout abstract response model.
@@ -31,6 +30,10 @@ abstract class AbstractResponse
     const STATUS_SUCCESS    = 1;
     const STATUS_FAILED     = 2;
 
+    protected $config;
+    protected $readerWriter;
+
+
     /**
      * @var int
      */
@@ -55,17 +58,14 @@ abstract class AbstractResponse
      * @var array
      */
     protected $body;
-    
-    protected $config;
-    protected $readerWriter;
 
     /**
      * AbstractResponse constructor.
      *
-     * @param Config $config
-     * @param int $requestId
-     * @param Curl $curl
-     * @param ReaderWriter $readerWriter
+     * @param Config        $config
+     * @param int           $requestId
+     * @param Curl          $curl
+     * @param readerWriter  $readerWriter
      */
     public function __construct(
         Config $config,
@@ -73,9 +73,9 @@ abstract class AbstractResponse
         Curl $curl,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
+        $this->config       = $config;
         $this->requestId    = $requestId;
         $this->curl         = $curl;
-        $this->config       = $config;
         $this->readerWriter = $readerWriter;
     }
 
@@ -232,7 +232,7 @@ abstract class AbstractResponse
         $diff = array_diff($requiredKeys, $bodyKeys);
         
         if (!empty($diff)) {
-            $this->config->readerWriter($diff, 'Mising response parameters:');
+            $this->readerWriter->createLog($diff, 'Mising response parameters:');
             
             throw new PaymentException(
                 __(

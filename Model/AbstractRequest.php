@@ -5,7 +5,6 @@ namespace Nuvei\Checkout\Model;
 use Magento\Framework\Exception\PaymentException;
 use Magento\Quote\Model\Quote;
 use Nuvei\Checkout\Lib\Http\Client\Curl;
-use Nuvei\Checkout\Model\Logger as Logger;
 use Nuvei\Checkout\Model\Response\Factory as ResponseFactory;
 
 /**
@@ -35,7 +34,8 @@ abstract class AbstractRequest
     const CANCEL_SUBSCRIPTION_METHOD            = 'cancelSubscription';
     const GET_SESSION_TOKEN                     = 'getSessionToken';
 
-    public $readerWriter;
+    protected $readerWriter;
+    protected $config;
     
     /**
      * @var Curl
@@ -51,8 +51,6 @@ abstract class AbstractRequest
      * @var int
      */
     protected $requestId;
-    
-    protected $config;
     
     // array details to validate request parameters
     private $params_validation = [
@@ -165,10 +163,10 @@ abstract class AbstractRequest
     /**
      * Object constructor.
      *
-     * @param Config $config
-     * @param Curl $curl
-     * @param ResponseFactory $responseFactory
-     * @param ReaderWriter $readerWriter
+     * @param Config            $config
+     * @param Curl              $curl
+     * @param ResponseFactory   $responseFactory
+     * @param ReaderWriter      $readerWriter
      */
     public function __construct(
         Config $config,
@@ -176,8 +174,8 @@ abstract class AbstractRequest
         ResponseFactory $responseFactory,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
-        $this->curl             = $curl;
         $this->config           = $config;
+        $this->curl             = $curl;
         $this->responseFactory  = $responseFactory;
         $this->readerWriter     = $readerWriter;
     }
@@ -218,7 +216,9 @@ abstract class AbstractRequest
 //                    ],
 //                ]
 //            );
-            $this->requestId = $requestLog->getId();
+//            $this->requestId = $requestLog->getId();
+            
+            $this->requestId = date('YmdHis') . '_' . uniqid();
         }
     }
     
@@ -273,7 +273,7 @@ abstract class AbstractRequest
         $params = [
             'merchantId'        => $this->config->getMerchantId(),
             'merchantSiteId'    => $this->config->getMerchantSiteId(),
-            'clientRequestId'   => (string)$this->getRequestId(),
+            'clientRequestId'   => (string) $this->getRequestId(),
             'timeStamp'         => date('YmdHis'),
             'webMasterId'       => $this->config->getSourcePlatformField(),
             'sourceApplication' => $this->config->getSourceApplication(),

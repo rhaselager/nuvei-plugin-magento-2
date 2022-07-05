@@ -14,11 +14,7 @@ use Nuvei\Checkout\Model\ResponseInterface;
 class GetMerchantPaymentMethods extends AbstractResponse implements ResponseInterface
 {
 
-    /**
-     * @var Resolver
-     */
     protected $localeResolver;
-
     protected $scPaymentMethods = [];
     
     /**
@@ -32,10 +28,13 @@ class GetMerchantPaymentMethods extends AbstractResponse implements ResponseInte
     /**
      * AbstractResponse constructor.
      *
-     * @param Config $config
-     * @param int $requestId
-     * @param Curl $curl
-     * @param Resolver $localeResolver
+     * @param Config        $config
+     * @param Config        $config
+     * @param int           $requestId
+     * @param Curl          $curl
+     * @param Resolver      $localeResolver
+     * @param Repository    $assetRepo
+     * @param ReaderWriter  $readerWriter
      */
     public function __construct(
         Config $config,

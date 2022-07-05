@@ -28,14 +28,14 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
     protected $store;
     
     private $billing_address;
-//    private $cart;
     
     /**
-     * @param Logger $logger
-     * @param Config           $moduleConfig
-     * @param Curl             $curl
-     * @param ResponseFactory  $responseFactory
-     * @param Factory          $requestFactory
+     * @param Config            $moduleConfig
+     * @param Curl              $curl
+     * @param ResponseFactory   $responseFactory
+     * @param Factory           $requestFactory
+     * @param StoreInterface    $store
+     * @param ReaderWriter      $readerWriter
      */
     public function __construct(
         Config $moduleConfig,
@@ -43,10 +43,8 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
         ResponseFactory $responseFactory,
         RequestFactory $requestFactory,
         \Magento\Store\Api\Data\StoreInterface $store,
-//        \Magento\Checkout\Model\Cart $cart,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
-        
         parent::__construct(
             $moduleConfig,
             $curl,
@@ -56,7 +54,6 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
 
         $this->requestFactory   = $requestFactory;
         $this->store            = $store;
-//        $this->cart             = $cart;
     }
 
     /**

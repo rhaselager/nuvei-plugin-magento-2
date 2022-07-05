@@ -3,13 +3,13 @@
 namespace Nuvei\Checkout\Model\Response\Payment;
 
 use Nuvei\Checkout\Model\Payment;
-use Nuvei\Checkout\Model\Response\AbstractPayment;
-use Nuvei\Checkout\Model\ResponseInterface;
+//use Nuvei\Checkout\Model\Response\AbstractPayment;
+//use Nuvei\Checkout\Model\ResponseInterface;
 
 /**
  * Nuvei Checkout payment settle response model.
  */
-class Settle extends AbstractPayment implements ResponseInterface
+class Settle extends \Nuvei\Checkout\Model\Response\AbstractPayment implements \Nuvei\Checkout\Model\ResponseInterface
 {
     /**
      * @var int
@@ -92,7 +92,7 @@ class Settle extends AbstractPayment implements ResponseInterface
                 );
             }
         } catch (Exception $ex) {
-            $this->readerWriter->createLog($ex->getMessage(), 'updateTransaction exception:');
+            $this->config->createLog($ex->getMessage(), 'updateTransaction exception:');
         }
 
         $this->orderPayment

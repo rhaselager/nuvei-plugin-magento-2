@@ -8,11 +8,12 @@ use Nuvei\Checkout\Model\RequestInterface;
 class GetPlansList extends AbstractRequest implements RequestInterface
 {
     protected $requestFactory;
-    protected $config;
+//    protected $config;
     
 //    private $fileSystem;
     
     public function __construct(
+//        \Nuvei\Checkout\Model\Logger $logger,
         \Nuvei\Checkout\Model\Config $config,
         \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
         \Nuvei\Checkout\Model\Response\Factory $responseFactory,
@@ -21,6 +22,7 @@ class GetPlansList extends AbstractRequest implements RequestInterface
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct(
+//            $logger,
             $config,
             $curl,
             $responseFactory,
@@ -35,7 +37,7 @@ class GetPlansList extends AbstractRequest implements RequestInterface
     {
         $plans = $this->sendRequest(true);
         
-        $this->readerWriter->createLog($plans, 'Get Plans response');
+        $this->config->createLog($plans, 'Get Plans response');
         
         // there are no active plans, we must create at least one active
         if (!isset($plans['plans']) || !isset($plans['total']) || 0 == $plans['total']) {
@@ -95,7 +97,7 @@ class GetPlansList extends AbstractRequest implements RequestInterface
             if (empty($plans['status']) || $plans['status'] != 'SUCCESS'
                 || empty($plans['total']) || (int) $plans['total'] < 1
             ) {
-                $this->readerWriter->createLog('GetPlansList error - status error or missing plans. '
+                $this->config->createLog('GetPlansList error - status error or missing plans. '
                     . 'Check the response above!');
                 return false;
             }
@@ -110,9 +112,8 @@ class GetPlansList extends AbstractRequest implements RequestInterface
                 \Nuvei\Checkout\Model\Config::PAYMENT_PLANS_FILE_NAME,
                 json_encode($plans)
             );
-            
         } catch (Exception $e) {
-            $this->readerWriter->createLog($e->getMessage(), 'GetPlansList Exception');
+            $this->config->createLog($e->getMessage(), 'GetPlansList Exception');
             
             return false;
         }

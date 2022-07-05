@@ -51,7 +51,6 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
     private $orderResourceModel;
     private $requestFactory;
     private $httpRequest;
-    private $readerWriter;
     
     // variables for the DMN process
     private $order;

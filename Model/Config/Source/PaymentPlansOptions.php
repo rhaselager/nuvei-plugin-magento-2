@@ -33,7 +33,7 @@ class PaymentPlansOptions extends \Magento\Eav\Model\Entity\Attribute\Source\Abs
         ];
         
         # json version
-        $file_name = $this->directory->getPath('tmp') . DIRECTORY_SEPARATOR
+        $file_name = $this->directory->getPath('log') . DIRECTORY_SEPARATOR
             . \Nuvei\Checkout\Model\Config::PAYMENT_PLANS_FILE_NAME;
         
         $cont = json_decode($this->readerWriter->readFile($file_name), true);
@@ -67,3 +67,4 @@ class PaymentPlansOptions extends \Magento\Eav\Model\Entity\Attribute\Source\Abs
         return $this->_options;
     }
 }
+

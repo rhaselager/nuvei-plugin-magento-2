@@ -9,22 +9,22 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
 {
     private $request;
     private $invoice;
+    private $config;
     private $orderRepo;
-//    private $searchCriteriaBuilder;
-    private $readerWriter;
+    private $searchCriteriaBuilder;
 
     public function __construct(
         \Magento\Framework\App\RequestInterface $request,
         Invoice $invoice,
+        \Nuvei\Checkout\Model\Config $config,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepo,
-//        \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
-        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
+        \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder
     ) {
         $this->request                  = $request;
         $this->invoice                  = $invoice;
+        $this->config                   = $config;
         $this->orderRepo                = $orderRepo;
-//        $this->searchCriteriaBuilder    = $searchCriteriaBuilder;
-        $this->readerWriter             = $readerWriter;
+        $this->searchCriteriaBuilder    = $searchCriteriaBuilder;
     }
 
     public function beforeSetLayout(\Magento\Sales\Block\Adminhtml\Order\Invoice\View $view)
@@ -40,7 +40,7 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
             $orderList = $this->orderRepo->getList($searchCriteria)->getItems();
 
             if (!$orderList || empty($orderList)) {
-                $this->readerWriter->createLog('Modify Order Invoice buttons error - there is no $orderList');
+                $this->config->createLog('Modify Order Invoice buttons error - there is no $orderList');
                 return;
             }
 
@@ -83,7 +83,7 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
                 }
             }
         } catch (Exception $ex) {
-            $this->readerWriter->createLog($ex->getMessage(), 'admin beforeSetLayout');
+            $this->config->createLog($ex->getMessage(), 'admin beforeSetLayout');
         }
     }
 }

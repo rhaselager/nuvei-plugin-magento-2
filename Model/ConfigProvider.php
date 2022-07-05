@@ -33,14 +33,13 @@ class ConfigProvider extends CcGenericConfigProvider
     /**
      * @var RequestFactory
      */
-//    private $requestFactory;
+    private $requestFactory;
     
     private $apmsRequest;
-//    private $storeManager;
+    private $storeManager;
     private $scopeConfig;
-//    private $cart;
+    private $cart;
     private $assetRepo;
-    private $readerWriter;
 
     /**
      * ConfigProvider constructor.
@@ -53,31 +52,28 @@ class ConfigProvider extends CcGenericConfigProvider
      * @param RequestFactory    $requestFactory
      * @param array             $methodCodes
      * @param AssetRepository   $assetRepo
-     * @param ReaderWriter      $readerWriter
      */
     public function __construct(
         CcConfig $ccConfig,
         PaymentHelper $paymentHelper,
         ModuleConfig $moduleConfig,
-//        CustomerSession $customerSession,
+        CustomerSession $customerSession,
         UrlInterface $urlBuilder,
-//        RequestFactory $requestFactory,
+        RequestFactory $requestFactory,
         array $methodCodes,
-//        \Magento\Store\Model\StoreManagerInterface $storeManager,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-//        \Magento\Checkout\Model\Cart $cart,
-        \Magento\Framework\View\Asset\Repository $assetRepo,
-        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
+        \Magento\Checkout\Model\Cart $cart,
+        \Magento\Framework\View\Asset\Repository $assetRepo
     ) {
         $this->moduleConfig     = $moduleConfig;
-//        $this->customerSession  = $customerSession;
+        $this->customerSession  = $customerSession;
         $this->urlBuilder       = $urlBuilder;
-//        $this->requestFactory   = $requestFactory;
-//        $this->storeManager     = $storeManager;
+        $this->requestFactory   = $requestFactory;
+        $this->storeManager     = $storeManager;
         $this->scopeConfig      = $scopeConfig;
-//        $this->cart             = $cart;
+        $this->cart             = $cart;
         $this->assetRepo        = $assetRepo;
-        $this->readerWriter     = $readerWriter;
 
         $methodCodes = array_merge_recursive(
             $methodCodes,
@@ -99,7 +95,7 @@ class ConfigProvider extends CcGenericConfigProvider
     public function getConfig()
     {
         if (!$this->moduleConfig->isActive()) {
-            $this->readerWriter->createLog($this->moduleConfig->isActive(), 'Mudule is not active');
+            $this->moduleConfig->createLog($this->moduleConfig->isActive(), 'Mudule is not active');
             
             return $config = [
                 'payment' => [
@@ -151,7 +147,7 @@ class ConfigProvider extends CcGenericConfigProvider
         }
         
         $checkout_logo = $this->moduleConfig->showCheckoutLogo()
-            ? $this->assetRepo->getUrl("Nuvei_Payments::images/nuvei.png") : '#';
+            ? $this->assetRepo->getUrl("Nuvei_Payments::images/nuvei.png") : '';
         
         $config = [
             'payment' => [
@@ -214,7 +210,7 @@ class ConfigProvider extends CcGenericConfigProvider
             $config['payment'][Payment::METHOD_CODE]['nuveiCheckoutParams']['webSdkEnv'] = 'dev';
         }
         
-        $this->readerWriter->createLog($config, 'config for the checkout');
+        $this->moduleConfig->createLog($config, 'config for the checkout');
         
         return $config;
     }

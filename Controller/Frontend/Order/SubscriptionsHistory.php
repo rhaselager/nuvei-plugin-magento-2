@@ -43,7 +43,7 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
         $this->resultPageFactory    = $resultPageFactory;
         $this->httpRequest          = $httpRequest;
         $this->jsonResultFactory    = $jsonResultFactory;
-        //$this->productRepository    = $productRepository;
+//        $this->productRepository    = $productRepository;
         $this->request              = $request;
 //        $this->configurable         = $configurable;
         $this->helper               = $helper;
@@ -122,6 +122,7 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
             }
             
             if (is_string($params['params'])) {
+//                parse_str($params['params'], $hash_params);
                 $this->zendUri->setQuery($params['params']);
                 $hash_params = $this->zendUri->getQueryAsArray();
             } else {

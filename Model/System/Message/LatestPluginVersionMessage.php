@@ -18,19 +18,16 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
     
     private $directory;
     private $modulConfig;
-//    private $fileSystem;
     private $readerWriter;
     
     public function __construct(
         \Magento\Framework\Filesystem\DirectoryList $directory,
         \Nuvei\Checkout\Model\Config $modulConfig,
-//        \Magento\Framework\Filesystem\DriverInterface $fileSystem,
         \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->directory    = $directory;
         $this->modulConfig  = $modulConfig;
-//        $this->fileSystem   = $fileSystem;
         $this->curl         = $curl;
         $this->readerWriter = $readerWriter;
     }
@@ -58,7 +55,7 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
         }
         
         try {
-            $file = $this->directory->getPath('tmp') . DIRECTORY_SEPARATOR . 'nuvei-plugin-latest-version.txt';
+            $file = $this->directory->getPath('log') . DIRECTORY_SEPARATOR . 'nuvei-plugin-latest-version.txt';
             $git_version = 0;
             
             // check git for version on every 7th day
@@ -77,9 +74,8 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
                 }
 
                 $git_version    = (int) str_replace('.', '', $array['version']);
-//                $res            = $this->fileSystem->filePutContents($file, $array['version']);
                 $res            = $this->readerWriter->saveFile(
-                    $this->directory->getPath('tmp'),
+                    $this->directory->getPath('log'),
                     'nuvei-plugin-latest-version.txt',
                     $array['version']
                 );
@@ -92,13 +88,13 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
             $this->readerWriter->createLog($ex->getMessage(), 'LatestPluginVersionMessage Exception:');
         }
         
-//        if (!$this->fileSystem->isFile($file) && 0 == $git_version) {
-//            $this->readerWriter->createLog('LatestPluginVersionMessage - version file does not exists.');
-//            return false;
-//        }
+        if (!$this->readerWriter->fileExists($file) && 0 == $git_version) {
+            $this->readerWriter->createLog('LatestPluginVersionMessage - version file does not exists.');
+            return false;
+        }
         
         if (!$this->readerWriter->isReadable($file)) {
-            $this->readerWriter->createLog('LatestPluginVersionMessage Error - '
+            $this->readerWriter->createLog($file, 'LatestPluginVersionMessage Error - '
                 . 'version file exists, but is not readable!');
             
             if(0 == $git_version) {
@@ -107,7 +103,6 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
         }
         
         if(0 == $git_version) {
-//            $git_version = (int) str_replace('.', '', trim($this->fileSystem->fileGetContents($file)));
             $git_version = (int) str_replace('.', '', trim($this->readerWriter->readFile($file)));
         }
         
@@ -148,3 +143,4 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
         return self::SEVERITY_NOTICE;
     }
 }
+

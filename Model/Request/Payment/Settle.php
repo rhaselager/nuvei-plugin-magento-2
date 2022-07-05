@@ -6,13 +6,13 @@ use Magento\Framework\Exception\PaymentException;
 use Nuvei\Checkout\Model\AbstractRequest;
 use Nuvei\Checkout\Model\AbstractResponse;
 use Nuvei\Checkout\Model\Payment;
-use Nuvei\Checkout\Model\Request\AbstractPayment;
-use Nuvei\Checkout\Model\RequestInterface;
+//use Nuvei\Checkout\Model\Request\AbstractPayment;
+//use Nuvei\Checkout\Model\RequestInterface;
 
 /**
  * Nuvei Checkout settle payment request model.
  */
-class Settle extends AbstractPayment implements RequestInterface
+class Settle extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \Nuvei\Checkout\Model\RequestInterface
 {
     /**
      * {@inheritdoc}
@@ -64,7 +64,7 @@ class Settle extends AbstractPayment implements RequestInterface
         ) {
             $msg = 'Settle Error - Missing Auth paramters.';
             
-            $this->readerWriter->createLog($trans_to_settle, $msg);
+            $this->config->createLog($trans_to_settle, $msg);
             
             throw new PaymentException(__($msg));
         }

@@ -8,20 +8,15 @@ use Nuvei\Checkout\Model\Payment;
 class MethodAvailable
 {
     private $config;
-    private $readerWriter;
     
-    public function __construct(
-        \Nuvei\Checkout\Model\Config $config,
-        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
-    )
+    public function __construct(Config $config)
     {
-        $this->config       = $config;
-        $this->readerWriter = $readerWriter;
+        $this->config = $config;
     }
     
     public function afterGetAvailableMethods(\Magento\Payment\Model\MethodList $subject, $result)
     {
-        $this->readerWriter->createLog('MethodAvailable afterGetAvailableMethods');
+        $this->config->createLog('MethodAvailable afterGetAvailableMethods');
         
         if(!empty($this->config->getProductPlanData())) {
             foreach ($result as $key => $_result) {

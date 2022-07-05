@@ -44,6 +44,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
      * @param Factory          $requestFactory
      */
     public function __construct(
+//        \Nuvei\Checkout\Model\Logger $logger,
         Config $config,
         Curl $curl,
         ResponseFactory $responseFactory,
@@ -52,6 +53,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct(
+//            $logger,
             $config,
             $curl,
             $responseFactory,
@@ -135,7 +137,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
     protected function getParams()
     {
         if (null === $this->cart || empty($this->cart)) {
-            $this->readerWriter->createLog('OpenOrder class Error - mising Cart data.');
+            $this->config->createLog('OpenOrder class Error - mising Cart data.');
             throw new PaymentException(__('There is no Cart data.'));
         }
         
@@ -273,7 +275,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             
             return $return;
         } catch (Exception $e) {
-            $this->readerWriter->createLog($e->getMessage(), 'getOptions() Exception');
+            $this->config->createLog($e->getMessage(), 'getOptions() Exception');
         }
 
         return $return;

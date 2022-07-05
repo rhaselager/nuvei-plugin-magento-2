@@ -10,8 +10,14 @@ use Magento\Framework\App\RequestInterface;
 /**
  * Nuvei Checkout redirect success controller.
  */
+//class Success extends Action
 class Complete extends \Magento\Framework\App\Action\Action implements \Magento\Framework\App\CsrfAwareActionInterface
 {
+    /**
+     * @var ModuleConfig
+     */
+//    private $moduleConfig;
+
     /**
      * @var PaymentRequestFactory
      */
@@ -44,15 +50,16 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
      *
      * @param Context                 $context
      * @param PaymentRequestFactory   $paymentRequestFactory
+     * @param ModuleConfig            $moduleConfig
      * @param DataObjectFactory       $dataObjectFactory
      * @param CartManagementInterface $cartManagement
      * @param CheckoutSession         $checkoutSession
      * @param Onepage                 $onepageCheckout
-     * @param ReaderWriter            $readerWriter
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
 //        \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
+//        \Nuvei\Checkout\Model\Config $moduleConfig,
         \Magento\Framework\DataObjectFactory $dataObjectFactory,
         \Magento\Quote\Api\CartManagementInterface $cartManagement,
         \Magento\Checkout\Model\Session $checkoutSession,
@@ -61,6 +68,7 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
     ) {
         parent::__construct($context);
 
+//        $this->moduleConfig             = $moduleConfig;
 //        $this->paymentRequestFactory    = $paymentRequestFactory;
         $this->dataObjectFactory        = $dataObjectFactory;
         $this->cartManagement           = $cartManagement;

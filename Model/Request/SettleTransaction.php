@@ -22,19 +22,19 @@ class SettleTransaction extends AbstractRequest implements RequestInterface
      * @param Curl             $curl
      * @param ResponseFactory  $responseFactory
      */
-    public function __construct(
-        \Nuvei\Checkout\Model\Config $config,
-        \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
-        \Nuvei\Checkout\Model\Response\Factory $responseFactory,
-        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
-    ) {
-        parent::__construct(
-            $config,
-            $curl,
-            $responseFactory,
-            $readerWriter
-        );
-    }
+//    public function __construct(
+//        \Nuvei\Checkout\Model\Logger $logger,
+//        \Nuvei\Checkout\Model\Config $config,
+//        \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
+//        \Nuvei\Checkout\Model\Response\Factory $responseFactory
+//    ) {
+//        parent::__construct(
+//            $logger,
+//            $config,
+//            $curl,
+//            $responseFactory
+//        );
+//    }
     
     /**
      * @return AbstractResponse
@@ -80,7 +80,7 @@ class SettleTransaction extends AbstractRequest implements RequestInterface
         $ord_trans_addit_info   = $this->payment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
         $trans_to_settle        = [];
         
-        $this->readerWriter->createLog($ord_trans_addit_info, 'getParams');
+        $this->config->createLog($ord_trans_addit_info, 'getParams');
         
         if (!empty($ord_trans_addit_info) && is_array($ord_trans_addit_info)) {
             foreach (array_reverse($ord_trans_addit_info) as $trans) {
@@ -98,7 +98,7 @@ class SettleTransaction extends AbstractRequest implements RequestInterface
         ) {
             $msg = 'Settle Error - Missing Auth paramters.';
             
-            $this->readerWriter->createLog($trans_to_settle, $msg);
+            $this->config->createLog($trans_to_settle, $msg);
             
             throw new PaymentException(__($msg));
         }

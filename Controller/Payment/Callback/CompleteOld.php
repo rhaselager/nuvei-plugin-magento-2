@@ -11,6 +11,11 @@ use Magento\Framework\Exception\PaymentException;
 class CompleteOld extends \Magento\Framework\App\Action\Action
 {
     /**
+     * @var ModuleConfig
+     */
+//    private $moduleConfig;
+
+    /**
      * @var PaymentRequestFactory
      */
 //    private $paymentRequestFactory;
@@ -42,6 +47,7 @@ class CompleteOld extends \Magento\Framework\App\Action\Action
      *
      * @param Context                 $context
      * @param PaymentRequestFactory   $paymentRequestFactory
+     * @param ModuleConfig            $moduleConfig
      * @param DataObjectFactory       $dataObjectFactory
      * @param CartManagementInterface $cartManagement
      * @param CheckoutSession         $checkoutSession
@@ -50,6 +56,7 @@ class CompleteOld extends \Magento\Framework\App\Action\Action
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
 //        \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
+//        \Nuvei\Checkout\Model\Config $moduleConfig,
         \Magento\Framework\DataObjectFactory $dataObjectFactory,
         \Magento\Quote\Api\CartManagementInterface $cartManagement,
         \Magento\Checkout\Model\Session $checkoutSession,
@@ -58,6 +65,7 @@ class CompleteOld extends \Magento\Framework\App\Action\Action
     ) {
         parent::__construct($context);
 
+//        $this->moduleConfig             = $moduleConfig;
 //        $this->paymentRequestFactory    = $paymentRequestFactory;
         $this->dataObjectFactory        = $dataObjectFactory;
         $this->cartManagement           = $cartManagement;

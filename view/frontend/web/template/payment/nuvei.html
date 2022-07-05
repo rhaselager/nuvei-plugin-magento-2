@@ -19,13 +19,15 @@
                     visible : isRadioButtonVisible()
                 " />
         <label class="label" data-bind="attr: {'for': getCode()}">
-			<!--<img data-bind="attr: {
-					src		: getNuveiIconUrl(),
-					alt		: $t('Nuvei Logo'),
-					height	: '',
-					width	: '50'
-				}" class="payment-icon" onerror="this.style.display='none'" />-->
-            <span data-bind="text: getTitle()"></span>
+			<!-- ko if: getNuveiIconUrl() -->
+				<img data-bind="attr: {
+						src		: getNuveiIconUrl(),
+						alt		: $t('Nuvei Logo'),
+						height	: '',
+						width	: '50'
+					}" class="payment-icon" onerror="this.style.display='none'" />
+				<span data-bind="text: getTitle()"></span>
+			<!--/ko-->
         </label>
     </div>
 

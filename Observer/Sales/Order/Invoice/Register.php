@@ -17,11 +17,11 @@ use Magento\Sales\Model\Order\Payment as OrderPayment;
  */
 class Register implements ObserverInterface
 {
-    private $readerWriter;
+    private $config;
     
-    public function __construct(\Nuvei\Checkout\Model\ReaderWriter $readerWriter)
+    public function __construct(\Nuvei\Checkout\Model\Config $config)
     {
-        $this->readerWriter = $readerWriter;
+        $this->config = $config;
     }
     
     /**
@@ -32,7 +32,7 @@ class Register implements ObserverInterface
      */
     public function execute(Observer $observer)
     {
-        $this->readerWriter->createLog('Invoice Register Observer.');
+        $this->config->createLog('Invoice Register Observer.');
         
         /** @var Order $order */
         $order = $observer->getOrder();
@@ -49,7 +49,7 @@ class Register implements ObserverInterface
         }
 
         if ($payment->getMethod() !== Payment::METHOD_CODE) {
-            $this->readerWriter->createLog($payment->getMethod(), 'Invoice Register - payment method is not Nuvei, but');
+            $this->config->createLog($payment->getMethod(), 'Invoice Register - payment method is not Nuvei, but');
             
             return $this;
         }

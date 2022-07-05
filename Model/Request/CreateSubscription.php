@@ -32,22 +32,22 @@ class CreateSubscription extends AbstractRequest implements RequestInterface
      * @param ResponseFactory  $responseFactory
      * @param Factory          $requestFactory
      */
-    public function __construct(
-        Config $config,
-        Curl $curl,
-        ResponseFactory $responseFactory,
-        RequestFactory $requestFactory,
-        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
-    ) {
-        parent::__construct(
-            $config,
-            $curl,
-            $responseFactory,
-            $readerWriter
-        );
-
-        $this->requestFactory = $requestFactory;
-    }
+//    public function __construct(
+//        \Nuvei\Checkout\Model\Logger $logger,
+//        Config $config,
+//        Curl $curl,
+//        ResponseFactory $responseFactory,
+//        RequestFactory $requestFactory
+//    ) {
+//        parent::__construct(
+//            $logger,
+//            $config,
+//            $curl,
+//            $responseFactory
+//        );
+//
+//        $this->requestFactory = $requestFactory;
+//    }
     
     /**
      * @return AbstractResponse

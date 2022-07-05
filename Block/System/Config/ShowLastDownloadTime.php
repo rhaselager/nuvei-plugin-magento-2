@@ -21,7 +21,7 @@ class ShowLastDownloadTime implements \Magento\Config\Model\Config\CommentInterf
     public function getCommentText($elementValue)
     {
         $text = '';
-        $file = $this->directory->getPath('tmp') . DIRECTORY_SEPARATOR
+        $file = $this->directory->getPath('log') . DIRECTORY_SEPARATOR
             . $this->config::PAYMENT_PLANS_FILE_NAME;
         
         if ($this->file->isExists($file)) {

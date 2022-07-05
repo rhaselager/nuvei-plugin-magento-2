@@ -19,7 +19,7 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
     /**
      * @var RequestFactory
      */
-//    protected $requestFactory;
+    protected $requestFactory;
 
     /**
      * @var array
@@ -35,6 +35,7 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
      * @param Factory          $requestFactory
      */
     public function __construct(
+//        \Nuvei\Checkout\Model\Logger $logger,
         Config $config,
         Curl $curl,
         ResponseFactory $responseFactory,
@@ -43,6 +44,7 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct(
+//            $logger,
             $config,
             $curl,
             $responseFactory,
