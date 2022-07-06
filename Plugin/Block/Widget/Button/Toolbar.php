@@ -6,18 +6,21 @@ use Nuvei\Checkout\Model\Payment;
 
 class Toolbar
 {
-    private $config;
+//    private $config;
     private $orderRepository;
     private $request;
+    private $readerWriter;
     
     public function __construct(
-        \Nuvei\Checkout\Model\Config $config,
+//        \Nuvei\Checkout\Model\Config $config,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
-        \Magento\Framework\App\RequestInterface $request
+        \Magento\Framework\App\RequestInterface $request,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
-        $this->config            = $config;
-        $this->orderRepository    = $orderRepository;
-        $this->request            = $request;
+//        $this->config           = $config;
+        $this->orderRepository  = $orderRepository;
+        $this->request          = $request;
+        $this->readerWriter     = $readerWriter;
     }
     
     /**
@@ -74,7 +77,7 @@ class Toolbar
             //            ]
             //        );
             
-//            $this->config->createLog($buttonList->getItems(), 'buttonList');
+//            $this->readerWriter->createLog($buttonList->getItems(), 'buttonList');
             
             // the plugin does not support reorder from the admin
             $buttonList->remove('order_reorder');
@@ -114,7 +117,7 @@ class Toolbar
 //                );
 //            }
         } catch (Exception $e) {
-            $this->config->createLog($e->getMessage(), 'Class Toolbar exception:');
+            $this->readerWriter->createLog($e->getMessage(), 'Class Toolbar exception:');
             return [$context, $buttonList];
         }
 

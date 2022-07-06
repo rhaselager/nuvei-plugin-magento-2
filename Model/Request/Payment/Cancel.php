@@ -14,6 +14,8 @@ use Nuvei\Checkout\Model\Payment;
  */
 class Cancel extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \Nuvei\Checkout\Model\RequestInterface
 {
+    protected $readerWriter;
+    
     /**
      * Refund constructor.
      *
@@ -54,6 +56,7 @@ class Cancel extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \N
 
 //        $this->transactionRepository    = $transactionRepository;
         $this->request                  = $request;
+        $this->readerWriter             = $readerWriter;
     }
     
     /**
@@ -122,7 +125,7 @@ class Cancel extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \N
         }
         
         if (empty($trans_to_void_data)) {
-            $this->config->createLog(
+            $this->readerWriter->createLog(
                 [
                     '$ord_trans_addit_info' => $ord_trans_addit_info,
                     '$trans_to_void_data'    => $trans_to_void_data,
@@ -133,14 +136,14 @@ class Cancel extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \N
             throw new PaymentException(__('Void Error - Missing mandatory data for the Void.'));
         }
         
-        $this->config->createLog($trans_to_void_data, 'Transaction to Cancel');
+        $this->readerWriter->createLog($trans_to_void_data, 'Transaction to Cancel');
         
         $amount     = (float) $trans_to_void_data[Payment::TRANSACTION_TOTAL_AMOUN];
         $auth_code  = !empty($trans_to_void_data[Payment::TRANSACTION_AUTH_CODE])
             ? $trans_to_void_data[Payment::TRANSACTION_AUTH_CODE] : '';
         
         if (empty($amount) || $amount < 0) {
-            $this->config->createLog(
+            $this->readerWriter->createLog(
                 $trans_to_void_data,
                 'Void error - Transaction does not contain total amount.'
             );

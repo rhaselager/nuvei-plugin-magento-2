@@ -20,6 +20,8 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
      * @var RequestFactory
      */
     protected $requestFactory;
+    
+    protected $readerWriter;
 
     /**
      * @var array
@@ -27,6 +29,7 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
     protected $orderData;
     
     private $cart;
+    private $paymentsPlans;
     
     /**
      * @param Config           $config
@@ -41,7 +44,8 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
         ResponseFactory $responseFactory,
 //        RequestFactory $requestFactory,
         \Magento\Checkout\Model\Cart $cart,
-        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
+        \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans
     ) {
         parent::__construct(
 //            $logger,
@@ -53,6 +57,8 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
 
 //        $this->requestFactory   = $requestFactory;
         $this->cart             = $cart;
+        $this->paymentsPlans    = $paymentsPlans;
+        $this->readerWriter     = $readerWriter;
     }
 
     /**
@@ -107,13 +113,13 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
     protected function getParams()
     {
         if (null === $this->cart || empty($this->cart)) {
-            $this->config->createLog('UpdateOrder Error - There is no Cart data.');
+            $this->readerWriter->createLog('UpdateOrder Error - There is no Cart data.');
             
             throw new PaymentException(__('There is no Cart data.'));
         }
         
         // iterate over Items and search for Subscriptions
-        $items_data = $this->config->getProductPlanData();
+        $items_data = $this->paymentsPlans->getProductPlanData();
         
         $this->config->setNuveiUseCcOnly(!empty($items_data['subs_data']) ? true : false);
         
@@ -157,7 +163,8 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
             ? $this->orderData['clientRequestId'] : '';
         
         // for rebilling
-        if (!empty($this->config->getProductPlanData())) {
+//        if (!empty($this->config->getProductPlanData())) {
+        if (!empty($items_data)) {
             $params['isRebilling'] = 0;
             $params['paymentOption']['card']['threeD']['rebillFrequency']   = 1;
             $params['paymentOption']['card']['threeD']['rebillExpiry']
@@ -218,7 +225,7 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
 
             return $return;
         } catch (Exception $e) {
-            $this->config->createLog($e->getMessage(), 'getOptions() Exception');
+            $this->readerWriter->createLog($e->getMessage(), 'getOptions() Exception');
         }
 
         return $return;

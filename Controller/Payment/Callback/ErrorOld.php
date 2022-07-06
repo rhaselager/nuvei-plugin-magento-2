@@ -7,7 +7,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Controller\ResultInterface;
 use Nuvei\Checkout\Model\Config as ModuleConfig;
-use Nuvei\Checkout\Model\Logger as Logger;
+//use Nuvei\Checkout\Model\Logger as Logger;
 
 /**
  * Nuvei Checkout payment place controller.
@@ -47,7 +47,7 @@ class ErrorOld extends Action
     {
         $params = $this->getRequest()->getParams();
 
-        $this->moduleConfig->createLog($params, 'Error Callback Response: ');
+        $this->readerWriter->createLog($params, 'Error Callback Response: ');
         $this->messageManager->addErrorMessage(
             __('Your payment failed.')
         );

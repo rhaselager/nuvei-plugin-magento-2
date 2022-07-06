@@ -35,7 +35,7 @@
         </arguments>
     </virtualType>
     
-    <type name="Nuvei\Checkout\Model\ResourceModel\Request\Grid\Collection">
+<!--    <type name="Nuvei\Checkout\Model\ResourceModel\Request\Grid\Collection">
         <arguments>
             <argument name="mainTable"
                       xsi:type="string">nuvei_checkout_api_request_log</argument>
@@ -46,7 +46,7 @@
             <argument name="resourceModel"
                       xsi:type="string">Nuvei\Checkout\Model\ResourceModel\Request</argument>
         </arguments>
-    </type>
+    </type>-->
     
 <!--    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
         <arguments>
@@ -59,14 +59,14 @@
     </type>-->
 
     <!-- Logger configuration. -->
-    <type name="Nuvei\Checkout\Model\Logger\Handler">
+<!--    <type name="Nuvei\Checkout\Model\Logger\Handler">
         <arguments>
             <argument name="filesystem"
                       xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
         </arguments>
-    </type>
+    </type>-->
     
-    <type name="Nuvei\Checkout\Model\Logger">
+<!--    <type name="Nuvei\Checkout\Model\Logger">
         <arguments>
             <argument name="name"
                       xsi:type="string">logger</argument>
@@ -76,7 +76,7 @@
                       xsi:type="object">Nuvei\Checkout\Model\Logger\Handler</item>
             </argument>
         </arguments>
-    </type>
+    </type>-->
 	
 	<type name="Magento\Checkout\Model\Cart">
         <plugin name="prevent_add_to" 
@@ -104,9 +104,9 @@
     </type>
     
     <!-- Interface preferences. -->
-    <preference for="Nuvei\Checkout\Api\RequestLogRepositoryInterface"
+<!--    <preference for="Nuvei\Checkout\Api\RequestLogRepositoryInterface"
                 type="Nuvei\Checkout\Model\ResourceModel\RequestLogRepository"/>
     
     <preference for="Nuvei\Checkout\Api\Data\RequestLogInterface"
-                type="Nuvei\Checkout\Model\Data\RequestLog"/>
+                type="Nuvei\Checkout\Model\Data\RequestLog"/>-->
 </config>

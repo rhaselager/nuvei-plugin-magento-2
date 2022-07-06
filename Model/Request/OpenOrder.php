@@ -27,10 +27,13 @@ class OpenOrder extends AbstractRequest implements RequestInterface
      */
     protected $orderData;
     
+    protected $readerWriter;
+    
     private $countryCode; // string
     private $quote;
     private $cart;
     private $items; // the products in the cart
+    private $paymentsPlans;
     private $requestParams  = [];
     private $is_rebilling   = false;
 
@@ -50,7 +53,8 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         ResponseFactory $responseFactory,
         RequestFactory $requestFactory,
         \Magento\Checkout\Model\Cart $cart,
-        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
+        \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans
     ) {
         parent::__construct(
 //            $logger,
@@ -62,6 +66,8 @@ class OpenOrder extends AbstractRequest implements RequestInterface
 
         $this->requestFactory   = $requestFactory;
         $this->cart             = $cart;
+        $this->paymentsPlans    = $paymentsPlans;
+        $this->readerWriter     = $readerWriter;
     }
 
     /**
@@ -137,12 +143,12 @@ class OpenOrder extends AbstractRequest implements RequestInterface
     protected function getParams()
     {
         if (null === $this->cart || empty($this->cart)) {
-            $this->config->createLog('OpenOrder class Error - mising Cart data.');
+            $this->readerWriter->createLog('OpenOrder class Error - mising Cart data.');
             throw new PaymentException(__('There is no Cart data.'));
         }
         
         // iterate over Items and search for Subscriptions
-        $items_data = $this->config->getProductPlanData();
+        $items_data = $this->paymentsPlans->getProductPlanData();
         
         $this->config->setNuveiUseCcOnly(!empty($items_data['subs_data']) ? true : false);
         
@@ -221,7 +227,8 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         );
         
         // for rebilling
-        if (!empty($this->config->getProductPlanData())) {
+//        if (!empty($this->config->getProductPlanData())) {
+        if (!empty($items_data)) {
             $this->requestParams['isRebilling'] = 0;
             $this->requestParams['paymentOption']['card']['threeD']['rebillFrequency'] = 1;
             $this->requestParams['paymentOption']['card']['threeD']['rebillExpiry']
@@ -275,7 +282,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             
             return $return;
         } catch (Exception $e) {
-            $this->config->createLog($e->getMessage(), 'getOptions() Exception');
+            $this->readerWriter->createLog($e->getMessage(), 'getOptions() Exception');
         }
 
         return $return;

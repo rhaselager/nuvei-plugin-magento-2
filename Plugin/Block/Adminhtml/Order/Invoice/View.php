@@ -9,22 +9,25 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
 {
     private $request;
     private $invoice;
-    private $config;
+//    private $config;
     private $orderRepo;
-    private $searchCriteriaBuilder;
+//    private $searchCriteriaBuilder;
+    private $readerWriter;
 
     public function __construct(
         \Magento\Framework\App\RequestInterface $request,
         Invoice $invoice,
-        \Nuvei\Checkout\Model\Config $config,
+//        \Nuvei\Checkout\Model\Config $config,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepo,
-        \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder
+//        \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->request                  = $request;
         $this->invoice                  = $invoice;
-        $this->config                   = $config;
+//        $this->config                   = $config;
         $this->orderRepo                = $orderRepo;
-        $this->searchCriteriaBuilder    = $searchCriteriaBuilder;
+//        $this->searchCriteriaBuilder    = $searchCriteriaBuilder;
+        $this->readerWriter             = $readerWriter;
     }
 
     public function beforeSetLayout(\Magento\Sales\Block\Adminhtml\Order\Invoice\View $view)
@@ -40,7 +43,7 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
             $orderList = $this->orderRepo->getList($searchCriteria)->getItems();
 
             if (!$orderList || empty($orderList)) {
-                $this->config->createLog('Modify Order Invoice buttons error - there is no $orderList');
+                $this->readerWriter->createLog('Modify Order Invoice buttons error - there is no $orderList');
                 return;
             }
 
@@ -83,7 +86,7 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
                 }
             }
         } catch (Exception $ex) {
-            $this->config->createLog($ex->getMessage(), 'admin beforeSetLayout');
+            $this->readerWriter->createLog($ex->getMessage(), 'admin beforeSetLayout');
         }
     }
 }

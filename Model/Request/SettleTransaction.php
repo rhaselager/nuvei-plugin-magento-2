@@ -80,7 +80,7 @@ class SettleTransaction extends AbstractRequest implements RequestInterface
         $ord_trans_addit_info   = $this->payment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
         $trans_to_settle        = [];
         
-        $this->config->createLog($ord_trans_addit_info, 'getParams');
+        $this->readerWriter->createLog($ord_trans_addit_info, 'getParams');
         
         if (!empty($ord_trans_addit_info) && is_array($ord_trans_addit_info)) {
             foreach (array_reverse($ord_trans_addit_info) as $trans) {
@@ -98,7 +98,7 @@ class SettleTransaction extends AbstractRequest implements RequestInterface
         ) {
             $msg = 'Settle Error - Missing Auth paramters.';
             
-            $this->config->createLog($trans_to_settle, $msg);
+            $this->readerWriter->createLog($trans_to_settle, $msg);
             
             throw new PaymentException(__($msg));
         }

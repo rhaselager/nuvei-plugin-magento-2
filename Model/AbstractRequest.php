@@ -216,7 +216,7 @@ abstract class AbstractRequest
 //                    ],
 //                ]
 //            );
-//            $this->requestId = $requestLog->getId();
+//            $this->requestId = $requestLog->getId(); 
             
             $this->requestId = date('YmdHis') . '_' . uniqid();
         }

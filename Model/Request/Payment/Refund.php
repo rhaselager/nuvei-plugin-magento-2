@@ -15,6 +15,8 @@ use Nuvei\Checkout\Model\Payment;
  */
 class Refund extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \Nuvei\Checkout\Model\RequestInterface
 {
+    protected $readerWriter;
+
     /**
      * @var TransactionRepositoryInterface
      */
@@ -35,7 +37,7 @@ class Refund extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \N
      * @param float                             $amount
      */
     public function __construct(
-        \Nuvei\Checkout\Model\Logger $logger,
+//        \Nuvei\Checkout\Model\Logger $logger,
         \Nuvei\Checkout\Model\Config $config,
         \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
 //        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
@@ -61,6 +63,7 @@ class Refund extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \N
 
 //        $this->transactionRepository    = $transactionRepository;
         $this->request                  = $request;
+        $this->readerWriter             = $readerWriter;
     }
 
     /**
@@ -119,7 +122,7 @@ class Refund extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \N
         }
         
         if (empty($trans_to_refund_data[Payment::TRANSACTION_ID])) {
-            $this->config->createLog(
+            $this->readerWriter->createLog(
                 [
                     '$ord_trans_addit_info' => $ord_trans_addit_info,
                     '$trans_to_refund_data' =>$trans_to_refund_data
@@ -135,7 +138,7 @@ class Refund extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \N
         ) {
             $msg = 'Refund Error - CC Transaction does not contain authorization code.';
             
-            $this->config->createLog($trans_to_refund_data, $msg);
+            $this->readerWriter->createLog($trans_to_refund_data, $msg);
             
             throw new PaymentException(__($msg));
         }

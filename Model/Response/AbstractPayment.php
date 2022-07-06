@@ -6,7 +6,7 @@ use Nuvei\Checkout\Lib\Http\Client\Curl;
 use Nuvei\Checkout\Model\AbstractResponse;
 use Nuvei\Checkout\Model\Config;
 use Magento\Sales\Model\Order\Payment as OrderPayment;
-use Nuvei\Checkout\Model\Logger;
+//use Nuvei\Checkout\Model\Logger;
 
 /**
  * Nuvei Checkout abstract payment response model.
@@ -28,17 +28,19 @@ abstract class AbstractPayment extends AbstractResponse
      * @param OrderPayment|null $orderPayment
      */
     public function __construct(
-        Logger $logger,
+//        Logger $logger,
         Config $config,
         $requestId,
         Curl $curl,
-        OrderPayment $orderPayment
+        OrderPayment $orderPayment,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct(
-            $logger,
+//            $logger,
             $config,
             $requestId,
-            $curl
+            $curl,
+            $readerWriter
         );
 
         $this->orderPayment = $orderPayment;

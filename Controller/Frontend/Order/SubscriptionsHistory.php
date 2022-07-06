@@ -21,6 +21,7 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
     private $config;
     private $zendUri;
     private $readerWriter;
+    private $paymentsPlans;
 
     /**
      * @param Context $context
@@ -38,7 +39,8 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
         \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute,
         Config $config,
         \Zend\Uri\Uri $zendUri,
-        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
+        \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans
     ) {
         $this->resultPageFactory    = $resultPageFactory;
         $this->httpRequest          = $httpRequest;
@@ -51,6 +53,7 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
         $this->config               = $config;
         $this->zendUri              = $zendUri;
         $this->readerWriter         = $readerWriter;
+        $this->paymentsPlans        = $paymentsPlans;
         
         parent::__construct($context);
     }
@@ -157,7 +160,8 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
                 return [];
             }
             
-            $product_data = $this->config->getProductPlanData($params['prodId'], $prod_options);
+//            $product_data = $this->config->getProductPlanData($params['prodId'], $prod_options);
+            $product_data = $this->paymentsPlans->getProductPlanData($params['prodId'], $prod_options);
             
             if (empty($product_data) || !is_array($product_data)) {
                 return [];

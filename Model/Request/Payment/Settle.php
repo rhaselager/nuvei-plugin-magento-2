@@ -64,7 +64,7 @@ class Settle extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \N
         ) {
             $msg = 'Settle Error - Missing Auth paramters.';
             
-            $this->config->createLog($trans_to_settle, $msg);
+            $this->readerWriter->createLog($trans_to_settle, $msg);
             
             throw new PaymentException(__($msg));
         }

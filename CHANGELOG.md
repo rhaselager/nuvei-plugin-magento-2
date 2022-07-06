@@ -5,6 +5,7 @@
 # 1.1.0
 ```
 	* Added ReaderWriter class, to read and save files for the plugin.
+    * Added new helper class PaymentsPlans, who provide information about the payment plan of a product.
 ```
 
 # 1.0.0

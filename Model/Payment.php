@@ -18,7 +18,7 @@ use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Payment\Helper\Data;
 use Magento\Payment\Model\InfoInterface;
 use Magento\Payment\Model\Method\Cc;
-use Magento\Payment\Model\Method\Logger as PaymentLogger;
+//use Magento\Payment\Model\Method\Logger as PaymentLogger;
 use Magento\Payment\Model\Method\TransparentInterface;
 use Magento\Quote\Api\Data\PaymentInterface;
 use Nuvei\Checkout\Model\Config as ModuleConfig;
@@ -171,19 +171,20 @@ class Payment extends Cc implements TransparentInterface
     /**
      * @var CustomerSession
      */
-    private $customerSession;
+//    private $customerSession;
 
     /**
      * @var ModuleConfig
      */
-    private $moduleConfig;
+//    private $moduleConfig;
 
     /**
      * @var CheckoutSession
      */
-    private $checkoutSession;
+//    private $checkoutSession;
     
     private $orderResourceModel;
+    private $readerWriter;
 
     /**
      * Payment constructor.
@@ -212,7 +213,7 @@ class Payment extends Cc implements TransparentInterface
         AttributeValueFactory $customAttributeFactory,
         Data $paymentData,
         ScopeConfigInterface $scopeConfig,
-        PaymentLogger $logger,
+//        PaymentLogger $logger,
         ModuleListInterface $moduleList,
         TimezoneInterface $localeDate,
         PaymentRequestFactory $paymentRequestFactory,
@@ -222,6 +223,7 @@ class Payment extends Cc implements TransparentInterface
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
         \Magento\Sales\Model\ResourceModel\Order $orderResourceModel,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         array $data = []
     ) {
         parent::__construct(
@@ -231,7 +233,7 @@ class Payment extends Cc implements TransparentInterface
             $customAttributeFactory,
             $paymentData,
             $scopeConfig,
-            $logger,
+//            $logger,
             $moduleList,
             $localeDate,
             $resource,
@@ -240,10 +242,11 @@ class Payment extends Cc implements TransparentInterface
         );
 
         $this->paymentRequestFactory    = $paymentRequestFactory;
-        $this->customerSession          = $customerSession;
-        $this->moduleConfig             = $moduleConfig;
-        $this->checkoutSession          = $checkoutSession;
+//        $this->customerSession          = $customerSession;
+//        $this->moduleConfig             = $moduleConfig;
+//        $this->checkoutSession          = $checkoutSession;
         $this->orderResourceModel       = $orderResourceModel;
+        $this->readerWriter             = $readerWriter;
     }
 
     /**
@@ -376,7 +379,7 @@ class Payment extends Cc implements TransparentInterface
         $total  = $payment->getOrder()->getBaseGrandTotal();
         $status = $payment->getOrder()->getStatus();
         
-        $this->moduleConfig->createLog([$total, $status]);
+        $this->readerWriter->createLog([$total, $status]);
         
         // Void of Zero Total amount
         if(0 == (float) $total && self::SC_AUTH == $status) {
@@ -415,7 +418,7 @@ class Payment extends Cc implements TransparentInterface
             $ord_trans_addit_info = $payment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
 
             if(empty($ord_trans_addit_info) || !is_array($ord_trans_addit_info)) {
-                $this->moduleConfig->createLog(
+                $this->readerWriter->createLog(
                     $ord_trans_addit_info,
                     'cancelSubscription() Error - $ord_trans_addit_info is empty or not an array.'
                 );
@@ -425,13 +428,13 @@ class Payment extends Cc implements TransparentInterface
             $last_record    = end($ord_trans_addit_info);
             $subsc_ids      = json_decode($last_record[self::SUBSCR_IDS]);
             
-            $this->moduleConfig->createLog(
+            $this->readerWriter->createLog(
                 [$ord_trans_addit_info], 
                 'cancelSubscription()'
             );
 
             if (empty($subsc_ids) || !is_array($subsc_ids)) {
-                $this->moduleConfig->createLog(
+                $this->readerWriter->createLog(
                     $subsc_ids,
                     'cancelSubscription() Error - $subsc_ids is empty or not an array.'
                 );
@@ -467,7 +470,7 @@ class Payment extends Cc implements TransparentInterface
             return empty($msg) ? true : false;
         }
         catch(Exception $ex) {
-            $this->moduleConfig->createLog($ex->getMessage());
+            $this->readerWriter->createLog($ex->getMessage());
         }
     }
 
