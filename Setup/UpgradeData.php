@@ -11,7 +11,8 @@ use Magento\Sales\Model\Order;
 /**
  * Nuvei Checkout upgrade data.
  */
-class UpgradeData extends \Nuvei\Checkout\Setup\InstallSchema implements UpgradeDataInterface
+//class UpgradeData extends \Nuvei\Checkout\Setup\InstallSchema implements UpgradeDataInterface
+class UpgradeData implements UpgradeDataInterface
 {
     /**
      * @var OrderStatusFactory
@@ -19,7 +20,7 @@ class UpgradeData extends \Nuvei\Checkout\Setup\InstallSchema implements Upgrade
     private $orderStatusFactory;
     
     private $resourceConnection;
-    private $attributeSetFactory;
+//    private $attributeSetFactory;
     private $install;
 
     /**
@@ -31,13 +32,13 @@ class UpgradeData extends \Nuvei\Checkout\Setup\InstallSchema implements Upgrade
         OrderStatusFactory $orderStatusFactory,
         \Magento\Framework\App\ResourceConnection $resourceConnection,
         \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory,
-        \Magento\Eav\Model\Entity\Attribute\SetFactory $attributeSetFactory,
+//        \Magento\Eav\Model\Entity\Attribute\SetFactory $attributeSetFactory,
         \Magento\Framework\Setup\SchemaSetupInterface $install
     ) {
         $this->orderStatusFactory   = $orderStatusFactory;
         $this->resourceConnection   = $resourceConnection;
         $this->eavSetupFactory      = $eavSetupFactory;
-        $this->attributeSetFactory  = $attributeSetFactory;
+//        $this->attributeSetFactory  = $attributeSetFactory;
         $this->install              = $install;
     }
 
@@ -62,7 +63,7 @@ class UpgradeData extends \Nuvei\Checkout\Setup\InstallSchema implements Upgrade
          */
         
         // try to add main plugin table if not exists, and remove old plugin table if exists
-        $this->install($this->install, $context);
+        //$this->install($this->install, $context);
         
         $setup->startSetup();
         $eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);
@@ -84,7 +85,7 @@ class UpgradeData extends \Nuvei\Checkout\Setup\InstallSchema implements Upgrade
          */
         
         // add few new Order States
-        if (version_compare($context->getVersion(), '1.0.0') < 0) {
+        if (version_compare($context->getVersion(), '1.1.0') < 0) {
             $scVoided = $this->orderStatusFactory->create()
                 ->setData('status', 'nuvei_voided')
                 ->setData('label', 'Nuvei Voided')

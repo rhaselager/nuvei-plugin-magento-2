@@ -23,7 +23,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
     /**
      * @var CaptureCommand
      */
-//    private $captureCommand;
+    private $captureCommand;
 
     /**
      * @var DataObjectFactory
@@ -69,7 +69,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Nuvei\Checkout\Model\Config $moduleConfig,
-//        \Magento\Sales\Model\Order\Payment\State\CaptureCommand $captureCommand,
+        \Magento\Sales\Model\Order\Payment\State\CaptureCommand $captureCommand,
         \Magento\Framework\DataObjectFactory $dataObjectFactory,
         \Magento\Quote\Api\CartManagementInterface $cartManagement,
         \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory,
@@ -89,7 +89,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->moduleConfig             = $moduleConfig;
-//        $this->captureCommand           = $captureCommand;
+        $this->captureCommand           = $captureCommand;
         $this->dataObjectFactory        = $dataObjectFactory;
         $this->cartManagement           = $cartManagement;
         $this->jsonResultFactory        = $jsonResultFactory;
@@ -421,8 +421,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             
             // APPROVED TRANSACTION
             if (in_array($status, ['approved', 'success'])) {
-                $message = $this
-                    ->captureCommand
+                $message = $this->captureCommand
                     ->execute($this->orderPayment, $this->order->getBaseGrandTotal(), $this->order);
                 
                 $this->sc_transaction_type  = Payment::SC_PROCESSING;
@@ -902,7 +901,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
      */
     private function placeOrder($params)
     {
-        $this->readerWriter->createLog($params['quote'], 'PlaceOrder() quote');
+        $this->readerWriter->createLog($params, 'PlaceOrder()');
         
         $result = $this->dataObjectFactory->create();
         
@@ -1218,7 +1217,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             ) {
                 $this->readerWriter->createLog('The Order '. $orderIncrementId .' is not approved, stop process.');
                 
-                return 'getOrCreateOrder() error - The Order ' . $orderIncrementId .' is not approved, stop process.';
+                return 'The Order ' . $orderIncrementId .' is not approved, stop process.';
             }
             
             $this->readerWriter->createLog('Order '. $orderIncrementId .' not found, try to create it!');

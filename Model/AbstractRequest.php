@@ -277,7 +277,7 @@ abstract class AbstractRequest
             'timeStamp'         => date('YmdHis'),
             'webMasterId'       => $this->config->getSourcePlatformField(),
             'sourceApplication' => $this->config->getSourceApplication(),
-            'encoding'          => 'UTF-8',
+//            'encoding'          => 'UTF-8',
             'merchantDetails'   => [
                 'customField3'      => 'Magento v.' . $this->config->getMagentoVersion(), // Magento version
             ],

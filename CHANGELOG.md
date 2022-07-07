@@ -6,6 +6,10 @@
 ```
 	* Added ReaderWriter class, to read and save files for the plugin.
     * Added new helper class PaymentsPlans, who provide information about the payment plan of a product.
+    * createLog method was moved from Config class to ReaderWriter class.
+    * Removed Nuvei request and response DB tables. All information for the requests/responses is into the log. Removed all classes for reading and writing into those tables.
+    * Removed the Cron job cleaning Nuvei DB tables.
+    * Code was cleaned.
 ```
 
 # 1.0.0

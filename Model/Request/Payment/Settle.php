@@ -6,14 +6,29 @@ use Magento\Framework\Exception\PaymentException;
 use Nuvei\Checkout\Model\AbstractRequest;
 use Nuvei\Checkout\Model\AbstractResponse;
 use Nuvei\Checkout\Model\Payment;
-//use Nuvei\Checkout\Model\Request\AbstractPayment;
-//use Nuvei\Checkout\Model\RequestInterface;
+use Nuvei\Checkout\Model\Request\AbstractPayment;
+use Nuvei\Checkout\Model\RequestInterface;
 
 /**
  * Nuvei Checkout settle payment request model.
  */
-class Settle extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \Nuvei\Checkout\Model\RequestInterface
+class Settle extends AbstractPayment implements RequestInterface
 {
+    protected $readerWriter;
+    
+    public function __construct(
+        \Nuvei\Checkout\Model\Config $config, 
+        \Nuvei\Checkout\Lib\Http\Client\Curl $curl, 
+        \Nuvei\Checkout\Model\Response\Factory $responseFactory, 
+        \Magento\Sales\Model\Order\Payment $orderPayment, 
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
+    ) {
+        parent::__construct($config, $curl, $responseFactory, $orderPayment, $readerWriter);
+        
+        $this->readerWriter = $readerWriter;
+    }
+
+
     /**
      * {@inheritdoc}
      *
@@ -73,7 +88,7 @@ class Settle extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \N
 
         $params = [
             'clientUniqueId'            => $getIncrementId,
-            'amount'                    => (float)$this->amount,
+            'amount'                    => $trans_to_settle['total_amount'],
             'currency'                  => $order->getBaseCurrencyCode(),
             'relatedTransactionId'      => $trans_to_settle[Payment::TRANSACTION_ID],
             'authCode'                  => $trans_to_settle[Payment::TRANSACTION_AUTH_CODE],

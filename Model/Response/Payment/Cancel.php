@@ -8,7 +8,7 @@ namespace Nuvei\Checkout\Model\Response\Payment;
 /**
  * Nuvei Checkout payment void response model.
  */
-class Cancel extends \Nuvei\Checkout\Model\Response\AbstractPayment implements \Nuvei\Checkout\Model\RequestInterface
+class Cancel extends \Nuvei\Checkout\Model\Response\AbstractPayment implements \Nuvei\Checkout\Model\ResponseInterface
 {
     /**
      * @var int
@@ -25,10 +25,9 @@ class Cancel extends \Nuvei\Checkout\Model\Response\AbstractPayment implements \
      */
     protected function processResponseData()
     {
-        $body = $this->getBody();
-
-        $this->transactionId = $body['transactionId'];
-        $this->authCode = $body['authCode'];
+        $body                   = $this->getBody();
+        $this->transactionId    = $body['transactionId'];
+        $this->authCode         = $body['authCode'];
 
         return $this;
     }

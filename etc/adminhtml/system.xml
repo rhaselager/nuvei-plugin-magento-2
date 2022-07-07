@@ -167,7 +167,7 @@
 						<config_path>payment/nuvei/sandbox_merchant_secret_key</config_path>
 					</field>
 					
-					<field id="apple_pay_label"
+<!--					<field id="apple_pay_label"
 						   translate="label"
 						   type="text"
 						   sortOrder="120"
@@ -175,7 +175,7 @@
 						   showInWebsite="1"
 						   showInStore="0">
 						<label>Apple Pay Label</label>
-					</field>
+					</field>-->
 					
 					<field id="debug"
 						   translate="label"

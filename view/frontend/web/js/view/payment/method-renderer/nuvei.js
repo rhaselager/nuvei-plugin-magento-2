@@ -259,7 +259,7 @@ define(
                     }
                 }
                 
-                console.log('getSessionToken() calls nuveiGetSessionToken()')
+                console.log(quote.totals(), 'getSessionToken() calls nuveiGetSessionToken()')
 //                
                 ///////////////////////////////////
                 
@@ -297,8 +297,9 @@ define(
                         return;
                     }
                     
-                    self.checkoutSdkParams.fullName
-                        = quote.billingAddress().firstname + ' ' + quote.billingAddress().lastname;
+                    self.checkoutSdkParams.amount   = Number((quote.totals().base_grand_total).toFixed(2));
+                    self.checkoutSdkParams.fullName = quote.billingAddress().firstname 
+                        + ' ' + quote.billingAddress().lastname;
 
                     if(self.useCcOnly) {
                         self.checkoutSdkParams.pmBlacklist  = null;

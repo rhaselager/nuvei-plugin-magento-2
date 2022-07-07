@@ -155,13 +155,17 @@ class ReaderWriter
                 
                 case 1: // save both files
                     $log_file_name = 'Nuvei';
-                    
                     $this->saveFile($logsPath, date('Y-m-d') . '.log', $string, FILE_APPEND);
                     break;
                 
                 default:
                     return;
             }
+            
+//            $writer = new \Laminas\Log\Writer\Stream(BP . '/var/log/nuvei_checkout.log');
+//            $logger = new \Laminas\Log\Logger();
+//            $logger->addWriter($writer);
+//            $logger->info($string);
             
             return $this->saveFile($logsPath, $log_file_name . '.log', $string, FILE_APPEND);
         } catch (exception $e) {

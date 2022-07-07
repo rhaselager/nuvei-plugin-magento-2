@@ -2,8 +2,8 @@
 
 namespace Nuvei\Checkout\Model\Plugin\Service\CreditmemoService;
 
-use Nuvei\Checkout\Api\Data\RequestLogInterface;
-use Nuvei\Checkout\Model\RequestLogFactory;
+//use Nuvei\Checkout\Api\Data\RequestLogInterface;
+//use Nuvei\Checkout\Model\RequestLogFactory;
 //use Nuvei\Checkout\Model\Logger;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Registry as CoreRegistry;
@@ -23,7 +23,7 @@ class Plugin
     /**
      * @var RequestLogFactory
      */
-    private $requestLogFactory;
+//    private $requestLogFactory;
 
     /**
      * Object constructor.
@@ -32,11 +32,11 @@ class Plugin
      * @param RequestLogFactory $requestLogFactory
      */
     public function __construct(
-        CoreRegistry $coreRegistry,
-        RequestLogFactory $requestLogFactory
+        CoreRegistry $coreRegistry
+//        RequestLogFactory $requestLogFactory
     ) {
         $this->coreRegistry = $coreRegistry;
-        $this->requestLogFactory = $requestLogFactory;
+//        $this->requestLogFactory = $requestLogFactory;
     }
 
     /**

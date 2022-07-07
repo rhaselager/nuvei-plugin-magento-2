@@ -11,7 +11,7 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
     private $invoice;
 //    private $config;
     private $orderRepo;
-//    private $searchCriteriaBuilder;
+    private $searchCriteriaBuilder;
     private $readerWriter;
 
     public function __construct(
@@ -19,14 +19,14 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
         Invoice $invoice,
 //        \Nuvei\Checkout\Model\Config $config,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepo,
-//        \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
+        \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->request                  = $request;
         $this->invoice                  = $invoice;
 //        $this->config                   = $config;
         $this->orderRepo                = $orderRepo;
-//        $this->searchCriteriaBuilder    = $searchCriteriaBuilder;
+        $this->searchCriteriaBuilder    = $searchCriteriaBuilder;
         $this->readerWriter             = $readerWriter;
     }
 
@@ -36,9 +36,8 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
             $invoiceDetails = $this->invoice->load($this->request->getParam('invoice_id'));
             $order_incr_id  = $invoiceDetails->getOrder()->getIncrementId();
 
-            $searchCriteria = $this->
-                searchCriteriaBuilder->
-                addFilter('increment_id', $order_incr_id, 'eq')->create();
+            $searchCriteria = $this->searchCriteriaBuilder
+                ->addFilter('increment_id', $order_incr_id, 'eq')->create();
 
             $orderList = $this->orderRepo->getList($searchCriteria)->getItems();
 

@@ -18,7 +18,7 @@ use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Payment\Helper\Data;
 use Magento\Payment\Model\InfoInterface;
 use Magento\Payment\Model\Method\Cc;
-//use Magento\Payment\Model\Method\Logger as PaymentLogger;
+use Magento\Payment\Model\Method\Logger as PaymentLogger;
 use Magento\Payment\Model\Method\TransparentInterface;
 use Magento\Quote\Api\Data\PaymentInterface;
 use Nuvei\Checkout\Model\Config as ModuleConfig;
@@ -213,7 +213,7 @@ class Payment extends Cc implements TransparentInterface
         AttributeValueFactory $customAttributeFactory,
         Data $paymentData,
         ScopeConfigInterface $scopeConfig,
-//        PaymentLogger $logger,
+        PaymentLogger $logger,
         ModuleListInterface $moduleList,
         TimezoneInterface $localeDate,
         PaymentRequestFactory $paymentRequestFactory,
@@ -233,7 +233,7 @@ class Payment extends Cc implements TransparentInterface
             $customAttributeFactory,
             $paymentData,
             $scopeConfig,
-//            $logger,
+            $logger,
             $moduleList,
             $localeDate,
             $resource,

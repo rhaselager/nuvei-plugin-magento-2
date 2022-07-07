@@ -152,8 +152,10 @@ class ConfigProvider extends CcGenericConfigProvider
             $save_pm = 'always';
         }
         
-        $checkout_logo = $this->moduleConfig->showCheckoutLogo()
-            ? $this->assetRepo->getUrl("Nuvei_Payments::images/nuvei.png") : '';
+        // TODO - there is a problem getting this setting
+//        $checkout_logo = $this->moduleConfig->showCheckoutLogo()
+//            ? $this->assetRepo->getUrl("Nuvei_Checkout::images/nuvei.png") : '';
+        $checkout_logo = '';
         
         $config = [
             'payment' => [
@@ -182,7 +184,7 @@ class ConfigProvider extends CcGenericConfigProvider
                         'merchantSiteId'            => $this->moduleConfig->getMerchantSiteId(),
                         'country'                   => $billing_address['country'],
                         'currency'                  => $this->moduleConfig->getQuoteBaseCurrency(),
-                        'amount'                    => $this->moduleConfig->getQuoteBaseTotal(),
+//                        'amount'                    => $this->moduleConfig->getQuoteBaseTotal(),
                         'renderTo'                  => '#nuvei_checkout',
                         'useDCC'                    =>  $this->moduleConfig->useDCC(),
                         'strict'                    => false,

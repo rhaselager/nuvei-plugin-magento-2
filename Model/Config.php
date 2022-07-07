@@ -385,10 +385,10 @@ class Config
         return $this->getConfigValue('merchant_site_id');
     }
     
-    public function getMerchantApplePayLabel()
-    {
-        return $this->getConfigValue('apple_pay_label', 'basic');
-    }
+//    public function getMerchantApplePayLabel()
+//    {
+//        return $this->getConfigValue('apple_pay_label', 'basic');
+//    }
 
     /**
      * Return merchant secret key.
@@ -529,10 +529,10 @@ class Config
     public function getSourcePlatformField()
     {
         try {
-            return "Magento Plugin {$this->moduleList->getOne(self::MODULE_NAME)['setup_version']}";
+            return "Magento Checkout Plugin {$this->moduleList->getOne(self::MODULE_NAME)['setup_version']}";
         }
         catch(Exception $ex) {
-            return 'Magento Plugin';
+            return 'Magento Checkout Plugin';
         }
     }
     

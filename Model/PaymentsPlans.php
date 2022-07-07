@@ -29,7 +29,7 @@ class PaymentsPlans
         $this->configurable         = $configurable;
         $this->eavAttribute         = $eavAttribute;
         $this->productObj           = $productObj;
-        $this->$quote               = $checkoutSession->getQuote();
+        $this->quote                = $checkoutSession->getQuote();
     }
     
     /**
@@ -49,7 +49,7 @@ class PaymentsPlans
         try {
             # 1. when we search in the Cart
             if (0 == $product_id && empty($params)) {
-                $items = $this->$quote->getItems();
+                $items = $this->quote->getItems();
             
                 if (empty($items) || !is_array($items)) {
                     $this->readerWriter->createLog(
