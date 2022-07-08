@@ -43,7 +43,7 @@
 "MONTH","MONTH"
 "YEAR","YEAR"
 "%1 method is not supported.","%1 method is not supported."
-"%1 doesn't implement \Nuvei\Payments\Model\RequestInterface","%1 doesn't implement \Nuvei\Payments\Model\RequestInterface"
+"%1 doesn't implement \Nuvei\Checkout\Model\RequestInterface","%1 doesn't implement \Nuvei\Checkout\Model\RequestInterface"
 "There is no Cart data.","There is no Cart data."
 "%1 doesn't implement \Nuvei\Payments\Mode\RequestInterface","%1 doesn't implement \Nuvei\Payments\Mode\RequestInterface"
 "%1 type is not supported.","%1 type is not supported."

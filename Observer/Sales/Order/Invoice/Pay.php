@@ -11,6 +11,8 @@ use Nuvei\Checkout\Model\Payment;
 
 /**
  * Nuvei Checkout sales order invoice pay observer.
+ * 
+ * TODO do we use this class?
  */
 class Pay implements ObserverInterface
 {

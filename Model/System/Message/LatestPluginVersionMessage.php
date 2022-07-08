@@ -54,35 +54,38 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
             return;
         }
         
+        // check every 7th day
+        if( (int) date('d', time()) % 7 != 0 ) {
+            return;
+        }
+        
+        $git_version = 0;
+        
         try {
             $file = $this->directory->getPath('log') . DIRECTORY_SEPARATOR . 'nuvei-plugin-latest-version.txt';
-            $git_version = 0;
             
-            // check git for version on every 7th day
-            if( (int) date('d', time()) % 7 == 0 ) {
-                $this->curl->get('https://raw.githubusercontent.com/SafeChargeInternational/'
-                    . 'nuvei_checkout_magento/master/composer.json');
-                $this->curl->setOption(CURLOPT_RETURNTRANSFER, true);
-                $this->curl->setOption(CURLOPT_SSL_VERIFYPEER, false);
+            $this->curl->get('https://raw.githubusercontent.com/SafeChargeInternational/'
+                . 'nuvei_checkout_magento/master/composer.json');
+            $this->curl->setOption(CURLOPT_RETURNTRANSFER, true);
+            $this->curl->setOption(CURLOPT_SSL_VERIFYPEER, false);
 
-                $result = $this->curl->getBody();
-                $array  = json_decode($result, true);
+            $result = $this->curl->getBody();
+            $array  = json_decode($result, true);
 
-                if (empty($array['version'])) {
-                    $this->readerWriter->createLog($result, 'LatestPluginVersionMessage Error - missing version.');
-                    return;
-                }
+            if (empty($array['version'])) {
+                $this->readerWriter->createLog($result, 'LatestPluginVersionMessage Error - missing version.');
+                return;
+            }
 
-                $git_version    = (int) str_replace('.', '', $array['version']);
-                $res            = $this->readerWriter->saveFile(
-                    $this->directory->getPath('log'),
-                    'nuvei-plugin-latest-version.txt',
-                    $array['version']
-                );
+            $git_version    = (int) str_replace('.', '', $array['version']);
+            $res            = $this->readerWriter->saveFile(
+                $this->directory->getPath('log'),
+                'nuvei-plugin-latest-version.txt',
+                $array['version']
+            );
 
-                if (!$res) {
-                    $this->readerWriter->createLog('LatestPluginVersionMessage Error - file was not created.');
-                }
+            if (!$res) {
+                $this->readerWriter->createLog('LatestPluginVersionMessage Error - file was not created.');
             }
         } catch (Exception $ex) {
             $this->readerWriter->createLog($ex->getMessage(), 'LatestPluginVersionMessage Exception:');
@@ -105,7 +108,7 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
         if(0 == $git_version) {
             $git_version = (int) str_replace('.', '', trim($this->readerWriter->readFile($file)));
         }
-        
+        $this->readerWriter->createLog('isDisplayed()');
         $this_version = str_replace('Magento Plugin ', '', $this->modulConfig->getSourcePlatformField());
         $this_version = (int) str_replace('.', '', $this_version);
         

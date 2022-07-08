@@ -181,9 +181,13 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             ) {
                 $orderIncrementId       = 0;
                 $clientRequestId_arr    = explode('_', $params["clientRequestId"]);
+                $last_elem              = end($clientRequestId_arr);
                 
-                if (!empty($clientRequestId_arr[1]) && is_numeric($clientRequestId_arr[1])) {
-                    $orderIncrementId = $clientRequestId_arr[1];
+//                if (!empty($clientRequestId_arr[1]) && is_numeric($clientRequestId_arr[1])) {
+//                    $orderIncrementId = $clientRequestId_arr[1];
+//                }
+                if (!empty($last_elem) && is_numeric($last_elem)) {
+                    $orderIncrementId = $last_elem;
                 }
             } else {
                 $this->readerWriter->createLog('DMN error - no Order ID parameter.');
@@ -537,11 +541,18 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             
             $ord_trans_addit_info[] = $this->curr_trans_info;
             
+            $this->readerWriter->createLog($ord_trans_addit_info, 'DMN before save $ord_trans_addit_info');
+            
             $this->orderPayment
                 ->setAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA, $ord_trans_addit_info)
-                ->save();
+//                ->save()
+                ;
+            
+            $this->readerWriter->createLog('DMN after save $ord_trans_addit_info');
             
             $this->orderResourceModel->save($this->order);
+            
+            $this->readerWriter->createLog('DMN after save the order');
             
             $this->readerWriter->createLog('DMN process end for order #' . $orderIncrementId);
             $this->jsonOutput->setData('DMN process end for order #' . $orderIncrementId);
@@ -1173,6 +1184,8 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
     
     private function getOrCreateOrder($params, $orderIncrementId)
     {
+        $this->readerWriter->createLog($orderIncrementId, 'getOrCreateOrder for $orderIncrementId');
+        
         $searchCriteria = $this->searchCriteriaBuilder
             ->addFilter('increment_id', $orderIncrementId, 'eq')->create();
 

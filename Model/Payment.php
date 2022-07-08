@@ -333,7 +333,7 @@ class Payment extends Cc implements TransparentInterface
     public function refund(InfoInterface $payment, $amount)
     {
         parent::refund($payment, $amount);
-
+        
         /** @var RequestInterface $request */
         $request = $this->paymentRequestFactory->create(
             AbstractRequest::PAYMENT_REFUND_METHOD,

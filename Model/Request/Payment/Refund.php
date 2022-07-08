@@ -22,6 +22,8 @@ class Refund extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \N
      */
 //    private $transactionRepository;
     private $request;
+    
+    private $amount;
 
     /**
      * Refund constructor.
@@ -46,8 +48,8 @@ class Refund extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \N
         \Magento\Sales\Model\Order\Payment $orderPayment,
 //        \Magento\Sales\Api\TransactionRepositoryInterface $transactionRepository,
         \Magento\Framework\App\Request\Http $request,
-        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
-//        $amount = 0.0
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
+        $amount = 0.0
     ) {
         parent::__construct(
 //            $logger,
@@ -57,13 +59,14 @@ class Refund extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \N
 //            $paymentRequestFactory,
             $responseFactory,
             $orderPayment,
-            $readerWriter
+            $readerWriter,
 //            $amount
         );
 
 //        $this->transactionRepository    = $transactionRepository;
-        $this->request                  = $request;
-        $this->readerWriter             = $readerWriter;
+        $this->request      = $request;
+        $this->readerWriter = $readerWriter;
+        $this->amount       = $amount;
     }
 
     /**
@@ -149,7 +152,7 @@ class Refund extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \N
         $params = [
             'clientUniqueId'        => $order->getIncrementId(),
             'currency'              => $order->getBaseCurrencyCode(),
-            'amount'                => (float)$this->amount,
+            'amount'                => (float) $this->amount,
             'relatedTransactionId'  => $trans_to_refund_data[Payment::TRANSACTION_ID],
             'authCode'              => $auth_code,
             'comment'               => '',

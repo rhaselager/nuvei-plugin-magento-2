@@ -529,7 +529,13 @@ class Config
     public function getSourcePlatformField()
     {
         try {
-            return "Magento Checkout Plugin {$this->moduleList->getOne(self::MODULE_NAME)['setup_version']}";
+            $module_data = $this->moduleList->getOne(self::MODULE_NAME);
+            
+            if(!is_array($module_data) || empty($module_data['setup_version'])) {
+                return 'Magento Plugin';
+            }
+            
+            return 'Magento Plugin ' . $module_data['setup_version'];
         }
         catch(Exception $ex) {
             return 'Magento Checkout Plugin';

@@ -2,6 +2,8 @@
 
 namespace Nuvei\Checkout\Model;
 
+use \Nuvei\Checkout\Model\Config;
+
 /**
  * Helper class to provide information about eventual payment plans for products.
  *
@@ -10,6 +12,7 @@ namespace Nuvei\Checkout\Model;
 class PaymentsPlans
 {
     private $readerWriter;
+    private $config;
     private $productRepository;
     private $configurable;
     private $eavAttribute;
@@ -164,6 +167,9 @@ class PaymentsPlans
 //                        return $return_arr;
                         continue;
                     }
+//var_dump($nuvei_sub_enabled);
+//var_dump($options);
+//die('test');
 
                     $plan_data[$options['info_buyRequest']['product']] = $this->buildPlanDetailsArray($product);
 
@@ -256,7 +262,7 @@ class PaymentsPlans
      */
     private function buildPlanDetailsArray($product)
     {
-        $attr = $product->getCustomAttribute(self::PAYMENT_SUBS_ENABLE);
+        $attr = $product->getCustomAttribute(Config::PAYMENT_SUBS_ENABLE);
         
         if (null === $attr) {
             $this->readerWriter->createLog('buildPlanDetailsArray() - there is no subscription attribute PAYMENT_SUBS_ENABLE');
@@ -271,28 +277,28 @@ class PaymentsPlans
         }
         
         try {
-            $recurr_unit_obj        = $product->getCustomAttribute(self::PAYMENT_SUBS_RECURR_UNITS);
+            $recurr_unit_obj        = $product->getCustomAttribute(Config::PAYMENT_SUBS_RECURR_UNITS);
             $recurr_unit            = is_object($recurr_unit_obj) ? $recurr_unit_obj->getValue() : 'month';
 
-            $recurr_period_obj      = $product->getCustomAttribute(self::PAYMENT_SUBS_RECURR_PERIOD);
+            $recurr_period_obj      = $product->getCustomAttribute(Config::PAYMENT_SUBS_RECURR_PERIOD);
             $recurr_period          = is_object($recurr_period_obj) ? $recurr_period_obj->getValue() : 0;
 
-            $trial_unit_obj         = $product->getCustomAttribute(self::PAYMENT_SUBS_TRIAL_UNITS);
+            $trial_unit_obj         = $product->getCustomAttribute(Config::PAYMENT_SUBS_TRIAL_UNITS);
             $trial_unit             = is_object($trial_unit_obj) ? $trial_unit_obj->getValue() : 'month';
 
-            $trial_period_obj       = $product->getCustomAttribute(self::PAYMENT_SUBS_TRIAL_PERIOD);
+            $trial_period_obj       = $product->getCustomAttribute(Config::PAYMENT_SUBS_TRIAL_PERIOD);
             $trial_period           = is_object($trial_period_obj) ? $trial_period_obj->getValue() : 0;
 
-            $end_after_unit_obj     = $product->getCustomAttribute(self::PAYMENT_SUBS_END_AFTER_UNITS);
+            $end_after_unit_obj     = $product->getCustomAttribute(Config::PAYMENT_SUBS_END_AFTER_UNITS);
             $end_after_unit         = is_object($end_after_unit_obj) ? $end_after_unit_obj->getValue() : 'month';
 
-            $end_after_period_obj   = $product->getCustomAttribute(self::PAYMENT_SUBS_END_AFTER_PERIOD);
+            $end_after_period_obj   = $product->getCustomAttribute(Config::PAYMENT_SUBS_END_AFTER_PERIOD);
             $end_after_period       = is_object($end_after_period_obj) ? $end_after_period_obj->getValue() : 0;
 
-            $rec_amount             = $product->getCustomAttribute(self::PAYMENT_SUBS_REC_AMOUNT)->getValue();
+            $rec_amount             = $product->getCustomAttribute(Config::PAYMENT_SUBS_REC_AMOUNT)->getValue();
 
             $return_arr = [
-                'planId'            => $product->getCustomAttribute(self::PAYMENT_PLANS_ATTR_NAME)->getValue(),
+                'planId'            => $product->getCustomAttribute(Config::PAYMENT_PLANS_ATTR_NAME)->getValue(),
                 'initialAmount'     => 0,
                 'recurringAmount'   => number_format($rec_amount, 2, '.', ''),
                 'recurringPeriod'   => [strtolower($recurr_unit)    => $recurr_period],

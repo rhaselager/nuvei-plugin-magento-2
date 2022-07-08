@@ -102,7 +102,7 @@ class ReaderWriter
         $member_name        = '';
         $source_line_number = '';
         
-        $backtrace = debug_backtrace();
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
         if(!empty($backtrace)) {
             if(!empty($backtrace[0]['file'])) {
                 $file_path_arr  = explode(DIRECTORY_SEPARATOR, $backtrace[0]['file']);
@@ -124,7 +124,7 @@ class ReaderWriter
         $string .= $record_time . $tab
             . $log_level . $tab
             . $this->traceId . $tab
-            . 'Checkout ' . $this->config->getSourcePlatformField() . '|'
+//            . 'Checkout ' . $this->config->getSourcePlatformField() . '|'
             . $source_file_name
             . $member_name
             . $source_line_number;

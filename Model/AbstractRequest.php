@@ -169,7 +169,7 @@ abstract class AbstractRequest
      * @param ReaderWriter      $readerWriter
      */
     public function __construct(
-        Config $config,
+        \Nuvei\Checkout\Model\Config $config,
         Curl $curl,
         ResponseFactory $responseFactory,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
@@ -269,7 +269,7 @@ abstract class AbstractRequest
     protected function getParams()
     {
         $this->initRequest();
-
+$this->readerWriter->createLog('getParams()');
         $params = [
             'merchantId'        => $this->config->getMerchantId(),
             'merchantSiteId'    => $this->config->getMerchantSiteId(),
@@ -296,7 +296,7 @@ abstract class AbstractRequest
         $params = $this->getParams();
         
         // validate params
-        $this->readerWriter->createLog('Try to validate request parameters.');
+        $this->readerWriter->createLog('prepareParams(), before validate request parameters.');
         
         // directly check the mails
         if (isset($params['billingAddress']['email'])) {

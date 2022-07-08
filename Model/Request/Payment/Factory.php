@@ -48,9 +48,9 @@ class Factory
      * Create request model.
      *
      * @param string        $method
-     * @param OrderPayment    $orderPayment
-     * @param float            $amount
-     * @param int            $invoice_id
+     * @param OrderPayment  $orderPayment
+     * @param float         $amount
+     * @param int           $invoice_id
      *
      * @return RequestInterface
      * @throws LocalizedException
@@ -70,9 +70,9 @@ class Factory
         $model = $this->objectManager->create(
             $className,
             [
-                'orderPayment'    => $orderPayment,
+                'orderPayment'  => $orderPayment,
                 'amount'        => $amount,
-                'invoiceId'        => $invoice_id
+                'invoiceId'     => $invoice_id
             ]
         );
         

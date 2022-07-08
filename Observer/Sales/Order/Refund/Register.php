@@ -18,8 +18,8 @@ class Register implements ObserverInterface
      */
     public function execute(Observer $observer)
     {
-        $creditmemo    = $observer->getEvent()->getCreditmemo();
-        $order        = $creditmemo->getOrder();
+        $creditmemo = $observer->getEvent()->getCreditmemo();
+        $order      = $creditmemo->getOrder();
         $payment    = $order->getPayment();
 
         if ($payment->getMethod() !== Payment::METHOD_CODE) {

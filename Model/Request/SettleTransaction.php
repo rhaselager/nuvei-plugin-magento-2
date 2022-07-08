@@ -55,6 +55,12 @@ class SettleTransaction extends AbstractRequest implements RequestInterface
         return $this;
     }
     
+    /**
+     * We get $ivoice_amount from Invoice AfterSave Observer.
+     * 
+     * @param float $ivoice_amount
+     * @return $this
+     */
     public function setInvoiceAmount($ivoice_amount)
     {
         $this->amount = $ivoice_amount;
