@@ -394,7 +394,7 @@
 						<config_path>payment/nuvei/allow_guests_subscr</config_path>
 					</field>-->
 					
-                    <field id="show_checkout_logo"
+<!--                    <field id="show_checkout_logo"
                             translate="label"
                             type="select"
                             sortOrder="110"
@@ -403,7 +403,7 @@
                             showInStore="0">
                          <label>Show checkout logo</label>
                          <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                     </field>
+                     </field>-->
                     
 					<field id="notifyURL"
 						   translate="label"

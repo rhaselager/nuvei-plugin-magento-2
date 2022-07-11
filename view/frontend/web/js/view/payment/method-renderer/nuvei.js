@@ -237,9 +237,9 @@ define(
                 return 'nuvei';
             },
 
-			getNuveiIconUrl: function() {
-				return window.checkoutConfig.payment[self.getCode()].checkoutLogoUrl;
-			},
+//			getNuveiIconUrl: function() {
+//				return window.checkoutConfig.payment[self.getCode()].checkoutLogoUrl;
+//			},
 
             getPaymentApmUrl: function() {
                 return window.checkoutConfig.payment[self.getCode()].paymentApmUrl;
@@ -250,6 +250,8 @@ define(
             },
 			
 			getSessionToken: function() {
+                console.log('getSessionToken');
+                
                 if(window.checkoutConfig.payment[self.getCode()].isPaymentPlan) {
                     self.useCcOnly = true;
                     
@@ -259,8 +261,6 @@ define(
                     }
                 }
                 
-                console.log(quote.totals(), 'getSessionToken() calls nuveiGetSessionToken()')
-//                
                 ///////////////////////////////////
                 
                 jQuery('body').trigger('processStart');
@@ -297,9 +297,9 @@ define(
                         return;
                     }
                     
-                    self.checkoutSdkParams.amount   = Number((quote.totals().base_grand_total).toFixed(2));
-                    self.checkoutSdkParams.fullName = quote.billingAddress().firstname 
-                        + ' ' + quote.billingAddress().lastname;
+                    self.checkoutSdkParams.amount   = quote.totals().base_grand_total;
+//                    self.checkoutSdkParams.fullName = quote.billingAddress().firstname 
+//                        + ' ' + quote.billingAddress().lastname;
 
                     if(self.useCcOnly) {
                         self.checkoutSdkParams.pmBlacklist  = null;

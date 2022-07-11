@@ -10,6 +10,7 @@
     * Removed Nuvei request and response DB tables. All information for the requests/responses is into the log. Removed all classes for reading and writing into those tables.
     * Removed the Cron job cleaning Nuvei DB tables.
     * Code was cleaned.
+    * Removed the option to show/hide Nuvei logo on the checkout.
 ```
 
 # 1.0.0

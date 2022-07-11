@@ -800,7 +800,7 @@ class Config
         }
         
         return [
-            "firstName"    => $b_f_name,
+            "firstName" => $b_f_name,
             "lastName"  => $b_l_name,
             "address"   => $billingAddress->getStreetFull(),
             "phone"     => $billingAddress->getTelephone(),

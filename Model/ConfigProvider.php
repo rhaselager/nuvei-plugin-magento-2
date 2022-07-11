@@ -155,7 +155,7 @@ class ConfigProvider extends CcGenericConfigProvider
         // TODO - there is a problem getting this setting
 //        $checkout_logo = $this->moduleConfig->showCheckoutLogo()
 //            ? $this->assetRepo->getUrl("Nuvei_Checkout::images/nuvei.png") : '';
-        $checkout_logo = '';
+//        $checkout_logo = '';
         
         $config = [
             'payment' => [
@@ -167,7 +167,7 @@ class ConfigProvider extends CcGenericConfigProvider
                     'paymentApmUrl'             => $this->urlBuilder->getUrl('nuvei_checkout/payment/apm'),
                     'getUpdateOrderUrl'         => $this->urlBuilder->getUrl('nuvei_checkout/payment/OpenOrder'),
                     'successUrl'                => $this->moduleConfig->getCallbackSuccessUrl(),
-                    'checkoutLogoUrl'           => $checkout_logo,
+//                    'checkoutLogoUrl'           => $checkout_logo,
                     'isTestMode'                => $this->moduleConfig->isTestModeEnabled(),
                     'countryId'                 => $this->moduleConfig->getQuoteCountryCode(),
                     'updateQuotePM'             => $this->urlBuilder
@@ -193,7 +193,7 @@ class ConfigProvider extends CcGenericConfigProvider
 //                        'pmBlacklist'               => $this->moduleConfig->getPMsBlackList(),
 //                        'pmWhitelist'               => null,
                         'alwaysCollectCvv'          => true,
-                        'fullName'                  => '', // set it in the js
+                        'fullName'                  => $billing_address['firstName'] . ' ' . $billing_address['lastName'],
                         'email'                     => $billing_address['email'],
                         'payButton'                 => $this->moduleConfig->getPayButtnoText(),
                         'showResponseMessage'       => false, // shows/hide the response popups
