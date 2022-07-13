@@ -59,6 +59,8 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
     private $sc_transaction_type;
     private $jsonOutput;
     private $paymentModel;
+    private $registry;
+    private $transactionRepository;
     private $start_subscr       = false;
     private $is_partial_settle  = false;
     private $curr_trans_info    = []; // collect the info for the current transaction (action)
@@ -86,7 +88,10 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         \Nuvei\Checkout\Model\Request\Factory $requestFactory,
         \Magento\Framework\App\Request\Http $httpRequest,
         \Nuvei\Checkout\Model\Payment $paymentModel,
-        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
+//        \Magento\Sales\Api\TransactionRepositoryInterface $transactionRepository,
+        \Magento\Sales\Model\Order\Payment\Transaction\Repository $transactionRepository,
+        \Magento\Framework\Registry $registry // TODO Registry class is depricated
     ) {
         $this->moduleConfig             = $moduleConfig;
         $this->captureCommand           = $captureCommand;
@@ -107,6 +112,8 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         $this->httpRequest              = $httpRequest;
         $this->paymentModel             = $paymentModel;
         $this->readerWriter             = $readerWriter;
+        $this->registry                 = $registry;
+        $this->transactionRepository    = $transactionRepository;
         
         parent::__construct($context);
     }
@@ -530,9 +537,10 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                 
                 $this->order->addStatusHistoryComment(
                     '<b>' . $params['transactionType'] . '</b> '
-                    . __("request, response status is") . ' <b>' . $params['Status'] . '</b>.<br/>('
-                    . __('Code: ') . $params['ErrCode'] . ', '
-                    . __('Reason: ') . $params['ExErrCode'] . '.'
+                        . __("request, response status is") . ' <b>' . $params['Status'] . '</b>.<br/>('
+                        . __('Code: ') . $params['ErrCode'] . ', '
+                        . __('Reason: ') . $params['ExErrCode'] . '.',
+                    $this->sc_transaction_type
                 );
             } else { // UNKNOWN DMN
                 $this->readerWriter->createLog('DMN for Order #' . $orderIncrementId . ' was not recognized.');
@@ -686,7 +694,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         if (count($invCollection) > 0 && !$is_cpanel_settle) {
             $this->readerWriter->createLog('There are Invoices');
             
-            foreach ($this->order->getInvoiceCollection() as $invoice) {
+            foreach ($invCollection as $invoice) {
                 // Settle
                 if ($dmn_inv_id == $invoice->getId()) {
                     $this->curr_trans_info['invoice_id'] = $invoice->getId();
@@ -793,36 +801,118 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
      */
     private function processDeclinedSaleOrSettleDmn($params)
     {
+        $this->readerWriter->createLog('processDeclinedSaleOrSettleDmn()');
+        
         $invCollection  = $this->order->getInvoiceCollection();
-        $dmn_inv_id     = 0;
+        $dmn_inv_id     = (int) $this->httpRequest->getParam('invoice_id');
+        
+        try {
+            if('Settle' == $params['transactionType']) {
+                $this->sc_transaction_type = Payment::SC_AUTH;
+                
+                foreach($invCollection as $invoice) {
+                    if ($dmn_inv_id == $invoice->getId()) {
+                        $invoice
+//                            ->setRequestedCaptureCase(Invoice::NOT_CAPTURE)
+                            ->setRequestedCaptureCase(Invoice::CAPTURE_ONLINE)
+                            ->setTransactionId($params['TransactionID'])
+//                            ->setState(Invoice::STATE_CANCELED);
+                            ->setState(Invoice::STATE_PAID);
+                        
+                        $this->invoiceRepository->save($invoice);
+                        
+                        break;
+                    }
+                }
+                
+                
+                // to enable Delete action
+//                $this->registry->register('isSecureArea', true);
+                
+                // Delete the Invoice and the Transaction
+//                $invoice_data = $this->invoiceRepository->get($dmn_inv_id);
+                
+//                if(!is_object($invoice_data)) {
+//                    $this->readerWriter->createLog(
+//                        'processDeclinedSaleOrSettleDmn() Error - $invoice_data is not an object.');
+//                    
+//                    return;
+//                }
+                
+//                $transaction_id = $invoice_data->getTransactionId();
+//                $transaction    = $invoice_data->getTransaction();
+//                $transaction    = $this->transactionRepository->get($transaction_id);
+////                $transaction    = $this->transactionRepository->getByTransactionId($transaction_id);
+//                
+//                if(!$transaction) {
+//                    $this->readerWriter->createLog(
+//                        'processDeclinedSaleOrSettleDmn() Error - there is no $transaction.');
+//                    
+//                    return;
+//                }
+                
+//                $this->transactionRepository->delete($transaction);
+                
+//                $this->invoiceRepository->delete($invoice_data);
+            } elseif ('Sale' == $params['transactionType']) {
+                $invCollection                          = $this->order->getInvoiceCollection();
+                $invoice                                = current($invCollection);
+                $this->curr_trans_info['invoice_id'][]  = $invoice->getId();
+                $this->sc_transaction_type              = Payment::SC_CANCELED;
+
+                $invoice
+                    ->setTransactionId($params['TransactionID'])
+                    ->setState(Invoice::STATE_CANCELED)
+                ;
+                
+                $this->invoiceRepository->save($invoice);
+            }
+        } catch(Exception $ex) {
+            $this->readerWriter->createLog($ex->getMessage(), 'processDeclinedSaleOrSettleDmn() Exception.');
+            return;
+        }
         
         // there are invoices
-        if (count($invCollection) > 0) {
-            $this->readerWriter->createLog(count($invCollection), 'The Invoices count is');
-
-            foreach ($this->order->getInvoiceCollection() as $invoice) {
-                // Sale
-                if (0 == $dmn_inv_id) {
-                    $this->curr_trans_info['invoice_id'][] = $invoice->getId();
-                    
-                    $invoice
-                        ->setTransactionId($params['TransactionID'])
-                        ->setState(Invoice::STATE_CANCELED)
-                        ->pay()
-                        ->save();
-                } elseif ($dmn_inv_id == $invoice->getId()) { // Settle
-                    $this->curr_trans_info['invoice_id'] = $invoice->getId();
-
-                    $invoice
-                        ->setTransactionId($params['TransactionID'])
-                        ->setState(Invoice::STATE_CANCELED)
-                        ->pay()
-                        ->save();
-                    
-                    break;
-                }
-            }
-        }
+//        if (count($invCollection) > 0) {
+//            $this->readerWriter->createLog(count($invCollection), 'The Invoices count is');
+//
+//            foreach ($this->order->getInvoiceCollection() as $invoice) {
+//                // Sale
+//                if (0 == $dmn_inv_id) {
+//                    $this->curr_trans_info['invoice_id'][] = $invoice->getId();
+//                    
+//                    $this->sc_transaction_type = Payment::SC_CANCELED;
+//                    
+//                    $invoice
+//                        ->setTransactionId($params['TransactionID'])
+//                        ->setState(Invoice::STATE_CANCELED)
+//                        ->pay()
+//                        ->save()
+//                    ;
+//                    
+//                    
+//                    
+//                } elseif ($dmn_inv_id == $invoice->getId()) { // Settle
+//                    $this->curr_trans_info['invoice_id'][] = $invoice->getId();
+//                    
+//                    $this->sc_transaction_type = Payment::SC_AUTH;
+//
+//                    $this->readerWriter->createLog('Declined Settle');
+//                    
+//                    $invoice
+////                        ->setTransactionId($params['TransactionID'])
+////                        ->setState(Invoice::STATE_CANCELED)
+//                        ->setState(Invoice::STATE_OPEN)
+////                        ->pay()
+////                        ->save()
+//                    ;
+//                    
+//                    $this->invoiceRepository->save($invoice);
+//                    
+//                    break;
+//                }
+//            }
+//        }
     }
     
     /**

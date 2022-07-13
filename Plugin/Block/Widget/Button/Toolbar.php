@@ -116,6 +116,12 @@ class Toolbar
 //                    ]
 //                );
 //            }
+            elseif (isset($buttonList->getItems()[0]['void_payment'])) {
+                $message    = __('Are you sure you want to void the payment?');
+                $url        = $context->getUrl('sales/*/voidPayment', ['order_id' => $orderId]);
+
+                $buttonList->getItems()[0]['void_payment']['onclick'] = "confirmSetLocation('{$message}', '{$url}')";
+            }
         } catch (Exception $e) {
             $this->readerWriter->createLog($e->getMessage(), 'Class Toolbar exception:');
             return [$context, $buttonList];

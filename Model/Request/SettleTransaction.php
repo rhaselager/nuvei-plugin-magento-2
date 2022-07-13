@@ -10,9 +10,9 @@ use Magento\Framework\Exception\PaymentException;
 
 class SettleTransaction extends AbstractRequest implements RequestInterface
 {
-    protected $config;
-    protected $amount;
-    protected $payment;
+//    protected $config;
+//    protected $amount;
+//    protected $payment;
     
     private $invoice_id;
     

@@ -227,12 +227,13 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         );
         
         // for rebilling
-//        if (!empty($this->config->getProductPlanData())) {
         if (!empty($items_data)) {
             $this->requestParams['isRebilling'] = 0;
             $this->requestParams['paymentOption']['card']['threeD']['rebillFrequency'] = 1;
             $this->requestParams['paymentOption']['card']['threeD']['rebillExpiry']
                 = date('Ymd', strtotime("+10 years"));
+            
+            $this->requestParams['userTokenId'] = $params['billingAddress']['email'];
         }
             
         $this->requestParams['userDetails'] = $this->requestParams['billingAddress'];

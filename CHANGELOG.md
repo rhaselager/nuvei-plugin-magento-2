@@ -11,6 +11,8 @@
     * Removed the Cron job cleaning Nuvei DB tables.
     * Code was cleaned.
     * Removed the option to show/hide Nuvei logo on the checkout.
+    * Added new Order status - 'Nuvei Canceled'.
+    * Added confirm prompt when try to Void.
 ```
 
 # 1.0.0

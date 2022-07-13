@@ -116,6 +116,12 @@ class UpgradeData implements UpgradeDataInterface
                 ->save();
             $scRefunded->assignState(Order::STATE_PROCESSING, false, true);
             
+            $scCanceled = $this->orderStatusFactory->create()
+                ->setData('status', 'nuvei_canceled')
+                ->setData('label', 'Nuvei Canceled')
+                ->save();
+            $scCanceled->assignState(Order::STATE_CANCELED, false, true);
+            
             # Admin > Product > Nuvei Subscription details
             // Enable subscription
             $eavSetup->addAttribute(

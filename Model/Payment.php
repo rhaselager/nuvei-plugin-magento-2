@@ -72,6 +72,7 @@ class Payment extends Cc implements TransparentInterface
     const SC_VOIDED             = 'nuvei_voided';
     const SC_REFUNDED           = 'nuvei_refunded';
     const SC_PROCESSING         = 'nuvei_processing';
+    const SC_CANCELED           = 'nuvei_canceled';
     const SC_SUBSCRT_STARTED    = 'nuvei_subscr_started';
     const SC_SUBSCRT_ENDED      = 'nuvei_subscr_ended';
 
