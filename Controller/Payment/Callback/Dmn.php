@@ -987,7 +987,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                 . __('<b>Subscription ID:</b> ') . $params['subscriptionId']
             );
         }
-
+        
         $this->orderPayment->save();
         $this->orderResourceModel->save($this->order);
 

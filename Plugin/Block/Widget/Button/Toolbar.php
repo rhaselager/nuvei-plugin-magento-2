@@ -89,12 +89,14 @@ class Toolbar
                 $buttonList->remove('credit-memo');
             }
             
-            if (Payment::SC_VOIDED == $ord_status
-                || ( // Rebilling with Zero Total and Auth status Order
-                    0 == $order_total
-                    && Payment::SC_AUTH == $ord_status
-                )
-            ) {
+            /**
+             * We want to hide Invoice button when:
+             * 1. The order was voided.
+             * 2. The order is with total 0. Usually it will be with status Auth,
+             * but the merchant can manually change the status, so we will check
+             * for the total only.
+             */
+            if (Payment::SC_VOIDED == $ord_status ||  0 == $order_total) {
                 $buttonList->remove('order_invoice');
             }
             
@@ -116,7 +118,8 @@ class Toolbar
 //                    ]
 //                );
 //            }
-            elseif (isset($buttonList->getItems()[0]['void_payment'])) {
+            
+            if (isset($buttonList->getItems()[0]['void_payment'])) {
                 $message    = __('Are you sure you want to void the payment?');
                 $url        = $context->getUrl('sales/*/voidPayment', ['order_id' => $orderId]);
 

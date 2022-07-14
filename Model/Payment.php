@@ -377,10 +377,11 @@ class Payment extends Cc implements TransparentInterface
      */
     public function void(InfoInterface $payment)
     {
-        $total  = $payment->getOrder()->getBaseGrandTotal();
-        $status = $payment->getOrder()->getStatus();
+        $order  = $payment->getOrder();
+        $total  = $order->getBaseGrandTotal();
+        $status = $order->getStatus();
         
-        $this->readerWriter->createLog([$total, $status]);
+        $this->readerWriter->createLog([$total, $status], 'Payment Void.');
         
         // Void of Zero Total amount
         if(0 == (float) $total && self::SC_AUTH == $status) {
@@ -389,6 +390,9 @@ class Payment extends Cc implements TransparentInterface
             if(!$success) {
                 throw new LocalizedException(__('This Order can not be Cancelled.'));
             }
+            
+            $order->setStatus(self::SC_VOIDED);
+            $this->orderResourceModel->save($order);
             
             return $this;
             
