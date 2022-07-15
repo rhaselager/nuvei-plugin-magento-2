@@ -988,10 +988,14 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             );
         }
         
+        $this->readerWriter->createLog($this->order->getStatus(), 'Void Subsc getStatus', 'DEBUG');
+        
         $this->orderPayment->save();
         $this->orderResourceModel->save($this->order);
 
         $this->readerWriter->createLog($ord_trans_addit_info, 'Process Subscr DMN ends for order #' . $orderIncrementId);
+        $this->readerWriter->createLog($this->order->getStatus(), 'Process Subscr DMN Order Status', 'DEBUG');
+        
         return 'Process Subscr DMN ends for order #' . $orderIncrementId;
     }
 

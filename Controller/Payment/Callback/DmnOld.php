@@ -157,9 +157,13 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             ) {
                 $orderIncrementId       = 0;
                 $clientRequestId_arr    = explode('_', $params["clientRequestId"]);
+                $last_elem              = end($clientRequestId_arr);
                 
-                if (!empty($clientRequestId_arr[1]) && is_numeric($clientRequestId_arr[1])) {
-                    $orderIncrementId = $clientRequestId_arr[1];
+//                if (!empty($clientRequestId_arr[1]) && is_numeric($clientRequestId_arr[1])) {
+//                    $orderIncrementId = $clientRequestId_arr[1];
+//                }
+                if (!empty($last_elem) && is_numeric($last_elem)) {
+                    $orderIncrementId = $last_elem;
                 }
             } else {
                 $this->readerWriter->createLog('DMN error - no Order ID parameter.');
@@ -397,8 +401,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             
             // APPROVED TRANSACTION
             if (in_array($status, ['approved', 'success'])) {
-                $message = $this
-                    ->captureCommand
+                $message = $this->captureCommand
                     ->execute($this->orderPayment, $this->order->getBaseGrandTotal(), $this->order);
                 
                 $this->sc_transaction_type  = Payment::SC_PROCESSING;
@@ -503,9 +506,10 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 
                 $this->order->addStatusHistoryComment(
                     '<b>' . $params['transactionType'] . '</b> '
-                    . __("request, response status is") . ' <b>' . $params['Status'] . '</b>.<br/>('
-                    . __('Code: ') . $params['ErrCode'] . ', '
-                    . __('Reason: ') . $params['ExErrCode'] . '.'
+                        . __("request, response status is") . ' <b>' . $params['Status'] . '</b>.<br/>('
+                        . __('Code: ') . $params['ErrCode'] . ', '
+                        . __('Reason: ') . $params['ExErrCode'] . '.',
+                    $this->sc_transaction_type
                 );
             } else { // UNKNOWN DMN
                 $this->readerWriter->createLog('DMN for Order #' . $orderIncrementId . ' was not recognized.');
@@ -514,11 +518,18 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             
             $ord_trans_addit_info[] = $this->curr_trans_info;
             
+            $this->readerWriter->createLog($ord_trans_addit_info, 'DMN before save $ord_trans_addit_info');
+            
             $this->orderPayment
                 ->setAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA, $ord_trans_addit_info)
-                ->save();
+//                ->save()
+                ;
+            
+            $this->readerWriter->createLog('DMN after save $ord_trans_addit_info');
             
             $this->orderResourceModel->save($this->order);
+            
+            $this->readerWriter->createLog('DMN after save the order');
             
             $this->readerWriter->createLog('DMN process end for order #' . $orderIncrementId);
             $this->jsonOutput->setData('DMN process end for order #' . $orderIncrementId);
@@ -652,7 +663,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         if (count($invCollection) > 0 && !$is_cpanel_settle) {
             $this->readerWriter->createLog('There are Invoices');
             
-            foreach ($this->order->getInvoiceCollection() as $invoice) {
+            foreach ($invCollection as $invoice) {
                 // Settle
                 if ($dmn_inv_id == $invoice->getId()) {
                     $this->curr_trans_info['invoice_id'] = $invoice->getId();
@@ -759,36 +770,118 @@ class DmnOld extends \Magento\Framework\App\Action\Action
      */
     private function processDeclinedSaleOrSettleDmn($params)
     {
+        $this->readerWriter->createLog('processDeclinedSaleOrSettleDmn()');
+        
         $invCollection  = $this->order->getInvoiceCollection();
-        $dmn_inv_id     = 0;
+        $dmn_inv_id     = (int) $this->httpRequest->getParam('invoice_id');
+        
+        try {
+            if('Settle' == $params['transactionType']) {
+                $this->sc_transaction_type = Payment::SC_AUTH;
+                
+                foreach($invCollection as $invoice) {
+                    if ($dmn_inv_id == $invoice->getId()) {
+                        $invoice
+//                            ->setRequestedCaptureCase(Invoice::NOT_CAPTURE)
+                            ->setRequestedCaptureCase(Invoice::CAPTURE_ONLINE)
+                            ->setTransactionId($params['TransactionID'])
+//                            ->setState(Invoice::STATE_CANCELED);
+                            ->setState(Invoice::STATE_PAID);
+                        
+                        $this->invoiceRepository->save($invoice);
+                        
+                        break;
+                    }
+                }
+                
+                
+                // to enable Delete action
+//                $this->registry->register('isSecureArea', true);
+                
+                // Delete the Invoice and the Transaction
+//                $invoice_data = $this->invoiceRepository->get($dmn_inv_id);
+                
+//                if(!is_object($invoice_data)) {
+//                    $this->readerWriter->createLog(
+//                        'processDeclinedSaleOrSettleDmn() Error - $invoice_data is not an object.');
+//                    
+//                    return;
+//                }
+                
+//                $transaction_id = $invoice_data->getTransactionId();
+//                $transaction    = $invoice_data->getTransaction();
+//                $transaction    = $this->transactionRepository->get($transaction_id);
+////                $transaction    = $this->transactionRepository->getByTransactionId($transaction_id);
+//                
+//                if(!$transaction) {
+//                    $this->readerWriter->createLog(
+//                        'processDeclinedSaleOrSettleDmn() Error - there is no $transaction.');
+//                    
+//                    return;
+//                }
+                
+//                $this->transactionRepository->delete($transaction);
+                
+//                $this->invoiceRepository->delete($invoice_data);
+            } elseif ('Sale' == $params['transactionType']) {
+                $invCollection                          = $this->order->getInvoiceCollection();
+                $invoice                                = current($invCollection);
+                $this->curr_trans_info['invoice_id'][]  = $invoice->getId();
+                $this->sc_transaction_type              = Payment::SC_CANCELED;
+
+                $invoice
+                    ->setTransactionId($params['TransactionID'])
+                    ->setState(Invoice::STATE_CANCELED)
+                ;
+                
+                $this->invoiceRepository->save($invoice);
+            }
+        } catch(Exception $ex) {
+            $this->readerWriter->createLog($ex->getMessage(), 'processDeclinedSaleOrSettleDmn() Exception.');
+            return;
+        }
         
         // there are invoices
-        if (count($invCollection) > 0) {
-            $this->readerWriter->createLog(count($invCollection), 'The Invoices count is');
-
-            foreach ($this->order->getInvoiceCollection() as $invoice) {
-                // Sale
-                if (0 == $dmn_inv_id) {
-                    $this->curr_trans_info['invoice_id'][] = $invoice->getId();
-                    
-                    $invoice
-                        ->setTransactionId($params['TransactionID'])
-                        ->setState(Invoice::STATE_CANCELED)
-                        ->pay()
-                        ->save();
-                } elseif ($dmn_inv_id == $invoice->getId()) { // Settle
-                    $this->curr_trans_info['invoice_id'] = $invoice->getId();
-
-                    $invoice
-                        ->setTransactionId($params['TransactionID'])
-                        ->setState(Invoice::STATE_CANCELED)
-                        ->pay()
-                        ->save();
-                    
-                    break;
-                }
-            }
-        }
+//        if (count($invCollection) > 0) {
+//            $this->readerWriter->createLog(count($invCollection), 'The Invoices count is');
+//
+//            foreach ($this->order->getInvoiceCollection() as $invoice) {
+//                // Sale
+//                if (0 == $dmn_inv_id) {
+//                    $this->curr_trans_info['invoice_id'][] = $invoice->getId();
+//                    
+//                    $this->sc_transaction_type = Payment::SC_CANCELED;
+//                    
+//                    $invoice
+//                        ->setTransactionId($params['TransactionID'])
+//                        ->setState(Invoice::STATE_CANCELED)
+//                        ->pay()
+//                        ->save()
+//                    ;
+//                    
+//                    
+//                    
+//                } elseif ($dmn_inv_id == $invoice->getId()) { // Settle
+//                    $this->curr_trans_info['invoice_id'][] = $invoice->getId();
+//                    
+//                    $this->sc_transaction_type = Payment::SC_AUTH;
+//
+//                    $this->readerWriter->createLog('Declined Settle');
+//                    
+//                    $invoice
+////                        ->setTransactionId($params['TransactionID'])
+////                        ->setState(Invoice::STATE_CANCELED)
+//                        ->setState(Invoice::STATE_OPEN)
+////                        ->pay()
+////                        ->save()
+//                    ;
+//                    
+//                    $this->invoiceRepository->save($invoice);
+//                    
+//                    break;
+//                }
+//            }
+//        }
     }
     
     /**
@@ -863,11 +956,15 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 . __('<b>Subscription ID:</b> ') . $params['subscriptionId']
             );
         }
-
+        
+        $this->readerWriter->createLog($this->order->getStatus(), 'Void Subsc getStatus', 'DEBUG');
+        
         $this->orderPayment->save();
         $this->orderResourceModel->save($this->order);
 
         $this->readerWriter->createLog($ord_trans_addit_info, 'Process Subscr DMN ends for order #' . $orderIncrementId);
+        $this->readerWriter->createLog($this->order->getStatus(), 'Process Subscr DMN Order Status', 'DEBUG');
+        
         return 'Process Subscr DMN ends for order #' . $orderIncrementId;
     }
 
@@ -878,7 +975,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
      */
     private function placeOrder($params)
     {
-        $this->readerWriter->createLog($params['quote'], 'PlaceOrder() quote');
+        $this->readerWriter->createLog($params, 'PlaceOrder()');
         
         $result = $this->dataObjectFactory->create();
         
@@ -1150,6 +1247,8 @@ class DmnOld extends \Magento\Framework\App\Action\Action
     
     private function getOrCreateOrder($params, $orderIncrementId)
     {
+        $this->readerWriter->createLog($orderIncrementId, 'getOrCreateOrder for $orderIncrementId');
+        
         $searchCriteria = $this->searchCriteriaBuilder
             ->addFilter('increment_id', $orderIncrementId, 'eq')->create();
 
@@ -1194,7 +1293,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             ) {
                 $this->readerWriter->createLog('The Order '. $orderIncrementId .' is not approved, stop process.');
                 
-                return 'getOrCreateOrder() error - The Order ' . $orderIncrementId .' is not approved, stop process.';
+                return 'The Order ' . $orderIncrementId .' is not approved, stop process.';
             }
             
             $this->readerWriter->createLog('Order '. $orderIncrementId .' not found, try to create it!');
