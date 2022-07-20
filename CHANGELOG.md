@@ -13,6 +13,7 @@
     * Removed the option to show/hide Nuvei logo on the checkout.
     * Added new Order status - 'Nuvei Canceled'.
     * Added confirm prompt when try to Void.
+    * Added correct links to Nuvei Documentation.
 ```
 
 # 1.0.0

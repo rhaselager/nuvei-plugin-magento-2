@@ -505,6 +505,8 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                     
                     $this->curr_trans_info['invoice_id'] = $this->httpRequest->getParam('invoice_id');
                     
+                    $this->readerWriter->createLog(null, 'Refund before set state', 'DEBUG');
+                    
                     $this->order->setData('state', Order::STATE_PROCESSING);
                 }
                 
@@ -549,18 +551,18 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             
             $ord_trans_addit_info[] = $this->curr_trans_info;
             
-            $this->readerWriter->createLog($ord_trans_addit_info, 'DMN before save $ord_trans_addit_info');
+            $this->readerWriter->createLog($ord_trans_addit_info, 'DMN before save $ord_trans_addit_info', 'DEBUG');
             
             $this->orderPayment
                 ->setAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA, $ord_trans_addit_info)
-//                ->save()
+                ->save()
                 ;
             
-            $this->readerWriter->createLog('DMN after save $ord_trans_addit_info');
+            $this->readerWriter->createLog($this->sc_transaction_type, 'DMN after save $ord_trans_addit_info', 'DEBUG');
             
             $this->orderResourceModel->save($this->order);
             
-            $this->readerWriter->createLog('DMN after save the order');
+            $this->readerWriter->createLog(null, 'DMN after save the order', 'DEBUG');
             
             $this->readerWriter->createLog('DMN process end for order #' . $orderIncrementId);
             $this->jsonOutput->setData('DMN process end for order #' . $orderIncrementId);
@@ -647,7 +649,6 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         
         $this->sc_transaction_type  = Payment::SC_SETTLED;
         $invCollection              = $this->order->getInvoiceCollection();
-//        $inv_amount                 = round(floatval($this->order->getBaseGrandTotal()), 2);
         $dmn_inv_id                 = $this->httpRequest->getParam('invoice_id');
         $is_cpanel_settle           = false;
         

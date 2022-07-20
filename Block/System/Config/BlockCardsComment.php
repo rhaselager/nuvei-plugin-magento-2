@@ -13,7 +13,6 @@ class BlockCardsComment implements \Magento\Config\Model\Config\CommentInterface
 
     public function getCommentText($elementValue)  //the method has to be named getCommentText
     {
-        return 'For examples <a href="https://preprod-docs-safecharge.gw-4u.com/documentation/'
-        . 'features/blocking-cards/" target="_blank">check the Documentation</a>.';
+        return 'For examples <a href="https://docs.nuvei.com/documentation/accept-payment/checkout-2/payment-customization/#card-processing" target="_blank">check the Documentation</a>.';
     }
 }
