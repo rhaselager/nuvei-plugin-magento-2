@@ -112,9 +112,13 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         $this->jsonOutput = $this->jsonResultFactory->create();
         $this->jsonOutput->setHttpResponseCode(200);
         
+        // set some variables
+        $order_status   = '';
+        $order_tr_type  = '';
+        $last_record    = []; // last transaction data
+        
         if (!$this->moduleConfig->isActive()) {
-            $this->jsonOutput->setData('DMN Error - Nuvei payment module is not active!');
-            return $this->jsonOutput;
+            $this->returnJson('DMN Error - Nuvei payment module is not active!');
         }
         
         try {
@@ -126,17 +130,12 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             $this->readerWriter->createLog($params, 'DMN params:');
             
             if (!empty($params['type']) && 'CARD_TOKENIZATION' == $params['type']) {
-                $this->jsonOutput->setData('DMN report - this is Card Tokenization DMN.');
-                return $this->jsonOutput;
+                $this->returnJson('DMN report - this is Card Tokenization DMN.');
             }
             
             ### DEBUG
-//            $this->jsonOutput->setData('DMN manually stopped.');
-//            $this->readerWriter->createLog(http_build_query($params), 'DMN params string:');
-//            return $this->jsonOutput;
+//            $this->returnJson('DMN manually stopped.', http_build_query($params));
             ### DEBUG
-            
-            $status = !empty($params['Status']) ? strtolower($params['Status']) : null;
             
             // modify it because of the PayPal Sandbox problem with duplicate Orders IDs
             // we modify it also in Class PaymenAPM getParams().
@@ -144,6 +143,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 $params["merchant_unique_id"] = $this->moduleConfig->getClientUniqueId($params["merchant_unique_id"]);
             }
             
+            // try to find Order ID
             if (!empty($params["order"])) {
                 $orderIncrementId = $params["order"];
             } elseif (!empty($params["merchant_unique_id"]) && (int) $params["merchant_unique_id"] != 0) {
@@ -166,18 +166,20 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                     $orderIncrementId = $last_elem;
                 }
             } else {
-                $this->readerWriter->createLog('DMN error - no Order ID parameter.');
-                
-                $this->jsonOutput->setData('DMN error - no Order ID parameter.');
-                return $this->jsonOutput;
+                $this->returnJson('DMN error - no Order ID parameter.');
             }
+            // /try to find Order ID
             
-            $valid_resp = $this->validateChecksum($params, $orderIncrementId);
+            // try to find Status
+            $status = !empty($params['Status']) ? strtolower($params['Status']) : null;
             
-            if (true !== $valid_resp) {
-                $this->jsonOutput->setData($valid_resp);
-                return $this->jsonOutput;
+            if (!in_array($status, ['declined', 'error', 'approved', 'success'])) { // UNKNOWN DMN
+                $this->returnJson('DMN for Order #' . $orderIncrementId . ' was not recognized.');
             }
+            // /try to find Status
+            
+            // try to validate the Cheksum
+            $this->validateChecksum($params, $orderIncrementId);
             
             /**
              * Try to create the Order.
@@ -186,18 +188,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
              * $this->order
              * $this->orderPayment
              */
-            $resp = $this->getOrCreateOrder($params, $orderIncrementId);
-            
-            if (is_string($resp)) {
-                $this->jsonOutput->setData($resp);
-                return $this->jsonOutput;
-            }
-            // Try to create the Order END
-            
-            // set some variables
-            $order_status       = '';
-            $order_tr_type      = '';
-            $last_record        = []; // last transaction data
+            $this->getOrCreateOrder($params, $orderIncrementId);
             
             // last saved Additional Info for the transaction
             $ord_trans_addit_info = $this->orderPayment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
@@ -212,71 +203,22 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 $order_status   = !empty($last_record[Payment::TRANSACTION_STATUS])
                     ? $last_record[Payment::TRANSACTION_STATUS] : '';
                 
-                $order_tr_type    = !empty($last_record[Payment::TRANSACTION_TYPE])
+                $order_tr_type  = !empty($last_record[Payment::TRANSACTION_TYPE])
                     ? $last_record[Payment::TRANSACTION_TYPE] : '';
             }
             
-            # prepare current transaction data for save
-            $this->curr_trans_info = [
-                Payment::TRANSACTION_ID             => '',
-                Payment::TRANSACTION_AUTH_CODE      => '',
-                Payment::TRANSACTION_STATUS         => '',
-                Payment::TRANSACTION_TYPE           => '',
-                Payment::TRANSACTION_UPO_ID         => '',
-                Payment::TRANSACTION_TOTAL_AMOUN    => '',
-                Payment::TRANSACTION_PAYMENT_METHOD => '',
-                Payment::SUBSCR_IDS                 => '',
-                'start_subscr_data'                 => '',
-            ];
+            // prepare current transaction data for save
+            $this->prepareCurrTrInfo($params);
             
-            // some subscription DMNs does not have TransactionID
-            if (isset($params['TransactionID'])) {
-                $this->curr_trans_info[Payment::TRANSACTION_ID] = $params['TransactionID'];
-            }
-            if (isset($params['AuthCode'])) {
-                $this->curr_trans_info[Payment::TRANSACTION_AUTH_CODE] = $params['AuthCode'];
-            }
-            if (isset($params['Status'])) {
-                $this->curr_trans_info[Payment::TRANSACTION_STATUS] = $params['Status'];
-            }
-            if (isset($params['transactionType'])) {
-                $this->curr_trans_info[Payment::TRANSACTION_TYPE] = $params['transactionType'];
-            }
-            if (isset($params['userPaymentOptionId'])) {
-                $this->curr_trans_info[Payment::TRANSACTION_UPO_ID] = $params['userPaymentOptionId'];
-            }
-            if (isset($params['totalAmount'])) {
-                $this->curr_trans_info[Payment::TRANSACTION_TOTAL_AMOUN] = $params['totalAmount'];
-            }
-            if (isset($params['payment_method'])) {
-                $this->curr_trans_info[Payment::TRANSACTION_PAYMENT_METHOD] = $params['payment_method'];
-            }
-            if (!empty($params['customField2'])) {
-                $this->curr_trans_info['start_subscr_data'] = $params['customField2'];
-            }
-            # /prepare current transaction data for save
-            
-            # check for Subscription State DMN
-            $resp = $this->processSubscrDmn($params, $orderIncrementId, $ord_trans_addit_info);
-            
-            if (is_string($resp)) {
-                $this->jsonOutput->setData($resp);
-                return $this->jsonOutput;
-            }
-            # check for Subscription State DMN END
+            // check for Subscription State DMN
+            $this->processSubscrDmn($params, $orderIncrementId, $ord_trans_addit_info);
             
             if (empty($params['transactionType'])) {
-                $this->readerWriter->createLog('DMN error - missing Transaction Type.');
-                
-                $this->jsonOutput->setData('DMN error - missing Transaction Type.');
-                return $this->jsonOutput;
+                $this->returnJson('DMN error - missing Transaction Type.');
             }
             
             if (empty($params['TransactionID'])) {
-                $this->readerWriter->createLog('DMN error - missing Transaction ID.');
-                
-                $this->jsonOutput->setData('DMN error - missing Transaction ID.');
-                return $this->jsonOutput;
+                $this->returnJson('DMN error - missing Transaction ID.');
             }
             
             $tr_type_param = strtolower($params['transactionType']);
@@ -295,84 +237,12 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 );
                 
                 $this->orderResourceModel->save($this->order);
-
-                $this->readerWriter->createLog('DMN process end for order #' . $orderIncrementId);
-                $this->jsonOutput->setData('DMN process end for order #' . $orderIncrementId);
-
-                return $this->jsonOutput;
+                $this->returnJson('DMN process end for order #' . $orderIncrementId);
             }
             # /Subscription transaction DMN
             
-            # do not overwrite Order status
-            // default - same transaction type, order was approved, but DMN status is different
-            if (strtolower($order_tr_type) == $tr_type_param
-                && strtolower($order_status) == 'approved'
-                && $order_status != $params['Status']
-            ) {
-                $msg = 'Current Order status is "'. $order_status .'", but incoming DMN status is "'
-                    . $params['Status'] . '", for Transaction type '. $order_tr_type
-                    .'. Do not apply DMN data on the Order!';
-                
-                $this->readerWriter->createLog($msg);
-                $this->jsonOutput->setData($msg);
-                
-                return $this->jsonOutput;
-            }
-            
-            /**
-             * When all is same for Sale
-             * we do this check only for sale, because Settle, Reffund and Void
-             * can be partial
-             */
-            if (strtolower($order_tr_type) == $tr_type_param
-                && $tr_type_param == 'sale'
-                && strtolower($order_status) == 'approved'
-                && $order_status == $params['Status']
-            ) {
-                $msg = 'Duplicated Sale DMN. Stop DMN process!';
-                
-                $this->readerWriter->createLog($msg);
-                $this->jsonOutput->setData($msg);
-                
-                return $this->jsonOutput;
-            }
-            
-            // do not override status if the Order is Voided or Refunded
-            if ('void' == strtolower($order_tr_type)
-                && strtolower($order_status) == 'approved'
-                && (strtolower($params['transactionType']) != 'void'
-                    || 'approved' != $status)
-            ) {
-                $msg = 'No more actions are allowed for order #' . $this->order->getId();
-                
-                $this->readerWriter->createLog($msg);
-                $this->jsonOutput->setData($msg);
-                
-                return $this->jsonOutput;
-            }
-            
-            // after Refund allow only refund, this is in case of Partial Refunds
-            if (in_array(strtolower($order_tr_type), ['refund', 'credit'])
-                && strtolower($order_status) == 'approved'
-                && !in_array(strtolower($params['transactionType']), ['refund', 'credit'])
-            ) {
-                $msg = 'No more actions are allowed for order #' . $this->order->getId();
-                
-                $this->readerWriter->createLog($msg);
-                $this->jsonOutput->setData($msg);
-                
-                return $this->jsonOutput;
-            }
-            
-            if ($tr_type_param === 'auth' && strtolower($order_tr_type) === 'settle') {
-                $msg = 'Can not set Auth to Settled Order #' . $this->order->getId();
-                
-                $this->readerWriter->createLog($msg);
-                $this->jsonOutput->setData($msg);
-                
-                return $this->jsonOutput;
-            }
-            # do not overwrite Order status END
+            // do not overwrite Order status
+            $this->keepOrderStatusFromOverride($params, $order_tr_type, $order_status, $status);
 
             $parent_trans_id = isset($params['relatedTransactionId'])
                 ? $params['relatedTransactionId'] : null;
@@ -389,93 +259,31 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 );
             }
             
+            // compare them later
+            $order_total    = round((float) $this->order->getBaseGrandTotal(), 2);
+            $dmn_total      = round((float) $params['totalAmount'], 2);
+            
+            // PENDING TRANSACTION
             if ($status === "pending") {
                 $this->order
                     ->setState(Order::STATE_NEW)
                     ->setStatus('pending');
             }
             
-            // compare them later
-            $order_total    = round((float) $this->order->getBaseGrandTotal(), 2);
-            $dmn_total      = round((float) $params['totalAmount'], 2);
-            
             // APPROVED TRANSACTION
             if (in_array($status, ['approved', 'success'])) {
-                $message = $this->captureCommand
-                    ->execute($this->orderPayment, $this->order->getBaseGrandTotal(), $this->order);
+//                $message = $this->captureCommand
+//                    ->execute($this->orderPayment, $this->order->getBaseGrandTotal(), $this->order);
                 
                 $this->sc_transaction_type  = Payment::SC_PROCESSING;
                 $refund_msg                 = '';
                 
-                // AUTH
-                if ($tr_type_param == 'auth') {
-                    $this->processAuthDmn($params, $order_total, $dmn_total, $message);
-                } elseif (in_array($tr_type_param, ['sale', 'settle'])
-                    && !isset($params['dmnType'])
-                ) { // SALE and SETTLE
-                    $this->processSaleAndSettleDMN(
-                        $params,
-                        $order_total,
-                        $dmn_total,
-                        $tr_type_param,
-                        $last_record
-                    );
-                } elseif ('void' ==  $tr_type_param) { // VOID
-                    $this->transactionType        = Transaction::TYPE_VOID;
-                    $this->sc_transaction_type    = Payment::SC_VOIDED;
-                    
-                    // set the Canceld Invoice
-                    $this->curr_trans_info['invoice_id'] = $this->httpRequest->getParam('invoice_id');
-                    
-                    // mark the Order Invoice as Canceld
-                    $invCollection = $this->order->getInvoiceCollection();
-                    
-                    $this->readerWriter->createLog(
-                        [
-                            'invoice_id'        => $this->curr_trans_info['invoice_id'],
-                            '$invCollection'    => count($invCollection)
-                        ],
-                        'Void DMN data:'
-                    );
-                    
-                    if (!empty($invCollection)) {
-                        foreach ($invCollection as $invoice) {
-                            $this->readerWriter->createLog($invoice->getId(), 'Invoice');
-                            
-                            if ($invoice->getId() == $this->curr_trans_info['invoice_id']) {
-                                $this->readerWriter->createLog($invoice->getId(), 'Invoice to be Canceld');
-                                
-                                $invoice->setState(Invoice::STATE_CANCELED);
-                                $this->invoiceRepository->save($invoice);
-
-                                break;
-                            }
-                        }
-                    }
-                    // mark the Order Invoice as Canceld END
-                    
-                    // Cancel active Subscriptions, if there are any
-                    $succsess = $this->paymentModel->cancelSubscription($this->orderPayment);
-                    
-                    // if we cancel any subscription set state Close
-                    if($succsess) {
-                        $this->order->setData('state', Order::STATE_CLOSED);
-                    }
-                } elseif (in_array($tr_type_param, ['credit', 'refund'])) { // REFUND / CREDIT
-                    $this->transactionType        = Transaction::TYPE_REFUND;
-                    $this->sc_transaction_type    = Payment::SC_REFUNDED;
-                    
-                    if ( (!empty($params['totalAmount']) && 'cc_card' == $params["payment_method"])
-                        || false !== strpos($params["merchant_unique_id"], 'gwp')
-                    ) {
-                        $refund_msg = '<br/>Refunded amount: <b>'
-                            . $params['totalAmount'] . ' ' . $params['currency'] . '</b>.';
-                    }
-                    
-                    $this->curr_trans_info['invoice_id'] = $this->httpRequest->getParam('invoice_id');
-                    
-                    $this->order->setData('state', Order::STATE_PROCESSING);
-                }
+                // try to recognize DMN type
+//                $this->processAuthDmn($params, $order_total, $dmn_total, $message); // AUTH
+                $this->processAuthDmn($params, $order_total, $dmn_total); // AUTH
+                $this->processSaleAndSettleDMN($params, $order_total, $dmn_total, $last_record); // SALE and SETTLE
+                $this->processVoidDmn($tr_type_param); // VOID
+                $this->processRefundDmn($params); // REFUND/CREDIT
                 
                 $this->order->setStatus($this->sc_transaction_type);
 
@@ -498,7 +306,10 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                         . $refund_msg,
                     $this->sc_transaction_type
                 );
-            } elseif (in_array($status, ['declined', 'error'])) { // DECLINED/ERROR TRANSACTION
+            }
+            
+            // DECLINED/ERROR TRANSACTION
+            if (in_array($status, ['declined', 'error'])) {
                 $this->processDeclinedSaleOrSettleDmn($params);
                 
                 $params['ErrCode']      = (isset($params['ErrCode'])) ? $params['ErrCode'] : "Unknown";
@@ -511,25 +322,22 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                         . __('Reason: ') . $params['ExErrCode'] . '.',
                     $this->sc_transaction_type
                 );
-            } else { // UNKNOWN DMN
-                $this->readerWriter->createLog('DMN for Order #' . $orderIncrementId . ' was not recognized.');
-                $this->jsonOutput->setData('DMN for Order #' . $orderIncrementId . ' was not recognized.');
             }
             
             $ord_trans_addit_info[] = $this->curr_trans_info;
             
-            $this->readerWriter->createLog($ord_trans_addit_info, 'DMN before save $ord_trans_addit_info');
+            $this->readerWriter->createLog($ord_trans_addit_info, 'DMN before save $ord_trans_addit_info', 'DEBUG');
             
             $this->orderPayment
                 ->setAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA, $ord_trans_addit_info)
-//                ->save()
+                ->save()
                 ;
             
-            $this->readerWriter->createLog('DMN after save $ord_trans_addit_info');
+            $this->readerWriter->createLog($this->sc_transaction_type, 'DMN after save $ord_trans_addit_info', 'DEBUG');
             
             $this->orderResourceModel->save($this->order);
             
-            $this->readerWriter->createLog('DMN after save the order');
+            $this->readerWriter->createLog(null, 'DMN after save the order', 'DEBUG');
             
             $this->readerWriter->createLog('DMN process end for order #' . $orderIncrementId);
             $this->jsonOutput->setData('DMN process end for order #' . $orderIncrementId);
@@ -558,6 +366,10 @@ class DmnOld extends \Magento\Framework\App\Action\Action
      */
     private function processAuthDmn($params, $order_total, $dmn_total)
     {
+        if('auth' != strtolower($params['transactionType'])) {
+            return;
+        }
+        
         $this->sc_transaction_type = Payment::SC_AUTH;
 
         // amount check
@@ -591,7 +403,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         $this->orderPayment
             ->setAuthAmount($params['totalAmount'])
             ->setIsTransactionPending(true)
-            ->setIsTransactionClosed(0);
+            ->setIsTransactionClosed(false);
 
         // set transaction
         $transaction = $this->transObj->setPayment($this->orderPayment)
@@ -607,16 +419,20 @@ class DmnOld extends \Magento\Framework\App\Action\Action
      * @param array     $params
      * @param float     $order_total
      * @param float     $dmn_total
-     * @param string    $tr_type_param
      * @param array     $last_tr_record
      */
-    private function processSaleAndSettleDMN($params, $order_total, $dmn_total, $tr_type_param, $last_tr_record)
+    private function processSaleAndSettleDMN($params, $order_total, $dmn_total, $last_tr_record)
     {
+        $tr_type_param = strtolower($params['transactionType']);
+        
+        if (!in_array($tr_type_param, ['sale', 'settle']) || isset($params['dmnType'])) {
+            return;
+        }
+        
         $this->readerWriter->createLog('processSaleAndSettleDMN()');
         
         $this->sc_transaction_type  = Payment::SC_SETTLED;
         $invCollection              = $this->order->getInvoiceCollection();
-//        $inv_amount                 = round(floatval($this->order->getBaseGrandTotal()), 2);
         $dmn_inv_id                 = $this->httpRequest->getParam('invoice_id');
         $is_cpanel_settle           = false;
         
@@ -763,6 +579,85 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             
             return;
         }
+    }
+    
+    /**
+     * 
+     * @param string $tr_type_param
+     * @return void
+     */
+    private function processVoidDmn($tr_type_param)
+    {
+        if ('void' !=  $tr_type_param) {
+            return;
+        }
+        
+        $this->transactionType        = Transaction::TYPE_VOID;
+        $this->sc_transaction_type    = Payment::SC_VOIDED;
+
+        // set the Canceld Invoice
+        $this->curr_trans_info['invoice_id'] = $this->httpRequest->getParam('invoice_id');
+
+        // mark the Order Invoice as Canceld
+        $invCollection = $this->order->getInvoiceCollection();
+
+        $this->readerWriter->createLog(
+            [
+                'invoice_id'        => $this->curr_trans_info['invoice_id'],
+                '$invCollection'    => count($invCollection)
+            ],
+            'Void DMN data:'
+        );
+
+        if (!empty($invCollection)) {
+            foreach ($invCollection as $invoice) {
+                $this->readerWriter->createLog($invoice->getId(), 'Invoice');
+
+                if ($invoice->getId() == $this->curr_trans_info['invoice_id']) {
+                    $this->readerWriter->createLog($invoice->getId(), 'Invoice to be Canceld');
+
+                    $invoice->setState(Invoice::STATE_CANCELED);
+                    $this->invoiceRepository->save($invoice);
+
+                    break;
+                }
+            }
+        }
+        // mark the Order Invoice as Canceld END
+
+        // Cancel active Subscriptions, if there are any
+        $succsess = $this->paymentModel->cancelSubscription($this->orderPayment);
+
+        // if we cancel any subscription set state Close
+        if($succsess) {
+            $this->order->setData('state', Order::STATE_CLOSED);
+        }
+    }
+    
+    /**
+     * @param array $params Incoming parameters.
+     */
+    private function processRefundDmn($params)
+    {
+        if (!in_array(strtolower($params['transactionType']), ['credit', 'refund'])) { 
+            return;
+        }
+        
+        $this->readerWriter->createLog('', 'processRefundDmn', 'INFO');
+        
+        $this->transactionType        = Transaction::TYPE_REFUND;
+        $this->sc_transaction_type    = Payment::SC_REFUNDED;
+
+        if ( (!empty($params['totalAmount']) && 'cc_card' == $params["payment_method"])
+            || false !== strpos($params["merchant_unique_id"], 'gwp')
+        ) {
+            $refund_msg = '<br/>Refunded amount: <b>'
+                . $params['totalAmount'] . ' ' . $params['currency'] . '</b>.';
+        }
+
+        $this->curr_trans_info['invoice_id'] = $this->httpRequest->getParam('invoice_id');
+        // use this hack to prevent deadlock when try to save the order payment or the order
+        sleep(1);
     }
     
     /**
@@ -961,11 +856,9 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         
         $this->orderPayment->save();
         $this->orderResourceModel->save($this->order);
-
-        $this->readerWriter->createLog($ord_trans_addit_info, 'Process Subscr DMN ends for order #' . $orderIncrementId);
         $this->readerWriter->createLog($this->order->getStatus(), 'Process Subscr DMN Order Status', 'DEBUG');
         
-        return 'Process Subscr DMN ends for order #' . $orderIncrementId;
+        $this->returnJson('Process Subscr DMN ends for order #' . $orderIncrementId, $ord_trans_addit_info);
     }
 
     /**
@@ -1062,10 +955,8 @@ class DmnOld extends \Magento\Framework\App\Action\Action
     private function validateChecksum($params, $orderIncrementId)
     {
         if (empty($params["advanceResponseChecksum"]) && empty($params['responsechecksum'])) {
-            $msg = 'Required keys advanceResponseChecksum and responsechecksum for checksum calculation are missing.';
-            
-            $this->readerWriter->createLog($msg);
-            return $msg;
+            $this->returnJson('Required keys advanceResponseChecksum and '
+                . 'responsechecksum for checksum calculation are missing.');
         }
         
         // most of the DMNs with advanceResponseChecksum
@@ -1075,10 +966,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
 
             foreach ($params_arr as $checksumKey) {
                 if (!isset($params[$checksumKey])) {
-                    $msg = 'Required key '. $checksumKey .' for checksum calculation is missing.';
-                    
-                    $this->readerWriter->createLog($msg);
-                    return $msg;
+                    $this->returnJson('Required key '. $checksumKey .' for checksum calculation is missing.');
                 }
 
                 if (is_array($params[$checksumKey])) {
@@ -1100,8 +988,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                         . ' ' . __('Transaction type ') . $params['type']);
                 }
                 
-                $this->readerWriter->createLog($msg);
-                return $msg;
+                $this->returnJson($msg);
             }
 
             return true;
@@ -1114,10 +1001,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         $concat = implode('', $params);
         
         if (empty($concat)) {
-            $msg = 'Checksum string before hash is empty for Order #' . $orderIncrementId;
-
-            $this->readerWriter->createLog($msg);
-            return $msg;
+            $this->returnJson('Checksum string before hash is empty for Order #' . $orderIncrementId);
         }
         
         $concat_final   = $concat . $this->moduleConfig->getMerchantSecretKey();
@@ -1131,8 +1015,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                     . ' ' . __('Transaction type ') . $params['type']);
             }
             
-            $this->readerWriter->createLog([$concat, $checksum], $msg);
-            return $msg;
+            $this->returnJson($msg);
         }
         
         return true;
@@ -1291,9 +1174,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             if (in_array(strtolower($params['transactionType']), ['sale', 'auth'])
                 && strtolower($params['Status']) != 'approved'
             ) {
-                $this->readerWriter->createLog('The Order '. $orderIncrementId .' is not approved, stop process.');
-                
-                return 'The Order ' . $orderIncrementId .' is not approved, stop process.';
+                $this->returnJson('The Order ' . $orderIncrementId .' is not approved, stop process.');
             }
             
             $this->readerWriter->createLog('Order '. $orderIncrementId .' not found, try to create it!');
@@ -1301,9 +1182,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             $result = $this->placeOrder($params);
 
             if ($result->getSuccess() !== true) {
-                $this->readerWriter->createLog('DMN Callback error - place order error: ' . $result->getMessage());
-
-                return 'DMN Callback error - place order error: ' . $result->getMessage();
+                $this->returnJson('DMN Callback error - place order error: ' . $result->getMessage());
             }
 
             $orderList = $this->orderRepo->getList($searchCriteria)->getItems();
@@ -1312,43 +1191,150 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         }
         
         if (!$orderList || empty($orderList)) {
-            $this->readerWriter->createLog(
-                'DMN Callback error - there is no Order and the code did not success to create it.'
-            );
-            
-            $this->jsonOutput->setHttpResponseCode(400);
-            return 'DMN Callback error - there is no Order and the code did not success to create it.';
+            $this->returnJson('DMN Callback error - there is no Order and the code did not success to create it.');
         }
         
         $this->order = current($orderList);
         
         if (null === $this->order) {
-            $this->readerWriter->createLog($orderList, 'DMN error - Order object is null.');
-
-            return 'DMN error - Order object is null.';
+            $this->returnJson('DMN error - Order object is null.', $orderList);
         }
         
         $this->orderPayment = $this->order->getPayment();
         
         if (null === $this->orderPayment) {
-            $this->readerWriter->createLog('DMN error - Order Payment object is null.');
-
-            return 'DMN error - Order Payment object is null.';
+            $this->returnJson('DMN error - Order Payment object is null.');
         }
         
         // check if the Order belongs to nuvei
         $method = $this->orderPayment->getMethod();
 
         if ('nuvei' != $method) {
-            $this->readerWriter->createLog(
+            $this->returnJson(
+                'DMN getOrCreateOrder() error - the order does was not made with Nuvei module.',
                 [
                     'orderIncrementId' => $orderIncrementId,
                     'module' => $method,
-                ],
-                'DMN getOrCreateOrder() error - the order does was not made with Nuvei module.'
+                ]
             );
+        }
+        
+        return;
+    }
+    
+    /**
+     * @param array $params
+     */
+    private function prepareCurrTrInfo($params)
+    {
+        $this->curr_trans_info = [
+            Payment::TRANSACTION_ID             => '',
+            Payment::TRANSACTION_AUTH_CODE      => '',
+            Payment::TRANSACTION_STATUS         => '',
+            Payment::TRANSACTION_TYPE           => '',
+            Payment::TRANSACTION_UPO_ID         => '',
+            Payment::TRANSACTION_TOTAL_AMOUN    => '',
+            Payment::TRANSACTION_PAYMENT_METHOD => '',
+            Payment::SUBSCR_IDS                 => '',
+            'start_subscr_data'                 => '',
+        ];
 
-            return 'DMN getOrCreateOrder() error - the order does was not made with Nuvei module.';
+        // some subscription DMNs does not have TransactionID
+        if (isset($params['TransactionID'])) {
+            $this->curr_trans_info[Payment::TRANSACTION_ID] = $params['TransactionID'];
+        }
+        if (isset($params['AuthCode'])) {
+            $this->curr_trans_info[Payment::TRANSACTION_AUTH_CODE] = $params['AuthCode'];
+        }
+        if (isset($params['Status'])) {
+            $this->curr_trans_info[Payment::TRANSACTION_STATUS] = $params['Status'];
+        }
+        if (isset($params['transactionType'])) {
+            $this->curr_trans_info[Payment::TRANSACTION_TYPE] = $params['transactionType'];
+        }
+        if (isset($params['userPaymentOptionId'])) {
+            $this->curr_trans_info[Payment::TRANSACTION_UPO_ID] = $params['userPaymentOptionId'];
+        }
+        if (isset($params['totalAmount'])) {
+            $this->curr_trans_info[Payment::TRANSACTION_TOTAL_AMOUN] = $params['totalAmount'];
+        }
+        if (isset($params['payment_method'])) {
+            $this->curr_trans_info[Payment::TRANSACTION_PAYMENT_METHOD] = $params['payment_method'];
+        }
+        if (!empty($params['customField2'])) {
+            $this->curr_trans_info['start_subscr_data'] = $params['customField2'];
         }
     }
+    
+    /**
+     * @param string $msg
+     * @param mixed $data
+     */
+    private function returnJson($msg, $data = '')
+    {
+        $this->readerWriter->createLog($data, $msg);
+        $this->jsonOutput->setData($msg);
+        
+        return $this->jsonOutput;
+    }
+    
+    /**
+     * Help method keeping Order status from override with
+     * delied or duplicated DMNs.
+     * 
+     * @param array $params
+     * @param string $order_tr_type
+     * @param string $order_status
+     */
+    private function keepOrderStatusFromOverride($params, $order_tr_type, $order_status, $status)
+    {
+        $tr_type_param = strtolower($params['transactionType']);
+        
+        // default - same transaction type, order was approved, but DMN status is different
+        if (strtolower($order_tr_type) == $tr_type_param
+            && strtolower($order_status) == 'approved'
+            && $order_status != $params['Status']
+        ) {
+            $msg = 'Current Order status is "'. $order_status .'", but incoming DMN status is "'
+                . $params['Status'] . '", for Transaction type '. $order_tr_type
+                .'. Do not apply DMN data on the Order!';
+
+            $this->returnJson($msg);
+        }
+
+        /**
+         * When all is same for Sale
+         * we do this check only for sale, because Settle, Reffund and Void
+         * can be partial
+         */
+        if (strtolower($order_tr_type) == $tr_type_param
+            && $tr_type_param == 'sale'
+            && strtolower($order_status) == 'approved'
+            && $order_status == $params['Status']
+        ) {
+            $this->returnJson('Duplicated Sale DMN. Stop DMN process!');
+        }
+
+        // do not override status if the Order is Voided or Refunded
+        if ('void' == strtolower($order_tr_type)
+            && strtolower($order_status) == 'approved'
+            && (strtolower($params['transactionType']) != 'void'
+                || 'approved' != $status)
+        ) {
+            $this->returnJson('No more actions are allowed for order #' . $this->order->getId());
+        }
+
+        // after Refund allow only refund, this is in case of Partial Refunds
+        if (in_array(strtolower($order_tr_type), ['refund', 'credit'])
+            && strtolower($order_status) == 'approved'
+            && !in_array(strtolower($params['transactionType']), ['refund', 'credit'])
+        ) {
+            $this->returnJson('No more actions are allowed for order #' . $this->order->getId());
+        }
+
+        if ($tr_type_param === 'auth' && strtolower($order_tr_type) === 'settle') {
+            $this->returnJson('Can not set Auth to Settled Order #' . $this->order->getId());
+        }
+    }
+    
 }

@@ -14,6 +14,7 @@
     * Added new Order status - 'Nuvei Canceled'.
     * Added confirm prompt when try to Void.
     * Added correct links to Nuvei Documentation.
+    * When receive Refund DMN delay the process to avoid DB deadlock at the final save.
 ```
 
 # 1.0.0
