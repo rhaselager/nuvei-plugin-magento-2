@@ -87,7 +87,7 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
             if (!$res) {
                 $this->readerWriter->createLog('LatestPluginVersionMessage Error - file was not created.');
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             $this->readerWriter->createLog($ex->getMessage(), 'LatestPluginVersionMessage Exception:');
         }
         

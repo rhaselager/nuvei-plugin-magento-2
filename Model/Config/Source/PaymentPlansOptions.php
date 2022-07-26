@@ -52,7 +52,7 @@ class PaymentPlansOptions extends \Magento\Eav\Model\Entity\Attribute\Source\Abs
                         ];
                     }
 //                }
-//            } catch (Exception $e) {
+//            } catch (\Exception $e) {
 //                $this->readerWriter->createLog($e->getMessage(), 'PaymentPlansOptions Exception');
 //            }
 //        } elseif ($this->file->fileExists($file_name)) {

@@ -152,7 +152,7 @@ class AfterSave implements ObserverInterface
 //                $this->invRepo->delete($invoice_data);
 //            }
             // Settle request END
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->readerWriter->createLog($e->getMessage(), 'Invoice AfterSave Exception');
         }
         

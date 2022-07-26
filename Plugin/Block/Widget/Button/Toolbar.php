@@ -125,7 +125,7 @@ class Toolbar
 
                 $buttonList->getItems()[0]['void_payment']['onclick'] = "confirmSetLocation('{$message}', '{$url}')";
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->readerWriter->createLog($e->getMessage(), 'Class Toolbar exception:');
             return [$context, $buttonList];
         }

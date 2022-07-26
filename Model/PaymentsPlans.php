@@ -247,7 +247,7 @@ class PaymentsPlans
             }
 
             return $return_arr;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->readerWriter->createLog($e->getMessage(), 'getProductPlanData() Exception:');
             return [];
         }
@@ -309,7 +309,7 @@ class PaymentsPlans
             $this->readerWriter->createLog($return_arr, 'buildPlanDetailsArray()');
 
             return $return_arr;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->readerWriter->createLog($e->getMessage(), 'buildPlanDetailsArray() Exception');
             return [];
         }

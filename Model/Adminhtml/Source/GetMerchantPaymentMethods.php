@@ -108,7 +108,7 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
             }
             
             return $apmMethods->getPaymentMethods();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->readerWriter->createLog($e->getMessage(), 'Get APMs exception');
             return [];
         }

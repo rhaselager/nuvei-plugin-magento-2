@@ -85,7 +85,7 @@ class PreventAddToCart
                     throw new \Magento\Framework\Exception\LocalizedException(__($error_msg_2));
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->readerWriter->createLog($e->getMessage(), 'Exception:');
         }
     }

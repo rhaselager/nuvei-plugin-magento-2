@@ -89,7 +89,7 @@ class Settle extends \Nuvei\Checkout\Model\Response\AbstractPayment implements \
                     $this->getTransactionId()
                 );
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             $this->readerWriter->createLog($ex->getMessage(), 'updateTransaction exception:');
         }
 

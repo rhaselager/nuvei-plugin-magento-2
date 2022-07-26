@@ -61,6 +61,13 @@ function nuveiPrePayment(paymentDetails) {
 			jQuery('body').trigger('processStop');
 			return;
 		}
+        
+        // check if the hidden submit button is enabled
+        if(jQuery('#nuvei_default_pay_btn').hasClass('disabled')) {
+            reject(jQuery.mage.__('Please, check all required fields are filled!'));
+			jQuery('body').trigger('processStop');
+			return;
+        }
 		
 		nuveiUpdateOrder(resolve, reject);
 	});
@@ -141,7 +148,8 @@ function nuveiAfterSdkResponse(resp) {
 	}
 
 	// on Success, Approved
-	window.location.href = window.checkoutConfig.payment[nuveiGetCode()].successUrl;
+//	window.location.href = window.checkoutConfig.payment[nuveiGetCode()].successUrl;
+    jQuery('#nuvei_default_pay_btn').trigger('click');
 	jQuery('body').trigger('processStop');
 	return;
 };
@@ -234,7 +242,8 @@ define(
             },
 
             getCode: function() {
-                return 'nuvei';
+//                return 'nuvei';
+                return nuveiGetCode();
             },
 
 //			getNuveiIconUrl: function() {

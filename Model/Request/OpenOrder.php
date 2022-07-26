@@ -282,7 +282,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             }
             
             return $return;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->readerWriter->createLog($e->getMessage(), 'getOptions() Exception');
         }
 

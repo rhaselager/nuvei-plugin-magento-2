@@ -193,7 +193,7 @@ class ConfigProvider extends CcGenericConfigProvider
 //                        'pmBlacklist'               => $this->moduleConfig->getPMsBlackList(),
 //                        'pmWhitelist'               => null,
                         'alwaysCollectCvv'          => true,
-                        'fullName'                  => $billing_address['firstName'] . ' ' . $billing_address['lastName'],
+                        'fullName'                  => trim($billing_address['firstName'] . ' ' . $billing_address['lastName']),
                         'email'                     => $billing_address['email'],
                         'payButton'                 => $this->moduleConfig->getPayButtnoText(),
                         'showResponseMessage'       => false, // shows/hide the response popups

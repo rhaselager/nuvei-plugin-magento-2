@@ -112,7 +112,7 @@ class GetPlansList extends AbstractRequest implements RequestInterface
                 \Nuvei\Checkout\Model\Config::PAYMENT_PLANS_FILE_NAME,
                 json_encode($plans)
             );
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->readerWriter->createLog($e->getMessage(), 'GetPlansList Exception');
             
             return false;

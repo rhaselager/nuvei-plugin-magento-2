@@ -267,11 +267,11 @@ class Payment extends Cc implements TransparentInterface
         $chosenApmMethod = !empty($additionalData[self::KEY_CHOSEN_APM_METHOD])
             ? $additionalData[self::KEY_CHOSEN_APM_METHOD] : null;
         
-        $lastSessionToken = !empty($additionalData[self::KEY_LAST_ST])
-            ? $additionalData[self::KEY_LAST_ST] : null;
+//        $lastSessionToken = !empty($additionalData[self::KEY_LAST_ST])
+//            ? $additionalData[self::KEY_LAST_ST] : null;
 
         $info = $this->getInfoInstance();
-        $info->setAdditionalInformation(self::KEY_LAST_ST, $lastSessionToken);
+//        $info->setAdditionalInformation(self::KEY_LAST_ST, $lastSessionToken);
         $info->setAdditionalInformation(self::KEY_CHOSEN_APM_METHOD, $chosenApmMethod);
 
         return $this;
@@ -474,7 +474,7 @@ class Payment extends Cc implements TransparentInterface
 
             return empty($msg) ? true : false;
         }
-        catch(Exception $ex) {
+        catch(\Exception $ex) {
             $this->readerWriter->createLog($ex->getMessage());
         }
     }

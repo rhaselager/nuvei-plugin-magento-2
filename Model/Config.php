@@ -235,7 +235,7 @@ class Config
         try {
             $device_details['ipAddress']    = (string) $this->remoteIp->getRemoteAddress();
             $ua                                = $this->httpHeader->getHttpUserAgent();
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
 //            $this->createLog($ex->getMessage(), 'getDeviceDetails Exception');
             return $device_details;
         }
@@ -537,7 +537,7 @@ class Config
             
             return 'Magento Plugin ' . $module_data['setup_version'];
         }
-        catch(Exception $ex) {
+        catch(\Exception $ex) {
             return 'Magento Checkout Plugin';
         }
     }
@@ -845,7 +845,9 @@ class Config
     public function setQuotePaymentMethod($method)
     {
         $quote = $this->checkoutSession->getQuote();
-        $quote->getPayment()->setMethod($method);
+//        $quote->getPayment()->setMethod($method);
+        $quote->setPaymentMethod($method);
+        $quote->getPayment()->importData(['method' => $method]);
         $quote->save();
     }
     

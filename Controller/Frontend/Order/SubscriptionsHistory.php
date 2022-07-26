@@ -222,7 +222,7 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
                     false
                 ),
             ];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->readerWriter->createLog($e->getMessage(), 'SubscriptionsHistory getProductDetails() Exception:');
             return [];
         }

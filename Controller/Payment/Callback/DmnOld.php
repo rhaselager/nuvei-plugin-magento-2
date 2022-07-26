@@ -118,7 +118,12 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         $last_record    = []; // last transaction data
         
         if (!$this->moduleConfig->isActive()) {
-            $this->returnJson('DMN Error - Nuvei payment module is not active!');
+            $msg = 'DMN Error - Nuvei payment module is not active!';
+            
+            $this->readerWriter->createLog($msg);
+            $this->jsonOutput->setData($msg);
+
+            return $this->jsonOutput;
         }
         
         try {
@@ -130,11 +135,19 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             $this->readerWriter->createLog($params, 'DMN params:');
             
             if (!empty($params['type']) && 'CARD_TOKENIZATION' == $params['type']) {
-                $this->returnJson('DMN report - this is Card Tokenization DMN.');
+                $msg = 'DMN report - this is Card Tokenization DMN.';
+            
+                $this->readerWriter->createLog($msg);
+                $this->jsonOutput->setData($msg);
+
+                return $this->jsonOutput;
             }
             
             ### DEBUG
-//            $this->returnJson('DMN manually stopped.', http_build_query($params));
+//            $msg = 'DMN manually stopped.';
+//            $this->readerWriter->createLog(http_build_query($params), $msg);
+//            $this->jsonOutput->setData($msg);
+//            return $this->jsonOutput;
             ### DEBUG
             
             // modify it because of the PayPal Sandbox problem with duplicate Orders IDs
@@ -166,7 +179,12 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                     $orderIncrementId = $last_elem;
                 }
             } else {
-                $this->returnJson('DMN error - no Order ID parameter.');
+                $msg = 'DMN error - no Order ID parameter.';
+            
+                $this->readerWriter->createLog($msg);
+                $this->jsonOutput->setData($msg);
+
+                return $this->jsonOutput;
             }
             // /try to find Order ID
             
@@ -174,12 +192,22 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             $status = !empty($params['Status']) ? strtolower($params['Status']) : null;
             
             if (!in_array($status, ['declined', 'error', 'approved', 'success'])) { // UNKNOWN DMN
-                $this->returnJson('DMN for Order #' . $orderIncrementId . ' was not recognized.');
+                $msg = 'DMN for Order #' . $orderIncrementId . ' was not recognized.';
+            
+                $this->readerWriter->createLog($msg);
+                $this->jsonOutput->setData($msg);
+
+                return $this->jsonOutput;
             }
             // /try to find Status
             
             // try to validate the Cheksum
-            $this->validateChecksum($params, $orderIncrementId);
+            $success = $this->validateChecksum($params, $orderIncrementId);
+            
+            if(!$success) {
+                return $this->jsonOutput;
+            }
+            // /try to validate the Cheksum
             
             /**
              * Try to create the Order.
@@ -188,7 +216,12 @@ class DmnOld extends \Magento\Framework\App\Action\Action
              * $this->order
              * $this->orderPayment
              */
-            $this->getOrCreateOrder($params, $orderIncrementId);
+            $success = $this->getOrCreateOrder($params, $orderIncrementId);
+            
+            if(!$success) {
+                return $this->jsonOutput;
+            }
+            // /Try to create the Order.
             
             // last saved Additional Info for the transaction
             $ord_trans_addit_info = $this->orderPayment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
@@ -211,14 +244,34 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             $this->prepareCurrTrInfo($params);
             
             // check for Subscription State DMN
-            $this->processSubscrDmn($params, $orderIncrementId, $ord_trans_addit_info);
+            $stop = $this->processSubscrDmn($params, $orderIncrementId, $ord_trans_addit_info);
+            
+            if($stop) {
+                $msg = 'Process Subscr DMN ends for order #' . $orderIncrementId;
+                
+                $this->readerWriter->createLog($msg);
+                $this->jsonOutput->setData($msg);
+
+                return $this->jsonOutput;
+            }
+            // /check for Subscription State DMN
             
             if (empty($params['transactionType'])) {
-                $this->returnJson('DMN error - missing Transaction Type.');
+                $msg = 'DMN error - missing Transaction Type.';
+            
+                $this->readerWriter->createLog($msg);
+                $this->jsonOutput->setData($msg);
+
+                return $this->jsonOutput;
             }
             
             if (empty($params['TransactionID'])) {
-                $this->returnJson('DMN error - missing Transaction ID.');
+                $msg = 'DMN error - missing Transaction ID.';
+            
+                $this->readerWriter->createLog($msg);
+                $this->jsonOutput->setData($msg);
+
+                return $this->jsonOutput;
             }
             
             $tr_type_param = strtolower($params['transactionType']);
@@ -237,12 +290,23 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 );
                 
                 $this->orderResourceModel->save($this->order);
-                $this->returnJson('DMN process end for order #' . $orderIncrementId);
+                
+                $msg = 'DMN process end for order #' . $orderIncrementId;
+            
+                $this->readerWriter->createLog($msg);
+                $this->jsonOutput->setData($msg);
+
+                return $this->jsonOutput;
             }
             # /Subscription transaction DMN
             
             // do not overwrite Order status
-            $this->keepOrderStatusFromOverride($params, $order_tr_type, $order_status, $status);
+            $stop = $this->keepOrderStatusFromOverride($params, $order_tr_type, $order_status, $status);
+            
+            if($stop) {
+                return $this->jsonOutput;
+            }
+            // /do not overwrite Order status
 
             $parent_trans_id = isset($params['relatedTransactionId'])
                 ? $params['relatedTransactionId'] : null;
@@ -325,26 +389,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             }
             
             $ord_trans_addit_info[] = $this->curr_trans_info;
-            
-            $this->readerWriter->createLog($ord_trans_addit_info, 'DMN before save $ord_trans_addit_info', 'DEBUG');
-            
-            $this->orderPayment
-                ->setAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA, $ord_trans_addit_info)
-                ->save()
-                ;
-            
-            $this->readerWriter->createLog($this->sc_transaction_type, 'DMN after save $ord_trans_addit_info', 'DEBUG');
-            
-            $this->orderResourceModel->save($this->order);
-            
-            $this->readerWriter->createLog(null, 'DMN after save the order', 'DEBUG');
-            
-            $this->readerWriter->createLog('DMN process end for order #' . $orderIncrementId);
-            $this->jsonOutput->setData('DMN process end for order #' . $orderIncrementId);
-            
-            # try to create Subscription plans
-            $resp = $this->createSubscription($params, $last_record, $orderIncrementId);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $msg = $e->getMessage();
 
             $this->readerWriter->createLog(
@@ -355,6 +400,16 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             $this->jsonOutput->setData('Error: ' . $msg);
             $this->order->addStatusHistoryComment($msg);
         }
+        
+        $this->readerWriter->createLog('', 'DMN before finalSaveData()', 'DEBUG');
+        
+        $this->finalSaveData($ord_trans_addit_info);
+        
+        $this->readerWriter->createLog('DMN process end for order #' . $orderIncrementId);
+        $this->jsonOutput->setData('DMN process end for order #' . $orderIncrementId);
+
+        # try to create Subscription plans
+        $resp = $this->createSubscription($params, $last_record, $orderIncrementId);
 
         return $this->jsonOutput;
     }
@@ -657,7 +712,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
 
         $this->curr_trans_info['invoice_id'] = $this->httpRequest->getParam('invoice_id');
         // use this hack to prevent deadlock when try to save the order payment or the order
-        sleep(1);
+//        sleep(1);
     }
     
     /**
@@ -731,7 +786,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 
                 $this->invoiceRepository->save($invoice);
             }
-        } catch(Exception $ex) {
+        } catch(\Exception $ex) {
             $this->readerWriter->createLog($ex->getMessage(), 'processDeclinedSaleOrSettleDmn() Exception.');
             return;
         }
@@ -852,13 +907,11 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             );
         }
         
-        $this->readerWriter->createLog($this->order->getStatus(), 'Void Subsc getStatus', 'DEBUG');
-        
         $this->orderPayment->save();
         $this->orderResourceModel->save($this->order);
         $this->readerWriter->createLog($this->order->getStatus(), 'Process Subscr DMN Order Status', 'DEBUG');
         
-        $this->returnJson('Process Subscr DMN ends for order #' . $orderIncrementId, $ord_trans_addit_info);
+        return true;
     }
 
     /**
@@ -933,7 +986,7 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                     'action' => $this,
                 ]
             );
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->readerWriter->createLog($exception->getMessage(), 'DMN placeOrder Exception: ');
             
             return $result
@@ -955,8 +1008,13 @@ class DmnOld extends \Magento\Framework\App\Action\Action
     private function validateChecksum($params, $orderIncrementId)
     {
         if (empty($params["advanceResponseChecksum"]) && empty($params['responsechecksum'])) {
-            $this->returnJson('Required keys advanceResponseChecksum and '
-                . 'responsechecksum for checksum calculation are missing.');
+            $msg = 'Required keys advanceResponseChecksum and '
+                . 'responsechecksum for checksum calculation are missing.';
+                
+            $this->readerWriter->createLog($msg);
+            $this->jsonOutput->setData($msg);
+            
+            return false;
         }
         
         // most of the DMNs with advanceResponseChecksum
@@ -966,7 +1024,12 @@ class DmnOld extends \Magento\Framework\App\Action\Action
 
             foreach ($params_arr as $checksumKey) {
                 if (!isset($params[$checksumKey])) {
-                    $this->returnJson('Required key '. $checksumKey .' for checksum calculation is missing.');
+                    $msg = 'Required key '. $checksumKey .' for checksum calculation is missing.';
+
+                    $this->readerWriter->createLog($msg);
+                    $this->jsonOutput->setData($msg);
+                    
+                    return false;
                 }
 
                 if (is_array($params[$checksumKey])) {
@@ -988,7 +1051,10 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                         . ' ' . __('Transaction type ') . $params['type']);
                 }
                 
-                $this->returnJson($msg);
+                $this->readerWriter->createLog($msg);
+                $this->jsonOutput->setData($msg);
+
+                return false;
             }
 
             return true;
@@ -1001,7 +1067,12 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         $concat = implode('', $params);
         
         if (empty($concat)) {
-            $this->returnJson('Checksum string before hash is empty for Order #' . $orderIncrementId);
+            $msg = 'Checksum string before hash is empty for Order #' . $orderIncrementId;
+            
+            $this->readerWriter->createLog($msg);
+            $this->jsonOutput->setData($msg);
+
+            return false;
         }
         
         $concat_final   = $concat . $this->moduleConfig->getMerchantSecretKey();
@@ -1015,7 +1086,10 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                     . ' ' . __('Transaction type ') . $params['type']);
             }
             
-            $this->returnJson($msg);
+            $this->readerWriter->createLog($msg);
+            $this->jsonOutput->setData($msg);
+
+            return false;
         }
         
         return true;
@@ -1174,7 +1248,12 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             if (in_array(strtolower($params['transactionType']), ['sale', 'auth'])
                 && strtolower($params['Status']) != 'approved'
             ) {
-                $this->returnJson('The Order ' . $orderIncrementId .' is not approved, stop process.');
+                $msg = 'The Order ' . $orderIncrementId .' is not approved, stop process.';
+                
+                $this->readerWriter->createLog($msg);
+                $this->jsonOutput->setData($msg);
+                
+                return false;
             }
             
             $this->readerWriter->createLog('Order '. $orderIncrementId .' not found, try to create it!');
@@ -1182,7 +1261,12 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             $result = $this->placeOrder($params);
 
             if ($result->getSuccess() !== true) {
-                $this->returnJson('DMN Callback error - place order error: ' . $result->getMessage());
+                $msg = 'DMN Callback error - place order error.';
+                
+                $this->readerWriter->createLog($result->getMessage(), $msg);
+                $this->jsonOutput->setData($msg);
+                
+                return false;
             }
 
             $orderList = $this->orderRepo->getList($searchCriteria)->getItems();
@@ -1191,35 +1275,52 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         }
         
         if (!$orderList || empty($orderList)) {
-            $this->returnJson('DMN Callback error - there is no Order and the code did not success to create it.');
+            $msg = 'DMN Callback error - there is no Order and the code did not success to create it.';
+            
+            $this->readerWriter->createLog($msg);
+            $this->jsonOutput->setData($msg);
+
+            return false;
         }
         
         $this->order = current($orderList);
         
         if (null === $this->order) {
-            $this->returnJson('DMN error - Order object is null.', $orderList);
+            $msg = 'DMN error - Order object is null.';
+            
+            $this->readerWriter->createLog($orderList, $msg);
+            $this->jsonOutput->setData($msg);
+
+            return false;
         }
         
         $this->orderPayment = $this->order->getPayment();
         
         if (null === $this->orderPayment) {
-            $this->returnJson('DMN error - Order Payment object is null.');
+            $msg = 'DMN error - Order Payment object is null.';
+            
+            $this->readerWriter->createLog($msg);
+            $this->jsonOutput->setData($msg);
+
+            return false;
         }
         
         // check if the Order belongs to nuvei
         $method = $this->orderPayment->getMethod();
 
         if ('nuvei' != $method) {
-            $this->returnJson(
-                'DMN getOrCreateOrder() error - the order does was not made with Nuvei module.',
-                [
-                    'orderIncrementId' => $orderIncrementId,
-                    'module' => $method,
-                ]
-            );
+            $msg = 'DMN getOrCreateOrder() error - the order was not made with Nuvei module.';
+            
+            $this->readerWriter->createLog([
+                'orderIncrementId' => $orderIncrementId,
+                'module' => $method,
+            ], $msg);
+            $this->jsonOutput->setData($msg);
+
+            return false;
         }
         
-        return;
+        return true;
     }
     
     /**
@@ -1267,24 +1368,14 @@ class DmnOld extends \Magento\Framework\App\Action\Action
     }
     
     /**
-     * @param string $msg
-     * @param mixed $data
-     */
-    private function returnJson($msg, $data = '')
-    {
-        $this->readerWriter->createLog($data, $msg);
-        $this->jsonOutput->setData($msg);
-        
-        return $this->jsonOutput;
-    }
-    
-    /**
      * Help method keeping Order status from override with
      * delied or duplicated DMNs.
      * 
      * @param array $params
      * @param string $order_tr_type
      * @param string $order_status
+     * 
+     * return bool
      */
     private function keepOrderStatusFromOverride($params, $order_tr_type, $order_status, $status)
     {
@@ -1299,7 +1390,10 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 . $params['Status'] . '", for Transaction type '. $order_tr_type
                 .'. Do not apply DMN data on the Order!';
 
-            $this->returnJson($msg);
+            $this->readerWriter->createLog($msg);
+            $this->jsonOutput->setData($msg);
+        
+            return true;
         }
 
         /**
@@ -1312,7 +1406,12 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             && strtolower($order_status) == 'approved'
             && $order_status == $params['Status']
         ) {
-            $this->returnJson('Duplicated Sale DMN. Stop DMN process!');
+            $msg = 'Duplicated Sale DMN. Stop DMN process!';
+            
+            $this->readerWriter->createLog($msg);
+            $this->jsonOutput->setData($msg);
+        
+            return true;
         }
 
         // do not override status if the Order is Voided or Refunded
@@ -1321,7 +1420,12 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             && (strtolower($params['transactionType']) != 'void'
                 || 'approved' != $status)
         ) {
-            $this->returnJson('No more actions are allowed for order #' . $this->order->getId());
+            $msg = 'No more actions are allowed for order #' . $this->order->getId();
+            
+            $this->readerWriter->createLog($msg);
+            $this->jsonOutput->setData($msg);
+        
+            return true;
         }
 
         // after Refund allow only refund, this is in case of Partial Refunds
@@ -1329,12 +1433,63 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             && strtolower($order_status) == 'approved'
             && !in_array(strtolower($params['transactionType']), ['refund', 'credit'])
         ) {
-            $this->returnJson('No more actions are allowed for order #' . $this->order->getId());
+            $msg = 'No more actions are allowed for order #' . $this->order->getId();
+            
+            $this->readerWriter->createLog($msg);
+            $this->jsonOutput->setData($msg);
+        
+            return true;
         }
 
         if ($tr_type_param === 'auth' && strtolower($order_tr_type) === 'settle') {
-            $this->returnJson('Can not set Auth to Settled Order #' . $this->order->getId());
+            $msg = 'Can not set Auth to Settled Order #' . $this->order->getId();
+            
+            $this->readerWriter->createLog($msg);
+            $this->jsonOutput->setData($msg);
+        
+            return true;
         }
+        
+        return false;
+    }
+    
+    private function finalSaveData($ord_trans_addit_info, $tries = 0)
+    {
+        $this->readerWriter->createLog('', 'finalSaveData()', 'INFO');
+        
+        if($tries > 0) {
+            $this->readerWriter->createLog($tries, 'DMN save Order data recursive retry.');
+        }
+        
+        if($tries > 5) {
+            $this->readerWriter->createLog($tries, 'DMN save Order data maximum recursive retries reached.');
+            exit('DMN save Order data maximum recursive retries reached.');
+        }
+        
+        try {
+            $this->readerWriter->createLog($ord_trans_addit_info, 'DMN before save $ord_trans_addit_info', 'DEBUG');
+            
+            $this->orderPayment
+                ->setAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA, $ord_trans_addit_info)
+                ->save()
+                ;
+
+            $this->readerWriter->createLog('DMN after save $ord_trans_addit_info', 'DEBUG');
+
+            $this->orderResourceModel->save($this->order);
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            
+            $this->readerWriter->createLog($e->getMessage(), 'DMN save Order data exception.');
+            
+            if(strpos($msg, 'Deadlock found') !== false) {
+                $tries++;
+                sleep(1);
+                $this->finalSaveData($ord_trans_addit_info, $tries);
+            }
+        }
+        
+        return;
     }
     
 }

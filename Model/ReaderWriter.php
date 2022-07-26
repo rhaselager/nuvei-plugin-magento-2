@@ -23,7 +23,7 @@ class ReaderWriter
 //            $this->fileSystem   = $objectManager->create(\Magento\Framework\Filesystem\DriverInterface::class);
             $this->config       = $config;
             $this->directory    = $directory;
-        } catch(Exception $ex) {
+        } catch(\Exception $ex) {
             
         }
     }
@@ -197,7 +197,7 @@ class ReaderWriter
             if(is_dir($path)) {
                 return file_put_contents($path . DIRECTORY_SEPARATOR . $name, $data, $option);
             }
-        } catch(Exception $ex) {
+        } catch(\Exception $ex) {
             
         }
 
@@ -220,7 +220,7 @@ class ReaderWriter
             if(is_readable($file_name)) {
                 return file_get_contents($file_name);
             }
-        } catch(Exception $ex) {
+        } catch(\Exception $ex) {
             
         }
         
@@ -241,7 +241,7 @@ class ReaderWriter
             }
 
             return is_readable($file);
-        } catch(Exception $ex) {
+        } catch(\Exception $ex) {
             
         }
         
@@ -262,7 +262,7 @@ class ReaderWriter
             }
 
             return file_exists($file);
-        } catch(Exception $ex) {
+        } catch(\Exception $ex) {
             
         }
         

@@ -84,7 +84,7 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
                     $view->removeButton('void');
                 }
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             $this->readerWriter->createLog($ex->getMessage(), 'admin beforeSetLayout');
         }
     }

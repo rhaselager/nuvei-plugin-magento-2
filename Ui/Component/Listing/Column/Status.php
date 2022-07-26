@@ -83,7 +83,7 @@ class Status extends Column
                     }
                     
                     $dataSource['data']['items'][$key]['has_nuvei_subscr'] = !empty($subscr_ids) ? 1 : 0;
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     $this->readerWriter->createLog($e->getMessage(), 'Exeception in Order Grid Status class:');
                     $dataSource['data']['items'][$key]['has_nuvei_subscr'] = 0;
                 }
