@@ -47,12 +47,13 @@ class PreventAddToCart
 
     public function beforeAddProduct(\Magento\Checkout\Model\Cart $subject, $productInfo, $requestInfo = null)
     {
-        try {
+        //try {
             # 1. first search for SC plan in the items in the cart
             if (!empty($this->paymentsPlans->getProductPlanData())) {
-                throw new \Magento\Framework\Exception\LocalizedException(
-                    __('You can not add this product to product with a Payment Plan.')
-                );
+                $msg = __('You can not add this product to product with a Payment Plan.');
+                
+                $this->readerWriter->createLog($msg, 'Exception:');
+                throw new \Magento\Framework\Exception\LocalizedException($msg);
             }
             
             $payment_enabled    = false;
@@ -78,15 +79,17 @@ class PreventAddToCart
             if ($payment_enabled) {
                 // check for guest user
                 if (!$this->config->allowGuestsSubscr()) {
+                    $this->readerWriter->createLog($error_msg_3, 'Exception:');
                     throw new \Magento\Framework\Exception\LocalizedException(__($error_msg_3));
                 }
                 
                 if ($cartItemsCount > 0) {
+                    $this->readerWriter->createLog($error_msg_2, 'Exception:');
                     throw new \Magento\Framework\Exception\LocalizedException(__($error_msg_2));
                 }
             }
-        } catch (\Exception $e) {
-            $this->readerWriter->createLog($e->getMessage(), 'Exception:');
-        }
+//        } catch (\Exception $e) {
+//            $this->readerWriter->createLog($e->getMessage(), 'Exception:');
+//        }
     }
 }
