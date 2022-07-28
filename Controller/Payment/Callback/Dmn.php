@@ -64,6 +64,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
     private $start_subscr       = false;
     private $is_partial_settle  = false;
     private $curr_trans_info    = []; // collect the info for the current transaction (action)
+    private $refund_msg         = '';
 
     /**
      * Object constructor.
@@ -370,8 +371,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
 //                $message = $this->captureCommand
 //                    ->execute($this->orderPayment, $this->order->getBaseGrandTotal(), $this->order);
                 
-                $this->sc_transaction_type  = Payment::SC_PROCESSING;
-                $refund_msg                 = '';
+                $this->sc_transaction_type = Payment::SC_PROCESSING;
                 
                 // try to recognize DMN type
 //                $this->processAuthDmn($params, $order_total, $dmn_total, $message); // AUTH
@@ -398,7 +398,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
                         . __('Related Transaction ID: ') . $params['relatedTransactionId'] . '.<br/>'
                         . __('Transaction Amount: ') . number_format($params['totalAmount'], 2, '.', '')
                         . ' ' . $params['currency'] . '.'
-                        . $refund_msg,
+                        . $this->refund_msg,
                     $this->sc_transaction_type
                 );
             }
@@ -737,7 +737,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
         if ( (!empty($params['totalAmount']) && 'cc_card' == $params["payment_method"])
             || false !== strpos($params["merchant_unique_id"], 'gwp')
         ) {
-            $refund_msg = '<br/>Refunded amount: <b>'
+            $this->refund_msg = '<br/>Refunded amount: <b>'
                 . $params['totalAmount'] . ' ' . $params['currency'] . '</b>.';
         }
 
