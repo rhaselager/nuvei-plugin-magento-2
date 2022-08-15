@@ -188,19 +188,6 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             }
             // /try to find Order ID
             
-            // try to find Status
-            $status = !empty($params['Status']) ? strtolower($params['Status']) : null;
-            
-            if (!in_array($status, ['declined', 'error', 'approved', 'success'])) { // UNKNOWN DMN
-                $msg = 'DMN for Order #' . $orderIncrementId . ' was not recognized.';
-            
-                $this->readerWriter->createLog($msg);
-                $this->jsonOutput->setData($msg);
-
-                return $this->jsonOutput;
-            }
-            // /try to find Status
-            
             // try to validate the Cheksum
             $success = $this->validateChecksum($params, $orderIncrementId);
             
@@ -255,6 +242,19 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 return $this->jsonOutput;
             }
             // /check for Subscription State DMN
+            
+            // try to find Status
+            $status = !empty($params['Status']) ? strtolower($params['Status']) : null;
+            
+            if (!in_array($status, ['declined', 'error', 'approved', 'success'])) { // UNKNOWN DMN
+                $msg = 'DMN for Order #' . $orderIncrementId . ' was not recognized.';
+            
+                $this->readerWriter->createLog($msg);
+                $this->jsonOutput->setData($msg);
+
+                return $this->jsonOutput;
+            }
+            // /try to find Status
             
             if (empty($params['transactionType'])) {
                 $msg = 'DMN error - missing Transaction Type.';
@@ -705,13 +705,11 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         if ( (!empty($params['totalAmount']) && 'cc_card' == $params["payment_method"])
             || false !== strpos($params["merchant_unique_id"], 'gwp')
         ) {
-            $this->refund_msg = '<br/>Refunded amount: <b>'
-                . $params['totalAmount'] . ' ' . $params['currency'] . '</b>.';
+            $this->refund_msg = '<br/>Refunded amount: '
+                . $params['totalAmount'] . ' ' . $params['currency'];
         }
 
         $this->curr_trans_info['invoice_id'] = $this->httpRequest->getParam('invoice_id');
-        // use this hack to prevent deadlock when try to save the order payment or the order
-//        sleep(1);
     }
     
     /**
