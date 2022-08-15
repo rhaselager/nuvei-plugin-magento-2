@@ -738,7 +738,7 @@ class Dmn extends \Magento\Framework\App\Action\Action implements \Magento\Frame
             || false !== strpos($params["merchant_unique_id"], 'gwp')
         ) {
             $this->refund_msg = '<br/>Refunded amount: '
-                . $params['totalAmount'] . ' ' . $params['currency'];
+                . number_format($params['totalAmount'], 2, '.', '') . ' ' . $params['currency'];
         }
 
         $this->curr_trans_info['invoice_id'] = $this->httpRequest->getParam('invoice_id');
