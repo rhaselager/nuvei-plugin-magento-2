@@ -24,6 +24,7 @@ class GetMerchantPaymentMethods extends AbstractResponse implements ResponseInte
     protected $sessionToken = '';
     
     private $assetRepo;
+    private $config;
 
     /**
      * AbstractResponse constructor.
@@ -45,7 +46,7 @@ class GetMerchantPaymentMethods extends AbstractResponse implements ResponseInte
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct(
-            $config,
+//            $config,
             $requestId,
             $curl,
             $readerWriter
@@ -53,6 +54,7 @@ class GetMerchantPaymentMethods extends AbstractResponse implements ResponseInte
 
         $this->localeResolver   = $localeResolver;
         $this->assetRepo        = $assetRepo;
+        $this->config           = $config;
     }
 
     /**

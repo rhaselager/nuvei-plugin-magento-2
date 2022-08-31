@@ -15,6 +15,7 @@
     * Added confirm prompt when try to Void.
     * Added correct links to Nuvei Documentation.
     * When receive DMN use retry logic if deadlock happen.
+    * Added better message when we get "Insufficient funds" error.
 ```
 
 # 1.0.0

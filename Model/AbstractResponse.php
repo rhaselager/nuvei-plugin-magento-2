@@ -30,7 +30,7 @@ abstract class AbstractResponse
     const STATUS_SUCCESS    = 1;
     const STATUS_FAILED     = 2;
 
-    protected $config;
+//    protected $config;
     protected $readerWriter;
 
 
@@ -68,12 +68,12 @@ abstract class AbstractResponse
      * @param readerWriter  $readerWriter
      */
     public function __construct(
-        Config $config,
+//        Config $config,
         $requestId,
         Curl $curl,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
-        $this->config       = $config;
+//        $this->config       = $config;
         $this->requestId    = $requestId;
         $this->curl         = $curl;
         $this->readerWriter = $readerWriter;
