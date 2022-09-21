@@ -6,21 +6,17 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Nuvei\Checkout\Model\Payment;
+use Magento\Framework\App\Action\Action;
 
 /**
  * Nuvei Checkout payment redirect controller.
  */
-class DmnOld extends \Magento\Framework\App\Action\Action
+class DmnOld extends Action
 {
     /**
      * @var ModuleConfig
      */
     private $moduleConfig;
-
-    /**
-     * @var CaptureCommand
-     */
-//    private $captureCommand;
 
     /**
      * @var DataObjectFactory
@@ -65,7 +61,6 @@ class DmnOld extends \Magento\Framework\App\Action\Action
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Nuvei\Checkout\Model\Config $moduleConfig,
-//        \Magento\Sales\Model\Order\Payment\State\CaptureCommand $captureCommand,
         \Magento\Framework\DataObjectFactory $dataObjectFactory,
         \Magento\Quote\Api\CartManagementInterface $cartManagement,
         \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory,
@@ -84,7 +79,6 @@ class DmnOld extends \Magento\Framework\App\Action\Action
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->moduleConfig             = $moduleConfig;
-//        $this->captureCommand           = $captureCommand;
         $this->dataObjectFactory        = $dataObjectFactory;
         $this->cartManagement           = $cartManagement;
         $this->jsonResultFactory        = $jsonResultFactory;
@@ -172,9 +166,6 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 $clientRequestId_arr    = explode('_', $params["clientRequestId"]);
                 $last_elem              = end($clientRequestId_arr);
                 
-//                if (!empty($clientRequestId_arr[1]) && is_numeric($clientRequestId_arr[1])) {
-//                    $orderIncrementId = $clientRequestId_arr[1];
-//                }
                 if (!empty($last_elem) && is_numeric($last_elem)) {
                     $orderIncrementId = $last_elem;
                 }
@@ -336,13 +327,9 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             
             // APPROVED TRANSACTION
             if (in_array($status, ['approved', 'success'])) {
-//                $message = $this->captureCommand
-//                    ->execute($this->orderPayment, $this->order->getBaseGrandTotal(), $this->order);
-                
                 $this->sc_transaction_type = Payment::SC_PROCESSING;
                 
                 // try to recognize DMN type
-//                $this->processAuthDmn($params, $order_total, $dmn_total, $message); // AUTH
                 $this->processAuthDmn($params, $order_total, $dmn_total); // AUTH
                 $this->processSaleAndSettleDMN($params, $order_total, $dmn_total, $last_record); // SALE and SETTLE
                 $this->processVoidDmn($tr_type_param); // VOID
@@ -864,16 +851,17 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                     continue;
                 }
 
-                $subsc_ids = json_decode($data[Payment::SUBSCR_IDS]);
+//                $subsc_ids = json_decode($data[Payment::SUBSCR_IDS]);
                 
-                if (empty($subsc_ids)) {
-                    $subsc_ids = [];
-                } elseif (in_array($params['subscriptionId'], $subsc_ids)) {
-                    continue;
-                }
+//                if (empty($subsc_ids)) {
+//                    $subsc_ids = [];
+//                } elseif (in_array($params['subscriptionId'], $subsc_ids)) {
+//                    continue;
+//                }
 
-                $subsc_ids[]                                        = $params['subscriptionId'];
-                $ord_trans_addit_info[$key][Payment::SUBSCR_IDS]    = json_encode($subsc_ids);
+//                $subsc_ids[]                                        = $params['subscriptionId'];
+//                $ord_trans_addit_info[$key][Payment::SUBSCR_IDS]    = json_encode($subsc_ids);
+                $ord_trans_addit_info[$key][Payment::SUBSCR_IDS]    = $params['subscriptionId'];
                 
                 $this->orderPayment->setAdditionalInformation(
                     Payment::ORDER_TRANSACTIONS_DATA,
@@ -1111,53 +1099,60 @@ class DmnOld extends \Magento\Framework\App\Action\Action
             return false;
         }
             
-        $customField2   = json_decode($params['customField2'], true);
-        $customField5   = json_decode($params['customField5'], true);
+        $subscr_data   = json_decode($params['customField2'], true);
+        $items_list   = json_decode($params['customField5'], true);
         $subsc_data     = [];
-        $subscr_count   = 0;
+//        $subscr_count   = 0;
 
         // we allow only one Product in the Order to be with Payment Plan,
         // so the list with the products must be with length = 1
-        if (!empty($customField2) && is_array($customField2)) {
-            $subsc_data = current($customField2);
+        if (!empty($subscr_data) && is_array($subscr_data)) {
+//            $subsc_data = current($subscr_data);
+            $subsc_data = $subscr_data;
         } elseif (!empty($last_record[Payment::TRANSACTION_UPO_ID])
             && is_numeric($last_record[Payment::TRANSACTION_UPO_ID])
         ) {
-            $subsc_data = current($last_record['start_subscr_data']);
+//            $subsc_data = current($last_record['start_subscr_data']);
+            $subsc_data = $last_record['start_subscr_data'];
+        }
+        
+        if(empty($subsc_data) || !is_array($subsc_data)) {
+            $this->readerWriter->createLog($subsc_data, 'createSubscription() problem with the subscription data.');
+            return false;
         }
 
         // we create as many Subscriptions as the Product quantity is
-        if (!empty($customField5) && is_array($customField5)) {
-            $customField5_curr = current($customField5);
-
-            if (isset($customField5_curr['quantity']) && is_numeric($customField5_curr['quantity'])) {
-                $subscr_count = (int) $customField5_curr['quantity'];
-            }
-        } else {
-            $items = $this->order->getAllItems();
-
-            foreach ($items as $item) {
-                $subscr_count += $item->getQtyOrdered();
-            }
-        }
+//        if (!empty($items_list) && is_array($items_list)) {
+//            $customField5_curr = current($items_list);
+//
+//            if (isset($customField5_curr['quantity']) && is_numeric($customField5_curr['quantity'])) {
+//                $subscr_count = (int) $customField5_curr['quantity'];
+//            }
+//        } else {
+//            $items = $this->order->getAllItems();
+//
+//            foreach ($items as $item) {
+//                $subscr_count += $item->getQtyOrdered();
+//            }
+//        }
 
         // Error - missing Subscription details
-        if (empty($subsc_data) || 0 == $subscr_count) {
-            $this->readerWriter->createLog(
-                [
-                    'subsc_data'    => $subsc_data,
-                    'subscr_count'  => $subscr_count,
-                ],
-                'DMN Error - can not create Subscription beacuse of missing data:'
-            );
-            
-            return false;
-        }
+//        if (empty($subsc_data) || 0 == $subscr_count) {
+//            $this->readerWriter->createLog(
+//                [
+//                    'subsc_data'    => $subsc_data,
+//                    'subscr_count'  => $subscr_count,
+//                ],
+//                'DMN Error - can not create Subscription beacuse of missing data:'
+//            );
+//            
+//            return false;
+//        }
         
         // create subscriptions for each of the Products
         $request = $this->requestFactory->create(AbstractRequest::CREATE_SUBSCRIPTION_METHOD);
         
-        do {
+//        do {
             $subsc_data['userPaymentOptionId'] = $params['userPaymentOptionId'];
             $subsc_data['userTokenId']         = $params['email'];
             $subsc_data['currency']            = $params['currency'];
@@ -1193,8 +1188,8 @@ class DmnOld extends \Magento\Framework\App\Action\Action
                 $this->readerWriter->createLog('createSubscription - Error: ' . $e->getMessage());
             }
             
-            $subscr_count--;
-        } while ($subscr_count > 0);
+//            $subscr_count--;
+//        } while ($subscr_count > 0);
         
         return true;
     }

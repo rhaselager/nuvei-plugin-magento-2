@@ -38,24 +38,20 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
      * @param Factory          $requestFactory
      */
     public function __construct(
-//        \Nuvei\Checkout\Model\Logger $logger,
         Config $config,
         Curl $curl,
         ResponseFactory $responseFactory,
-//        RequestFactory $requestFactory,
         \Magento\Checkout\Model\Cart $cart,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans
     ) {
         parent::__construct(
-//            $logger,
             $config,
             $curl,
             $responseFactory,
             $readerWriter
         );
 
-//        $this->requestFactory   = $requestFactory;
         $this->cart             = $cart;
         $this->paymentsPlans    = $paymentsPlans;
         $this->readerWriter     = $readerWriter;
@@ -125,6 +121,8 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
         
         $billing_address    = $this->config->getQuoteBillingAddress();
         $amount             = $this->config->getQuoteBaseTotal();
+        
+        $this->readerWriter->createLog($items_data['subs_data'], 'update order - subs_data');
         
         $params = array_merge_recursive(
             parent::getParams(),

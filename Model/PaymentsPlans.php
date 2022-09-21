@@ -64,31 +64,32 @@ class PaymentsPlans
                 }
                 
                 // if there are more than 1 products in the Cart we assume there are no product with a Plan
-//                if (count($items) > 1) {
-//                    $this->readerWriter->createLog('getProductPlanData() - the Items in the Cart are more than 1. '
-//                        . 'We assume there is no Product with a plan amongs them.');
-//                    return $return_arr;
-//                }
+                if (count($items) > 1) {
+                    $this->readerWriter->createLog('getProductPlanData() - the Items in the Cart are more than 1. '
+                        . 'We assume there is no Product with a plan amongs them.');
+                    return $return_arr;
+                }
                 
-                foreach($items as $item) {
-//                    $item = current($items);
+//                foreach($items as $item) {
+                    $item = current($items);
 
                     if (!is_object($item)) {
-                        $this->readerWriter->createLog('getProductPlanData() Error - the Item in the Cart is not an Object.');
-//                        return $return_arr;
-                        continue;
+                        $this->readerWriter->createLog('getProductPlanData() Error - '
+                            . 'the Item in the Cart is not an Object.');
+                        return $return_arr;
+//                        continue;
                     }
 
-                    $options = $item->getProduct()->getTypeInstance(true)->getOrderOptions($item->getProduct());
-
+                    $options = $item->getProduct()->getTypeInstance(true)
+                        ->getOrderOptions($item->getProduct());
                     $this->readerWriter->createLog($options, 'getProductPlanData $options');
 
                     // stop the proccess
                     if (empty($options['info_buyRequest'])
                         || !is_array($options['info_buyRequest'])
                     ) {
-//                        return $return_arr;
-                        continue;
+                        return $return_arr;
+//                        continue;
                     }
 
                     // 1.1 in case of configurable product
@@ -104,8 +105,8 @@ class PaymentsPlans
                         );
                         
                         if(!is_object($nuvei_sub_enabled)) {
-//                            return $return_arr;
-                            continue;
+                            return $return_arr;
+//                            continue;
                         }
                     }
                     // 1.1.2. when we have super_attribute
@@ -126,17 +127,20 @@ class PaymentsPlans
                         );
 
                         if(!is_object($nuvei_sub_enabled)) {
-//                            return $return_arr;
-                            continue;
+                            return $return_arr;
+//                            continue;
                         }
                     }
 
                     if(!empty($product) && 0 != $product_id) {
-                        $plan_data[$product_id]     = $this->buildPlanDetailsArray($product);
+//                        $plan_data[$product_id]     = $this->buildPlanDetailsArray($product);
+                        $plan_data                  = $this->buildPlanDetailsArray($product);
                         $items_data[$product_id]    = [
                             'quantity'  => $item->getQty(),
                             'price'     => round((float) $item->getPrice(), 2),
                         ];
+                        
+                        $plan_data['recurringAmount'] *= $items_data[$product_id]['quantity'];
 
                         $this->readerWriter->createLog(
                             $plan_data,
@@ -144,7 +148,8 @@ class PaymentsPlans
                         );
 
                         // return plan details only if the subscription is enabled
-                        if (!empty($plan_data[$product_id])) {
+//                        if (!empty($plan_data[$product_id])) {
+                        if (!empty($plan_data)) {
                             $return_arr = [
                                 'subs_data'     => $plan_data,
                                 'items_data'    => $items_data,
@@ -164,21 +169,21 @@ class PaymentsPlans
                     );
 
                     if(!is_object($nuvei_sub_enabled)) {
-//                        return $return_arr;
-                        continue;
+                        return $return_arr;
+//                        continue;
                     }
-//var_dump($nuvei_sub_enabled);
-//var_dump($options);
-//die('test');
 
-                    $plan_data[$options['info_buyRequest']['product']] = $this->buildPlanDetailsArray($product);
-
+//                    $plan_data[$options['info_buyRequest']['product']] = $this->buildPlanDetailsArray($product);
+                    $plan_data                  = $this->buildPlanDetailsArray($product);
                     $items_data[$item->getId()] = [
                         'quantity'  => $item->getQty(),
                         'price'     => round((float) $item->getPrice(), 2),
                     ];
+                    
+                    $plan_data['recurringAmount'] *= $items_data[$item->getId()]['quantity'];
 
-                    if (!empty($plan_data[$options['info_buyRequest']['product']])) {
+//                    if (!empty($plan_data[$options['info_buyRequest']['product']])) {
+                    if (!empty($plan_data)) {
 //                        $return_arr = [
                         return [
                             'subs_data'     => $plan_data,
@@ -187,7 +192,7 @@ class PaymentsPlans
                     }
 
 //                    return $return_arr;
-                }
+//                }
                 
                 return $return_arr;
             }
@@ -265,14 +270,16 @@ class PaymentsPlans
         $attr = $product->getCustomAttribute(Config::PAYMENT_SUBS_ENABLE);
         
         if (null === $attr) {
-            $this->readerWriter->createLog('buildPlanDetailsArray() - there is no subscription attribute PAYMENT_SUBS_ENABLE');
+            $this->readerWriter->createLog('buildPlanDetailsArray() - '
+                . 'there is no subscription attribute PAYMENT_SUBS_ENABLE');
             return [];
         }
         
         $subscription_enabled = $attr->getValue();
         
         if (0 == $subscription_enabled) {
-            $this->readerWriter->createLog('buildPlanDetailsArray() - for this product the Subscription is not enabled or not set.');
+            $this->readerWriter->createLog('buildPlanDetailsArray() - '
+                . 'for this product the Subscription is not enabled or not set.');
             return [];
         }
         

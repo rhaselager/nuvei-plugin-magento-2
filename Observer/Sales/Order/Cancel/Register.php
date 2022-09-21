@@ -15,7 +15,6 @@ class Register implements ObserverInterface
 {
     /**
      * @param Observer $observer
-     *
      * @return Register
      */
     public function execute(Observer $observer)

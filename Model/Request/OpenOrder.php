@@ -149,6 +149,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         
         // iterate over Items and search for Subscriptions
         $items_data = $this->paymentsPlans->getProductPlanData();
+        $this->readerWriter->createLog($items_data, 'OpenOrder $items_data');
         
         $this->config->setNuveiUseCcOnly(!empty($items_data['subs_data']) ? true : false);
         

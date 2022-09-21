@@ -6,55 +6,42 @@ use Magento\Framework\Exception\PaymentException;
 use Nuvei\Checkout\Model\AbstractRequest;
 use Nuvei\Checkout\Model\AbstractResponse;
 use Nuvei\Checkout\Model\Payment;
-//use Nuvei\Checkout\Model\Request\AbstractPayment;
-//use Nuvei\Checkout\Model\RequestInterface;
+use Nuvei\Checkout\Model\Request\AbstractPayment;
+use Nuvei\Checkout\Model\RequestInterface;
 
 /**
  * Nuvei Checkout void payment request model.
  */
-class Cancel extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \Nuvei\Checkout\Model\RequestInterface
+class Cancel extends AbstractPayment implements RequestInterface
 {
     protected $readerWriter;
     
     /**
      * Refund constructor.
      *
-     * @param Config                            $config
-     * @param Curl                              $curl
-     * @param RequestFactory                    $requestFactory
-     * @param Factory                           $paymentRequestFactory
-     * @param ResponseFactory                   $responseFactory
-     * @param OrderPayment                      $orderPayment
-     * @param TransactionRepositoryInterface    $transactionRepository
-     * @param Http                              $request
-     * @param float                             $amount
+     * @param Config            $config
+     * @param Curl              $curl
+     * @param ResponseFactory   $responseFactory
+     * @param OrderPayment      $orderPayment
+     * @param Http              $request
+     * @param ReaderWriter      $readerWriter
      */
     public function __construct(
-//        \Nuvei\Checkout\Model\Logger $logger,
         \Nuvei\Checkout\Model\Config $config,
         \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
-//        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
-//        \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
         \Nuvei\Checkout\Model\Response\Factory $responseFactory,
         \Magento\Sales\Model\Order\Payment $orderPayment,
-//        \Magento\Sales\Api\TransactionRepositoryInterface $transactionRepository,
         \Magento\Framework\App\Request\Http $request,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
-//        $amount = 0.0
     ) {
         parent::__construct(
-//            $logger,
             $config,
             $curl,
-//            $requestFactory,
-//            $paymentRequestFactory,
             $responseFactory,
             $orderPayment,
             $readerWriter
-//            $amount
         );
 
-//        $this->transactionRepository    = $transactionRepository;
         $this->request                  = $request;
         $this->readerWriter             = $readerWriter;
     }

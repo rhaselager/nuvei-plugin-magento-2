@@ -431,16 +431,19 @@ class Payment extends Cc implements TransparentInterface
             }
 
             $last_record    = end($ord_trans_addit_info);
-            $subsc_ids      = json_decode($last_record[self::SUBSCR_IDS]);
+//            $subsc_ids      = json_decode($last_record[self::SUBSCR_IDS]);
+            $id             = $last_record[self::SUBSCR_IDS];
             
             $this->readerWriter->createLog(
                 [$ord_trans_addit_info], 
                 'cancelSubscription()'
             );
 
-            if (empty($subsc_ids) || !is_array($subsc_ids)) {
+//            if (empty($subsc_ids) || !is_array($subsc_ids)) {
+            if (empty($id)) {
                 $this->readerWriter->createLog(
-                    $subsc_ids,
+//                    $subsc_ids,
+                    $id,
                     'cancelSubscription() Error - $subsc_ids is empty or not an array.'
                 );
                 return false;
@@ -454,7 +457,7 @@ class Payment extends Cc implements TransparentInterface
             $order  = $payment->getOrder();
             $msg    = '';
 
-            foreach ($subsc_ids as $id) {
+//            foreach ($subsc_ids as $id) {
                 $resp = $request
                     ->setSubscrId($id)
                     ->process();
@@ -470,7 +473,7 @@ class Payment extends Cc implements TransparentInterface
 
                 $order->addStatusHistoryComment($msg);
                 $this->orderResourceModel->save($order);
-            }
+//            }
 
             return empty($msg) ? true : false;
         }

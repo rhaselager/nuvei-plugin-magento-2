@@ -2,10 +2,13 @@
 
 namespace Nuvei\Checkout\Model\Request;
 
+use Nuvei\Checkout\Model\AbstractRequest;
+use Nuvei\Checkout\Model\RequestInterface;
+
 /**
  * Nuvei Checkout Cancel Subscription request model.
  */
-class CancelSubscription extends \Nuvei\Checkout\Model\AbstractRequest implements \Nuvei\Checkout\Model\RequestInterface
+class CancelSubscription extends AbstractRequest implements RequestInterface
 {
     protected $subscr_id;
 
