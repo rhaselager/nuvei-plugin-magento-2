@@ -7,6 +7,7 @@ use Magento\Framework\Exception\PaymentException;
 use Nuvei\Checkout\Model\AbstractRequest;
 use Nuvei\Checkout\Model\AbstractResponse;
 use Nuvei\Checkout\Model\Payment;
+
 //use Nuvei\Checkout\Model\Request\AbstractPayment;
 //use Nuvei\Checkout\Model\RequestInterface;
 
@@ -39,14 +40,14 @@ class Refund extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \N
      * @param float                             $amount
      */
     public function __construct(
-//        \Nuvei\Checkout\Model\Logger $logger,
+        //        \Nuvei\Checkout\Model\Logger $logger,
         \Nuvei\Checkout\Model\Config $config,
         \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
-//        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
-//        \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
+        //        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
+        //        \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
         \Nuvei\Checkout\Model\Response\Factory $responseFactory,
         \Magento\Sales\Model\Order\Payment $orderPayment,
-//        \Magento\Sales\Api\TransactionRepositoryInterface $transactionRepository,
+        //        \Magento\Sales\Api\TransactionRepositoryInterface $transactionRepository,
         \Magento\Framework\App\Request\Http $request,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         $amount = 0.0
@@ -55,12 +56,12 @@ class Refund extends \Nuvei\Checkout\Model\Request\AbstractPayment implements \N
 //            $logger,
             $config,
             $curl,
-//            $requestFactory,
-//            $paymentRequestFactory,
+            //            $requestFactory,
+            //            $paymentRequestFactory,
             $responseFactory,
             $orderPayment,
             $readerWriter,
-//            $amount
+            //            $amount
         );
 
 //        $this->transactionRepository    = $transactionRepository;

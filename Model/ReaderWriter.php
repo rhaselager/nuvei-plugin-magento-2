@@ -15,7 +15,7 @@ class ReaderWriter
     private $traceId;
     
     public function __construct(
-//        \Magento\Framework\ObjectManagerInterface $objectManager,
+        //        \Magento\Framework\ObjectManagerInterface $objectManager,
         \Nuvei\Checkout\Model\Config $config,
         \Magento\Framework\Filesystem\DirectoryList $directory
     ) {
@@ -23,18 +23,18 @@ class ReaderWriter
 //            $this->fileSystem   = $objectManager->create(\Magento\Framework\Filesystem\DriverInterface::class);
             $this->config       = $config;
             $this->directory    = $directory;
-        } catch(\Exception $ex) {
+        } catch (\Exception $ex) {
             
         }
     }
     
     /**
      * Prepare and save log.
-     * 
+     *
      * @param mixed $data
      * @param string $title
      * @param string $log_level
-     * 
+     *
      * @return void
      */
     public function createLog($data, $title = '', $log_level = 'TRACE')
@@ -94,7 +94,7 @@ class ReaderWriter
         $milliseconds   = round(($utimestamp - $timestamp) * 1000000);
         $record_time    = date('Y-m-d') . 'T' . date('H:i:s') . '.' . $milliseconds . date('P');
         
-        if(!$this->traceId) {
+        if (!$this->traceId) {
             $this->traceId = bin2hex(random_bytes(16));
         }
         
@@ -103,11 +103,11 @@ class ReaderWriter
         $source_line_number = '';
         
         $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
-        if(!empty($backtrace)) {
-            if(!empty($backtrace[0]['file'])) {
+        if (!empty($backtrace)) {
+            if (!empty($backtrace[0]['file'])) {
                 $file_path_arr  = explode(DIRECTORY_SEPARATOR, $backtrace[0]['file']);
                 
-                if(!empty($file_path_arr)) {
+                if (!empty($file_path_arr)) {
                     $source_file_name = end($file_path_arr) . '|';
                 }
             }
@@ -116,7 +116,7 @@ class ReaderWriter
 //                $member_name = $backtrace[0]['function'] . '|';
 //            }
             
-            if(!empty($backtrace[0]['line'])) {
+            if (!empty($backtrace[0]['line'])) {
                 $source_line_number = $backtrace[0]['line'] . $tab;
             }
         }
@@ -133,9 +133,9 @@ class ReaderWriter
             if (is_string($title)) {
                 $string .= $title . $tab;
             } else {
-                if($this->isTestModeEnabled()) {
+                if ($this->isTestModeEnabled()) {
                     $string .= "\r\n" . json_encode($title, JSON_PRETTY_PRINT) . "\r\n";
-                } else{
+                } else {
                     $string .= json_encode($title) . $tab;
                 }
             }
@@ -175,18 +175,18 @@ class ReaderWriter
     
     /**
      * A single place to save files.
-     * 
+     *
      * @param string $path
      * @param string $name The file name with extension. Append it to the $path.
      * @param mixed $data
      * @param int $option A PHP constant like FILE_APPEND.
-     * 
+     *
      * @return bool
      */
     public function saveFile($path, $name, $data, $option = null)
     {
         try {
-            if(is_object($this->fileSystem) && $this->fileSystem->isDirectory($path)) {
+            if (is_object($this->fileSystem) && $this->fileSystem->isDirectory($path)) {
                 return $this->fileSystem->filePutContents(
                     $path . DIRECTORY_SEPARATOR . $name,
                     $data,
@@ -194,10 +194,10 @@ class ReaderWriter
                 );
             }
 
-            if(is_dir($path)) {
+            if (is_dir($path)) {
                 return file_put_contents($path . DIRECTORY_SEPARATOR . $name, $data, $option);
             }
-        } catch(\Exception $ex) {
+        } catch (\Exception $ex) {
             
         }
 
@@ -206,21 +206,21 @@ class ReaderWriter
     
     /**
      * Get contents of Nuvei plugin help files. Usually the contains JSONs.
-     * 
+     *
      * @param string $file_name
      * @return string
      */
     public function readFile($file_name)
     {
         try {
-            if(is_object($this->fileSystem) && $this->isReadable($file_name)) {
+            if (is_object($this->fileSystem) && $this->isReadable($file_name)) {
                 return $this->fileSystem->fileGetContents($file_name);
             }
 
-            if(is_readable($file_name)) {
+            if (is_readable($file_name)) {
                 return file_get_contents($file_name);
             }
-        } catch(\Exception $ex) {
+        } catch (\Exception $ex) {
             
         }
         
@@ -229,19 +229,19 @@ class ReaderWriter
     
     /**
      * Is a file readable.
-     * 
+     *
      * @param string $file
      * @return bool
      */
     public function isReadable($file)
     {
         try {
-            if(is_object($this->fileSystem)) {
+            if (is_object($this->fileSystem)) {
                 return $this->fileSystem->isReadable($file);
             }
 
             return is_readable($file);
-        } catch(\Exception $ex) {
+        } catch (\Exception $ex) {
             
         }
         
@@ -250,23 +250,22 @@ class ReaderWriter
     
     /**
      * Do file exists.
-     * 
+     *
      * @param string $file
      * @return bool
      */
     public function fileExists($file)
     {
         try {
-            if(is_object($this->fileSystem)) {
+            if (is_object($this->fileSystem)) {
                 return $this->fileSystem->isFile($file);
             }
 
             return file_exists($file);
-        } catch(\Exception $ex) {
+        } catch (\Exception $ex) {
             
         }
         
         return false;
     }
-    
 }

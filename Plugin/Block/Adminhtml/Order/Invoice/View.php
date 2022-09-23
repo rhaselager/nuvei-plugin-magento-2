@@ -17,7 +17,7 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
     public function __construct(
         \Magento\Framework\App\RequestInterface $request,
         Invoice $invoice,
-//        \Nuvei\Checkout\Model\Config $config,
+        //        \Nuvei\Checkout\Model\Config $config,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepo,
         \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter

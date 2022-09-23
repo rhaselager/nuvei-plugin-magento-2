@@ -14,8 +14,8 @@ class PaymentPlansOptions extends \Magento\Eav\Model\Entity\Attribute\Source\Abs
     
     public function __construct(
         \Magento\Framework\Filesystem\DirectoryList $directory,
-//        \Magento\Framework\Filesystem\Io\File $file,
-//        \Magento\Framework\Filesystem\DriverInterface $fileSystem,
+        //        \Magento\Framework\Filesystem\Io\File $file,
+        //        \Magento\Framework\Filesystem\DriverInterface $fileSystem,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->directory    = $directory;
@@ -38,19 +38,19 @@ class PaymentPlansOptions extends \Magento\Eav\Model\Entity\Attribute\Source\Abs
         
         $cont = json_decode($this->readerWriter->readFile($file_name), true);
         
-        if(is_array($cont) && !empty($cont['plans']) && is_array($cont['plans'])) {
+        if (is_array($cont) && !empty($cont['plans']) && is_array($cont['plans'])) {
 //        if ($this->fileSystem->isReadable($file_name)) {
 //            try {
 //                $cont = json_decode($this->file->read($file_name), true);
 //
 //                if (!empty($cont['plans']) && is_array($cont['plans'])) {
-                    foreach ($cont['plans'] as $data) {
-                        $this->_options[] = [
-                            'label' => $data['name'],
-                            'value' => $data['planId']
+            foreach ($cont['plans'] as $data) {
+                $this->_options[] = [
+                    'label' => $data['name'],
+                    'value' => $data['planId']
 
-                        ];
-                    }
+                ];
+            }
 //                }
 //            } catch (\Exception $e) {
 //                $this->readerWriter->createLog($e->getMessage(), 'PaymentPlansOptions Exception');
@@ -67,4 +67,3 @@ class PaymentPlansOptions extends \Magento\Eav\Model\Entity\Attribute\Source\Abs
         return $this->_options;
     }
 }
-

@@ -31,7 +31,7 @@ class Url
      */
     public function __construct(
         ModuleConfig $moduleConfig,
-//        CheckoutSession $checkoutSession,
+        //        CheckoutSession $checkoutSession,
         Http $request
     ) {
         $this->moduleConfig     = $moduleConfig;
@@ -58,7 +58,7 @@ class Url
 //                'url' => $this->moduleConfig->getCallbackSuccessUrl(),
 //            ];
 //        }
-//        
+//
 //        // non active case
 //        return [
 //            "url" => $this->moduleConfig->getEndpoint(),

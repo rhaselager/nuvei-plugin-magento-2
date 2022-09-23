@@ -22,7 +22,7 @@ class ReadPlans extends \Magento\Backend\Block\Template
     }
     
     /**
-     * 
+     *
      * @return string
      */
     public function getPaymentPlans()
@@ -30,7 +30,7 @@ class ReadPlans extends \Magento\Backend\Block\Template
         $file_name = $this->config->getTempPath() . DIRECTORY_SEPARATOR
             . \Nuvei\Checkout\Model\Config::PAYMENT_PLANS_FILE_NAME;
         
-        if(!$this->readerWriter->isReadable($file_name)) {
+        if (!$this->readerWriter->isReadable($file_name)) {
             return '';
         }
         
@@ -48,4 +48,3 @@ class ReadPlans extends \Magento\Backend\Block\Template
         return json_encode($plans);
     }
 }
-

@@ -152,11 +152,11 @@ class Config
         \Magento\Framework\HTTP\PhpEnvironment\RemoteAddress $remoteIp,
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Framework\Stdlib\CookieManagerInterface $cookie
-//        \Magento\Catalog\Model\Product $productObj
-//        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository
-//        \Magento\ConfigurableProduct\Model\Product\Type\Configurable $configurable
-//        \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute
-//        ,\Magento\Framework\Filesystem\DriverInterface $fileSystem
+        //        \Magento\Catalog\Model\Product $productObj
+        //        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository
+        //        \Magento\ConfigurableProduct\Model\Product\Type\Configurable $configurable
+        //        \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute
+        //        ,\Magento\Framework\Filesystem\DriverInterface $fileSystem
     ) {
         $this->scopeConfig      = $scopeConfig;
         $this->storeManager     = $storeManager;
@@ -486,7 +486,8 @@ class Config
         return $this->getConfigValue('use_dcc');
     }
     
-    public function useDevSdk() {
+    public function useDevSdk()
+    {
         return $this->getConfigValue('use_dev_sdk');
     }
     
@@ -531,13 +532,12 @@ class Config
         try {
             $module_data = $this->moduleList->getOne(self::MODULE_NAME);
             
-            if(!is_array($module_data) || empty($module_data['setup_version'])) {
+            if (!is_array($module_data) || empty($module_data['setup_version'])) {
                 return 'Magento Plugin';
             }
             
             return 'Magento Plugin ' . $module_data['setup_version'];
-        }
-        catch(\Exception $ex) {
+        } catch (\Exception $ex) {
             return 'Magento Checkout Plugin';
         }
     }
@@ -568,16 +568,9 @@ class Config
     public function getCallbackSuccessUrl()
     {
         $params = [
-            'quote'        => $this->checkoutSession->getQuoteId(),
-            'form_key'    => $this->formKey->getFormKey(),
+            'quote'     => $this->checkoutSession->getQuoteId(),
+            'form_key'  => $this->formKey->getFormKey(),
         ];
-        
-        if ($this->versionNum != 0 && $this->versionNum < 220) {
-            return $this->urlBuilder->getUrl(
-                'nuvei_checkout/payment/callback_completeold',
-                $params
-            );
-        }
         
         return $this->urlBuilder->getUrl(
             'nuvei_checkout/payment/callback_complete',
@@ -614,17 +607,10 @@ class Config
     public function getCallbackErrorUrl()
     {
         $params = [
-            'quote'        => $this->checkoutSession->getQuoteId(),
-            'form_key'    => $this->formKey->getFormKey(),
+            'quote'     => $this->checkoutSession->getQuoteId(),
+            'form_key'  => $this->formKey->getFormKey(),
         ];
 
-        if ($this->versionNum != 0 && $this->versionNum < 220) {
-            return $this->urlBuilder->getUrl(
-                'nuvei_checkout/payment/callback_errorold',
-                $params
-            );
-        }
-        
         return $this->urlBuilder->getUrl(
             'nuvei_checkout/payment/callback_error',
             $params
@@ -662,10 +648,6 @@ class Config
             }
             
             $params_str .= $key . '/' . $val . '/';
-        }
-        
-        if ($this->versionNum != 0 && $this->versionNum < 220) {
-            return $url . 'nuvei_checkout/payment/callback_dmnold/' . $params_str;
         }
         
         return $url . 'nuvei_checkout/payment/callback_dmn/' . $params_str;
@@ -728,7 +710,7 @@ class Config
     
     /**
      * Get base currency code from the Quote. This must be same as the Magento Base currency.
-     * 
+     *
      * @return string
      */
     public function getQuoteBaseCurrency()
@@ -738,7 +720,7 @@ class Config
     
     /**
      * Get currency code from the Quote. This must be same as the Magento store Visual currency.
-     * 
+     *
      * @return string
      */
     public function getQuoteVisualCurrency()
@@ -748,7 +730,7 @@ class Config
     
     /**
      * Get store currency code. Use this when Quote is not available.
-     * 
+     *
      * @return string
      */
     public function getStoreCurrency()
@@ -758,7 +740,7 @@ class Config
     
     /**
      * Get the Quote Base Grand Total, based on Display currency.
-     * 
+     *
      * @return string
      */
     public function getQuoteBaseTotal()
@@ -913,5 +895,4 @@ class Config
         
         return $email;
     }
-    
 }

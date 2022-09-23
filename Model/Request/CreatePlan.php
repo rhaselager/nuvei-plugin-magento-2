@@ -12,11 +12,11 @@ class CreatePlan extends AbstractRequest implements RequestInterface
     protected $storeManager;
     
     public function __construct(
-//        \Nuvei\Checkout\Model\Logger $logger,
+        //        \Nuvei\Checkout\Model\Logger $logger,
         \Nuvei\Checkout\Model\Config $config,
         \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
         \Nuvei\Checkout\Model\Response\Factory $responseFactory,
-//        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
+        //        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {

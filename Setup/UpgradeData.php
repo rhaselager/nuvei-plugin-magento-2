@@ -11,7 +11,6 @@ use Magento\Sales\Model\Order;
 /**
  * Nuvei Checkout upgrade data.
  */
-//class UpgradeData extends \Nuvei\Checkout\Setup\InstallSchema implements UpgradeDataInterface
 class UpgradeData implements UpgradeDataInterface
 {
     /**
@@ -32,7 +31,7 @@ class UpgradeData implements UpgradeDataInterface
         OrderStatusFactory $orderStatusFactory,
         \Magento\Framework\App\ResourceConnection $resourceConnection,
         \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory,
-//        \Magento\Eav\Model\Entity\Attribute\SetFactory $attributeSetFactory,
+        //        \Magento\Eav\Model\Entity\Attribute\SetFactory $attributeSetFactory,
         \Magento\Framework\Setup\SchemaSetupInterface $install
     ) {
         $this->orderStatusFactory   = $orderStatusFactory;

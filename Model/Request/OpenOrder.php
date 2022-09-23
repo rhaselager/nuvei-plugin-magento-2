@@ -47,7 +47,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
      * @param Factory          $requestFactory
      */
     public function __construct(
-//        \Nuvei\Checkout\Model\Logger $logger,
+        //        \Nuvei\Checkout\Model\Logger $logger,
         Config $config,
         Curl $curl,
         ResponseFactory $responseFactory,
@@ -211,12 +211,12 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         ];
         
         // show or not UPOs
-        if($this->config->canUseUpos()) {
+        if ($this->config->canUseUpos()) {
             $params['userTokenId'] = $params['billingAddress']['email'];
         }
         
         // auto_close_popup
-        if(1 == $this->config->autoCloseApmPopup()) {
+        if (1 == $this->config->autoCloseApmPopup()) {
             $params['urlDetails']['successUrl'] = $params['urlDetails']['pendingUrl']
                                                 = $params['urlDetails']['failureUrl']
                                                 = Config::NUVEI_SDK_AUTOCLOSE_URL;

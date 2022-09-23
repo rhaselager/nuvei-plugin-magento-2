@@ -23,12 +23,12 @@ class PreventAddToCart
 
     public function __construct(
         \Nuvei\Checkout\Model\Config $config,
-//        \Magento\Framework\App\Request\Http $request,
-//        \Magento\Framework\Message\ManagerInterface $messanger,
-//        \Magento\Catalog\Model\Product $product_obj,
-//        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
-//        \Magento\ConfigurableProduct\Model\Product\Type\Configurable $productTypeInstance,
-//        \Magento\Catalog\Model\ResourceModel\Eav\Attribute $eavModel,
+        //        \Magento\Framework\App\Request\Http $request,
+        //        \Magento\Framework\Message\ManagerInterface $messanger,
+        //        \Magento\Catalog\Model\Product $product_obj,
+        //        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
+        //        \Magento\ConfigurableProduct\Model\Product\Type\Configurable $productTypeInstance,
+        //        \Magento\Catalog\Model\ResourceModel\Eav\Attribute $eavModel,
         \Magento\ConfigurableProduct\Model\Product\Type\Configurable $configurableProduct,
         \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
@@ -49,12 +49,12 @@ class PreventAddToCart
     {
         //try {
             # 1. first search for SC plan in the items in the cart
-            if (!empty($this->paymentsPlans->getProductPlanData())) {
-                $msg = __('You can not add this product to product with a Payment Plan.');
+        if (!empty($this->paymentsPlans->getProductPlanData())) {
+            $msg = __('You can not add this product to product with a Payment Plan.');
                 
-                $this->readerWriter->createLog($msg, 'Exception:');
-                throw new \Magento\Framework\Exception\LocalizedException($msg);
-            }
+            $this->readerWriter->createLog($msg, 'Exception:');
+            throw new \Magento\Framework\Exception\LocalizedException($msg);
+        }
             
             $payment_enabled    = false;
             $cartItemsCount     = $subject->getQuote()->getItemsCount();
@@ -63,31 +63,31 @@ class PreventAddToCart
             
             # 2. then search for SC plan in the incoming item when there are products in the cart
             // 2.1 when we have configurable product with option attribute
-            if (!empty($requestInfo['super_attribute'])) {
-                // get the configurable product by its attributes
-                $conProd = $this->configurableProduct
-                    ->getProductByAttributes($requestInfo['super_attribute'], $productInfo);
+        if (!empty($requestInfo['super_attribute'])) {
+            // get the configurable product by its attributes
+            $conProd = $this->configurableProduct
+                ->getProductByAttributes($requestInfo['super_attribute'], $productInfo);
                 
-                if (is_object($conProd)) {
-                    $payment_enabled = (bool) $conProd->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_ENABLE);
-                }
-            } else { // 2.2 when we have simple peoduct without options
-                $payment_enabled = (bool) $productInfo->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_ENABLE);
+            if (is_object($conProd)) {
+                $payment_enabled = (bool) $conProd->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_ENABLE);
             }
+        } else { // 2.2 when we have simple peoduct without options
+            $payment_enabled = (bool) $productInfo->getData(\Nuvei\Checkout\Model\Config::PAYMENT_SUBS_ENABLE);
+        }
             
             // the incoming product has plan
-            if ($payment_enabled) {
-                // check for guest user
-                if (!$this->config->allowGuestsSubscr()) {
-                    $this->readerWriter->createLog($error_msg_3, 'Exception:');
-                    throw new \Magento\Framework\Exception\LocalizedException(__($error_msg_3));
-                }
-                
-                if ($cartItemsCount > 0) {
-                    $this->readerWriter->createLog($error_msg_2, 'Exception:');
-                    throw new \Magento\Framework\Exception\LocalizedException(__($error_msg_2));
-                }
+        if ($payment_enabled) {
+            // check for guest user
+            if (!$this->config->allowGuestsSubscr()) {
+                $this->readerWriter->createLog($error_msg_3, 'Exception:');
+                throw new \Magento\Framework\Exception\LocalizedException(__($error_msg_3));
             }
+                
+            if ($cartItemsCount > 0) {
+                $this->readerWriter->createLog($error_msg_2, 'Exception:');
+                throw new \Magento\Framework\Exception\LocalizedException(__($error_msg_2));
+            }
+        }
 //        } catch (\Exception $e) {
 //            $this->readerWriter->createLog($e->getMessage(), 'Exception:');
 //        }

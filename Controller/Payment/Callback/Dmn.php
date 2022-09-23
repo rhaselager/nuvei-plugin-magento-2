@@ -221,7 +221,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
             // try to validate the Cheksum
             $success = $this->validateChecksum($params, $orderIncrementId);
             
-            if(!$success) {
+            if (!$success) {
                 return $this->jsonOutput;
             }
             // /try to validate the Cheksum
@@ -235,7 +235,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
              */
             $success = $this->getOrCreateOrder($params, $orderIncrementId);
             
-            if(!$success) {
+            if (!$success) {
                 return $this->jsonOutput;
             }
             // /Try to create the Order.
@@ -263,7 +263,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
             // check for Subscription State DMN
             $stop = $this->processSubscrDmn($params, $orderIncrementId, $ord_trans_addit_info);
             
-            if($stop) {
+            if ($stop) {
                 $msg = 'Process Subscr DMN ends for order #' . $orderIncrementId;
                 
                 $this->readerWriter->createLog($msg);
@@ -333,7 +333,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
             // do not overwrite Order status
             $stop = $this->keepOrderStatusFromOverride($params, $order_tr_type, $order_status, $status);
             
-            if($stop) {
+            if ($stop) {
                 return $this->jsonOutput;
             }
             // /do not overwrite Order status
@@ -378,7 +378,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
 
                 $msg_transaction = '<b>';
                 
-                if($this->is_partial_settle === true) {
+                if ($this->is_partial_settle === true) {
                     $msg_transaction .= __("Partial ");
                 }
                 
@@ -428,7 +428,11 @@ class Dmn extends Action implements CsrfAwareActionInterface
         
         $this->readerWriter->createLog('', 'DMN before finalSaveData()', 'DEBUG');
         
-        $this->finalSaveData($ord_trans_addit_info);
+        $resp_save_data = $this->finalSaveData($ord_trans_addit_info);
+        
+        if(!$resp_save_data) {
+            return $this->jsonOutput;
+        }
         
         $this->readerWriter->createLog('DMN process end for order #' . $orderIncrementId);
         $this->jsonOutput->setData('DMN process end for order #' . $orderIncrementId);
@@ -446,7 +450,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
      */
     private function processAuthDmn($params, $order_total, $dmn_total)
     {
-        if('auth' != strtolower($params['transactionType'])) {
+        if ('auth' != strtolower($params['transactionType'])) {
             return;
         }
         
@@ -468,7 +472,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
         // check for Zero Total Order with Rebilling
         $rebillling_data = json_decode($params['customField2'], true);
         
-        if(0 == $order_total
+        if (0 == $order_total
             && !empty($rebillling_data)
             && is_array($rebillling_data)
         ) {
@@ -522,7 +526,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
             $is_cpanel_settle = true;
         }
 
-        // set Start Subscription flag 
+        // set Start Subscription flag
         if ('sale' == $tr_type_param && !empty($params['customField2'])) {
             $this->start_subscr = true;
         } elseif ('settle' == $tr_type_param
@@ -662,7 +666,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
     }
     
     /**
-     * 
+     *
      * @param string $tr_type_param
      * @return void
      */
@@ -709,7 +713,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
         $succsess = $this->paymentModel->cancelSubscription($this->orderPayment);
 
         // if we cancel any subscription set state Close
-        if($succsess) {
+        if ($succsess) {
             $this->order->setData('state', Order::STATE_CLOSED);
         }
     }
@@ -719,7 +723,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
      */
     private function processRefundDmn($params)
     {
-        if (!in_array(strtolower($params['transactionType']), ['credit', 'refund'])) { 
+        if (!in_array(strtolower($params['transactionType']), ['credit', 'refund'])) {
             return;
         }
         
@@ -728,7 +732,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
         $this->transactionType        = Transaction::TYPE_REFUND;
         $this->sc_transaction_type    = Payment::SC_REFUNDED;
 
-        if ( (!empty($params['totalAmount']) && 'cc_card' == $params["payment_method"])
+        if ((!empty($params['totalAmount']) && 'cc_card' == $params["payment_method"])
             || false !== strpos($params["merchant_unique_id"], 'gwp')
         ) {
             $this->refund_msg = '<br/>Refunded amount: '
@@ -749,10 +753,10 @@ class Dmn extends Action implements CsrfAwareActionInterface
         $dmn_inv_id     = (int) $this->httpRequest->getParam('invoice_id');
         
         try {
-            if('Settle' == $params['transactionType']) {
+            if ('Settle' == $params['transactionType']) {
                 $this->sc_transaction_type = Payment::SC_AUTH;
                 
-                foreach($invCollection as $invoice) {
+                foreach ($invCollection as $invoice) {
                     if ($dmn_inv_id == $invoice->getId()) {
                         $invoice
 //                            ->setRequestedCaptureCase(Invoice::NOT_CAPTURE)
@@ -777,7 +781,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
 //                if(!is_object($invoice_data)) {
 //                    $this->readerWriter->createLog(
 //                        'processDeclinedSaleOrSettleDmn() Error - $invoice_data is not an object.');
-//                    
+//
 //                    return;
 //                }
                 
@@ -785,11 +789,11 @@ class Dmn extends Action implements CsrfAwareActionInterface
 //                $transaction    = $invoice_data->getTransaction();
 //                $transaction    = $this->transactionRepository->get($transaction_id);
 ////                $transaction    = $this->transactionRepository->getByTransactionId($transaction_id);
-//                
+//
 //                if(!$transaction) {
 //                    $this->readerWriter->createLog(
 //                        'processDeclinedSaleOrSettleDmn() Error - there is no $transaction.');
-//                    
+//
 //                    return;
 //                }
                 
@@ -809,7 +813,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
                 
                 $this->invoiceRepository->save($invoice);
             }
-        } catch(\Exception $ex) {
+        } catch (\Exception $ex) {
             $this->readerWriter->createLog($ex->getMessage(), 'processDeclinedSaleOrSettleDmn() Exception.');
             return;
         }
@@ -822,25 +826,25 @@ class Dmn extends Action implements CsrfAwareActionInterface
 //                // Sale
 //                if (0 == $dmn_inv_id) {
 //                    $this->curr_trans_info['invoice_id'][] = $invoice->getId();
-//                    
+//
 //                    $this->sc_transaction_type = Payment::SC_CANCELED;
-//                    
+//
 //                    $invoice
 //                        ->setTransactionId($params['TransactionID'])
 //                        ->setState(Invoice::STATE_CANCELED)
 //                        ->pay()
 //                        ->save()
 //                    ;
-//                    
-//                    
-//                    
+//
+//
+//
 //                } elseif ($dmn_inv_id == $invoice->getId()) { // Settle
 //                    $this->curr_trans_info['invoice_id'][] = $invoice->getId();
-//                    
+//
 //                    $this->sc_transaction_type = Payment::SC_AUTH;
 //
 //                    $this->readerWriter->createLog('Declined Settle');
-//                    
+//
 //                    $invoice
 ////                        ->setTransactionId($params['TransactionID'])
 ////                        ->setState(Invoice::STATE_CANCELED)
@@ -848,9 +852,9 @@ class Dmn extends Action implements CsrfAwareActionInterface
 ////                        ->pay()
 ////                        ->save()
 //                    ;
-//                    
+//
 //                    $this->invoiceRepository->save($invoice);
-//                    
+//
 //                    break;
 //                }
 //            }
@@ -1070,8 +1074,8 @@ class Dmn extends Action implements CsrfAwareActionInterface
             if ($params["advanceResponseChecksum"] !== $checksum) {
                 $msg = 'Checksum validation failed for advanceResponseChecksum and Order #' . $orderIncrementId;
 
-                if($this->moduleConfig->isTestModeEnabled() && null !== $this->order) {
-                    $this->order->addStatusHistoryComment(__($msg) 
+                if ($this->moduleConfig->isTestModeEnabled() && null !== $this->order) {
+                    $this->order->addStatusHistoryComment(__($msg)
                         . ' ' . __('Transaction type ') . $params['type']);
                 }
                 
@@ -1105,8 +1109,8 @@ class Dmn extends Action implements CsrfAwareActionInterface
         if ($param_responsechecksum !== $checksum) {
             $msg = 'Checksum validation failed for responsechecksum and Order #' . $orderIncrementId;
 
-            if($this->moduleConfig->isTestModeEnabled() && null !== $this->order) {
-                $this->order->addStatusHistoryComment(__($msg) 
+            if ($this->moduleConfig->isTestModeEnabled() && null !== $this->order) {
+                $this->order->addStatusHistoryComment(__($msg)
                     . ' ' . __('Transaction type ') . $params['type']);
             }
             
@@ -1155,7 +1159,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
             $subsc_data = $last_record['start_subscr_data'];
         }
         
-        if(empty($subsc_data) || !is_array($subsc_data)) {
+        if (empty($subsc_data) || !is_array($subsc_data)) {
             $this->readerWriter->createLog($subsc_data, 'createSubscription() problem with the subscription data.');
             return false;
         }
@@ -1184,7 +1188,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
 //                ],
 //                'DMN Error - can not create Subscription beacuse of missing data:'
 //            );
-//            
+//
 //            return false;
 //        }
         
@@ -1196,36 +1200,36 @@ class Dmn extends Action implements CsrfAwareActionInterface
             $subsc_data['userTokenId']         = $params['email'];
             $subsc_data['currency']            = $params['currency'];
             
-            try {
-                $params = array_merge(
-                    $this->request->getParams(),
-                    $this->request->getPostValue()
-                );
+        try {
+            $params = array_merge(
+                $this->request->getParams(),
+                $this->request->getPostValue()
+            );
 
-                $resp = $request
-                    ->setOrderId($orderIncrementId)
-                    ->setData($subsc_data)
-                    ->process();
+            $resp = $request
+                ->setOrderId($orderIncrementId)
+                ->setData($subsc_data)
+                ->process();
 
-                // add note to the Order - Success
-                if ('success' == strtolower($resp['status'])) {
-                    $msg =  __("<b>Subscription</b> was created. Subscription ID "
-                        . $resp['subscriptionId']). '. '
-                        . __('Recurring amount: ') . $params['currency'] . ' '
-                        . $subsc_data['recurringAmount'];
-                } else { // Error, Decline
-                    $msg = __("<b>Error</b> when try to create Subscription by this Order. ");
+            // add note to the Order - Success
+            if ('success' == strtolower($resp['status'])) {
+                $msg =  __("<b>Subscription</b> was created. Subscription ID "
+                    . $resp['subscriptionId']). '. '
+                    . __('Recurring amount: ') . $params['currency'] . ' '
+                    . $subsc_data['recurringAmount'];
+            } else { // Error, Decline
+                $msg = __("<b>Error</b> when try to create Subscription by this Order. ");
 
-                    if (!empty($resp['reason'])) {
-                        $msg .= '<br/>' . __('Reason: ') . $resp['reason'];
-                    }
+                if (!empty($resp['reason'])) {
+                    $msg .= '<br/>' . __('Reason: ') . $resp['reason'];
                 }
-
-                $this->order->addStatusHistoryComment($msg, $this->sc_transaction_type);
-                $this->orderResourceModel->save($this->order);
-            } catch (PaymentException $e) {
-                $this->readerWriter->createLog('createSubscription - Error: ' . $e->getMessage());
             }
+
+            $this->order->addStatusHistoryComment($msg, $this->sc_transaction_type);
+            $this->orderResourceModel->save($this->order);
+        } catch (PaymentException $e) {
+            $this->readerWriter->createLog('createSubscription - Error: ' . $e->getMessage());
+        }
             
 //            $subscr_count--;
 //        } while ($subscr_count > 0);
@@ -1401,11 +1405,11 @@ class Dmn extends Action implements CsrfAwareActionInterface
     /**
      * Help method keeping Order status from override with
      * delied or duplicated DMNs.
-     * 
+     *
      * @param array $params
      * @param string $order_tr_type
      * @param string $order_status
-     * 
+     *
      * return bool
      */
     private function keepOrderStatusFromOverride($params, $order_tr_type, $order_status, $status)
@@ -1484,17 +1488,26 @@ class Dmn extends Action implements CsrfAwareActionInterface
         return false;
     }
     
+    /**
+     * 
+     * @param array $ord_trans_addit_info
+     * @param int $tries
+     * 
+     * @return boolean
+     */
     private function finalSaveData($ord_trans_addit_info, $tries = 0)
     {
         $this->readerWriter->createLog('', 'finalSaveData()', 'INFO');
         
-        if($tries > 0) {
+        if ($tries > 0) {
             $this->readerWriter->createLog($tries, 'DMN save Order data recursive retry.');
         }
         
-        if($tries > 5) {
+        if ($tries > 5) {
             $this->readerWriter->createLog($tries, 'DMN save Order data maximum recursive retries reached.');
-            exit('DMN save Order data maximum recursive retries reached.');
+            $this->jsonOutput->setData('DMN save Order data maximum recursive retries reached.');
+//            exit('DMN save Order data maximum recursive retries reached.');
+            return false;
         }
         
         try {
@@ -1502,8 +1515,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
             
             $this->orderPayment
                 ->setAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA, $ord_trans_addit_info)
-                ->save()
-                ;
+                ->save();
 
             $this->readerWriter->createLog('DMN after save $ord_trans_addit_info', 'DEBUG');
 
@@ -1513,14 +1525,13 @@ class Dmn extends Action implements CsrfAwareActionInterface
             
             $this->readerWriter->createLog($e->getMessage(), 'DMN save Order data exception.');
             
-            if(strpos($msg, 'Deadlock found') !== false) {
+            if (strpos($msg, 'Deadlock found') !== false) {
                 $tries++;
                 sleep(1);
                 $this->finalSaveData($ord_trans_addit_info, $tries);
             }
         }
         
-        return;
+        return true;
     }
-    
 }

@@ -59,12 +59,12 @@ class ConfigProvider extends CcGenericConfigProvider
         CcConfig $ccConfig,
         PaymentHelper $paymentHelper,
         ModuleConfig $moduleConfig,
-//        CustomerSession $customerSession,
+        //        CustomerSession $customerSession,
         UrlInterface $urlBuilder,
-//        RequestFactory $requestFactory,
-//        \Magento\Store\Model\StoreManagerInterface $storeManager,
+        //        RequestFactory $requestFactory,
+        //        \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-//        \Magento\Checkout\Model\Cart $cart,
+        //        \Magento\Checkout\Model\Cart $cart,
         \Magento\Framework\View\Asset\Repository $assetRepo,
         \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
@@ -148,7 +148,7 @@ class ConfigProvider extends CcGenericConfigProvider
         $save_pm            = $show_upo
                             = $this->moduleConfig->canUseUpos();
         
-        if(!empty($payment_plan_data)) {
+        if (!empty($payment_plan_data)) {
             $save_pm = 'always';
         }
         
@@ -210,11 +210,11 @@ class ConfigProvider extends CcGenericConfigProvider
             ],
         ];
         
-        if(!empty($blocked_pms) && null !== $blocked_pms) {
+        if (!empty($blocked_pms) && null !== $blocked_pms) {
             $config['payment'][Payment::METHOD_CODE]['nuveiCheckoutParams']['pmBlacklist'] = $blocked_pms;
         }
         
-        if(1 == $config['payment'][Payment::METHOD_CODE]['useDevSdk']) {
+        if (1 == $config['payment'][Payment::METHOD_CODE]['useDevSdk']) {
             $config['payment'][Payment::METHOD_CODE]['nuveiCheckoutParams']['webSdkEnv'] = 'dev';
         }
         

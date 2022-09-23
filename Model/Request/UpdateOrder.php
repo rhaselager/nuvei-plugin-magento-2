@@ -116,13 +116,14 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
         
         // iterate over Items and search for Subscriptions
         $items_data = $this->paymentsPlans->getProductPlanData();
+        $subs_data  = isset($items_data['subs_data']) ? $items_data['subs_data'] : [];
         
-        $this->config->setNuveiUseCcOnly(!empty($items_data['subs_data']) ? true : false);
+        $this->config->setNuveiUseCcOnly(!empty($subs_data) ? true : false);
         
         $billing_address    = $this->config->getQuoteBillingAddress();
         $amount             = $this->config->getQuoteBaseTotal();
         
-        $this->readerWriter->createLog($items_data['subs_data'], 'update order - subs_data');
+        $this->readerWriter->createLog($subs_data, 'update order - subs_data');
         
         $params = array_merge_recursive(
             parent::getParams(),
@@ -141,9 +142,7 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
                 'merchantDetails'   => [
                     // pass amount
                     'customField1'  => $amount,
-                    // subscription data
-                    'customField2'  => isset($items_data['subs_data'])
-                        ? json_encode($items_data['subs_data']) : '',
+                    'customField2'  => json_encode($subs_data),
                     # customField3 is passed in AbstractRequest
                     // time when we create the request
                     'customField4'  => time(),

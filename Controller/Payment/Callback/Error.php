@@ -26,7 +26,7 @@ class Error extends \Magento\Framework\App\Action\Action implements \Magento\Fra
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-//        \Nuvei\Checkout\Model\Config $moduleConfig,
+        //        \Nuvei\Checkout\Model\Config $moduleConfig,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct($context);

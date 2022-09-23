@@ -13,12 +13,12 @@ class GetPlansList extends AbstractRequest implements RequestInterface
 //    private $fileSystem;
     
     public function __construct(
-//        \Nuvei\Checkout\Model\Logger $logger,
+        //        \Nuvei\Checkout\Model\Logger $logger,
         \Nuvei\Checkout\Model\Config $config,
         \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
         \Nuvei\Checkout\Model\Response\Factory $responseFactory,
         \Nuvei\Checkout\Model\Request\Factory $requestFactory,
-//        \Magento\Framework\Filesystem\DriverInterface $fileSystem,
+        //        \Magento\Framework\Filesystem\DriverInterface $fileSystem,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct(

@@ -34,7 +34,7 @@ class Status extends Column
         ContextInterface $context,
         UiComponentFactory $uiComponentFactory,
         CollectionFactory $collectionFactory,
-//        \Nuvei\Checkout\Model\Config $config,
+        //        \Nuvei\Checkout\Model\Config $config,
         \Magento\Sales\Model\Order $collection,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         array $components = [],

@@ -68,7 +68,7 @@ abstract class AbstractResponse
      * @param readerWriter  $readerWriter
      */
     public function __construct(
-//        Config $config,
+        //        Config $config,
         $requestId,
         Curl $curl,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter

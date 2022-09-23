@@ -4,7 +4,7 @@ namespace Nuvei\Checkout\Model\Request;
 
 //use Magento\Sales\Model\Order\Payment as OrderPayment;
 //use Nuvei\Checkout\Lib\Http\Client\Curl;
-//use Nuvei\Checkout\Model\AbstractRequest;
+use Nuvei\Checkout\Model\AbstractRequest;
 //use Nuvei\Checkout\Model\Config;
 //use Nuvei\Checkout\Model\Logger as Logger;
 //use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
@@ -15,7 +15,7 @@ namespace Nuvei\Checkout\Model\Request;
 /**
  * Nuvei Checkout abstract payment request model.
  */
-abstract class AbstractPayment extends \Nuvei\Checkout\Model\AbstractRequest
+abstract class AbstractPayment extends AbstractRequest
 {
     /**
      * @var RequestFactory
@@ -52,16 +52,16 @@ abstract class AbstractPayment extends \Nuvei\Checkout\Model\AbstractRequest
      * @param float|null            $amount
      */
     public function __construct(
-//        Logger $logger,
+        //        Logger $logger,
         \Nuvei\Checkout\Model\Config $config,
         \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
-//        RequestFactory $requestFactory,
-//        PaymentRequestFactory $paymentRequestFactory,
+        //        RequestFactory $requestFactory,
+        //        PaymentRequestFactory $paymentRequestFactory,
         \Nuvei\Checkout\Model\Response\Factory $responseFactory,
         \Magento\Sales\Model\Order\Payment $orderPayment,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
-//        \Magento\Framework\App\Request\Http $httpRequest
-//        $amount = 0.0
+        //        \Magento\Framework\App\Request\Http $httpRequest
+        //        $amount = 0.0
     ) {
         parent::__construct(
 //            $logger,

@@ -12,7 +12,7 @@ class Toolbar
     private $readerWriter;
     
     public function __construct(
-//        \Nuvei\Checkout\Model\Config $config,
+        //        \Nuvei\Checkout\Model\Config $config,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
         \Magento\Framework\App\RequestInterface $request,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
@@ -96,7 +96,7 @@ class Toolbar
              * but the merchant can manually change the status, so we will check
              * for the total only.
              */
-            if (Payment::SC_VOIDED == $ord_status ||  0 == $order_total) {
+            if (Payment::SC_VOIDED == $ord_status || 0 == $order_total) {
                 $buttonList->remove('order_invoice');
             }
             

@@ -11,7 +11,7 @@ class MethodAvailable
     private $readerWriter;
     
     public function __construct(
-//        \Nuvei\Checkout\Model\Config $config,
+        //        \Nuvei\Checkout\Model\Config $config,
         \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
@@ -24,7 +24,7 @@ class MethodAvailable
     {
         $this->readerWriter->createLog('MethodAvailable afterGetAvailableMethods');
         
-        if(!empty($this->paymentsPlans->getProductPlanData())) {
+        if (!empty($this->paymentsPlans->getProductPlanData())) {
             foreach ($result as $key => $_result) {
                 if ($_result->getCode() != Payment::METHOD_CODE) {
                     unset($result[$key]);

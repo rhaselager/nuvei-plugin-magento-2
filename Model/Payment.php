@@ -386,10 +386,10 @@ class Payment extends Cc implements TransparentInterface
         $this->readerWriter->createLog([$total, $status], 'Payment Void.');
         
         // Void of Zero Total amount
-        if(0 == (float) $total && self::SC_AUTH == $status) {
+        if (0 == (float) $total && self::SC_AUTH == $status) {
             $success = $this->cancelSubscription($payment);
             
-            if(!$success) {
+            if (!$success) {
                 throw new LocalizedException(__('This Order can not be Cancelled.'));
             }
             
@@ -424,7 +424,7 @@ class Payment extends Cc implements TransparentInterface
         try {
             $ord_trans_addit_info = $payment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
 
-            if(empty($ord_trans_addit_info) || !is_array($ord_trans_addit_info)) {
+            if (empty($ord_trans_addit_info) || !is_array($ord_trans_addit_info)) {
                 $this->readerWriter->createLog(
                     $ord_trans_addit_info,
                     'cancelSubscription() Error - $ord_trans_addit_info is empty or not an array.'
@@ -437,7 +437,7 @@ class Payment extends Cc implements TransparentInterface
             $id             = $last_record[self::SUBSCR_IDS];
             
             $this->readerWriter->createLog(
-                [$ord_trans_addit_info], 
+                [$ord_trans_addit_info],
                 'cancelSubscription()'
             );
 
@@ -465,21 +465,20 @@ class Payment extends Cc implements TransparentInterface
                     ->process();
 
                 // add note to the Order - Success
-                if (!$resp || !is_array($resp) || 'SUCCESS' != $resp['status']) {
-                    $msg = __("<b>Error</b> when try to Cancel Subscription by this Order. ");
+            if (!$resp || !is_array($resp) || 'SUCCESS' != $resp['status']) {
+                $msg = __("<b>Error</b> when try to Cancel Subscription by this Order. ");
 
-                    if (!empty($resp['reason'])) {
-                        $msg .= '<br/>' . __('Reason: ') . $resp['reason'];
-                    }
+                if (!empty($resp['reason'])) {
+                    $msg .= '<br/>' . __('Reason: ') . $resp['reason'];
                 }
+            }
 
                 $order->addStatusHistoryComment($msg);
                 $this->orderResourceModel->save($order);
 //            }
 
             return empty($msg) ? true : false;
-        }
-        catch(\Exception $ex) {
+        } catch (\Exception $ex) {
             $this->readerWriter->createLog($ex->getMessage());
         }
     }

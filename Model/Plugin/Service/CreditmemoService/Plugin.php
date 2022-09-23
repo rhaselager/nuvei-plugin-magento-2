@@ -33,7 +33,7 @@ class Plugin
      */
     public function __construct(
         CoreRegistry $coreRegistry
-//        RequestLogFactory $requestLogFactory
+        //        RequestLogFactory $requestLogFactory
     ) {
         $this->coreRegistry = $coreRegistry;
 //        $this->requestLogFactory = $requestLogFactory;

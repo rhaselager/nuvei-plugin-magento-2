@@ -58,8 +58,8 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-//        \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
-//        \Nuvei\Checkout\Model\Config $moduleConfig,
+        //        \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
+        //        \Nuvei\Checkout\Model\Config $moduleConfig,
         \Magento\Framework\DataObjectFactory $dataObjectFactory,
         \Magento\Quote\Api\CartManagementInterface $cartManagement,
         \Magento\Checkout\Model\Session $checkoutSession,

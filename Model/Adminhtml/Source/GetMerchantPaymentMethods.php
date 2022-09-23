@@ -54,7 +54,7 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
             return [];
         }
         
-        if(empty($this->moduleConfig->getMerchantId())
+        if (empty($this->moduleConfig->getMerchantId())
             || empty($this->moduleConfig->getMerchantSiteId())
             || empty($this->moduleConfig->getMerchantSecretKey())
         ) {
@@ -103,7 +103,7 @@ class GetMerchantPaymentMethods extends Action implements ArrayInterface
                 ->setBillingAddress($this->getRequest()->getParam('billingAddress'))
                 ->process();
 
-            if(!is_object($apmMethods)) {
+            if (!is_object($apmMethods)) {
                 return [];
             }
             

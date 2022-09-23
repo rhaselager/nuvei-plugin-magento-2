@@ -55,7 +55,7 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
         }
         
         // check every 7th day
-        if( (int) date('d', time()) % 7 != 0 ) {
+        if ((int) date('d', time()) % 7 != 0) {
             return;
         }
         
@@ -100,12 +100,12 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
             $this->readerWriter->createLog($file, 'LatestPluginVersionMessage Error - '
                 . 'version file exists, but is not readable!');
             
-            if(0 == $git_version) {
+            if (0 == $git_version) {
                 return false;
             }
         }
         
-        if(0 == $git_version) {
+        if (0 == $git_version) {
             $git_version = (int) str_replace('.', '', trim($this->readerWriter->readFile($file)));
         }
         $this->readerWriter->createLog('isDisplayed()');
@@ -146,4 +146,3 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
         return self::SEVERITY_NOTICE;
     }
 }
-

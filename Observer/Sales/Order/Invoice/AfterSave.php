@@ -26,13 +26,13 @@ class AfterSave implements ObserverInterface
 //    private $invRepo;
     
     public function __construct(
-//        \Nuvei\Checkout\Model\Config $config,
-//        \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
-//        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
+        //        \Nuvei\Checkout\Model\Config $config,
+        //        \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
+        //        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
         \Magento\Framework\ObjectManagerInterface $objectManager,
-//        \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory,
+        //        \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
-//        \Magento\Sales\Model\Order\InvoiceRepository $invRepo
+        //        \Magento\Sales\Model\Order\InvoiceRepository $invRepo
     ) {
 //        $this->config                   = $config;
 //        $this->paymentRequestFactory    = $paymentRequestFactory;
@@ -145,10 +145,10 @@ class AfterSave implements ObserverInterface
 //            if(empty($resp['transactionStatus']) || 'APPROVED' != $resp['transactionStatus']) {
 ////                $invoice->setState(Invoice::STATE_CANCELED);
 ////                $this->invRepo->save($invoice);
-//                
+//
 //                $this->readerWriter->createLog('Invoice AfterSave try to delete the invoice');
 //                $invoice_data = $this->invRepo->get($inv_id);
-//                
+//
 //                $this->invRepo->delete($invoice_data);
 //            }
             // Settle request END

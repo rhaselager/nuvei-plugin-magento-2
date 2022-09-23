@@ -44,7 +44,7 @@ class OpenOrder extends Action
      */
     public function __construct(
         Context $context,
-//        Logger $logger,
+        //        Logger $logger,
         ModuleConfig $moduleConfig,
         JsonFactory $jsonResultFactory,
         RequestFactory $requestFactory,

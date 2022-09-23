@@ -216,7 +216,7 @@ abstract class AbstractRequest
 //                    ],
 //                ]
 //            );
-//            $this->requestId = $requestLog->getId(); 
+//            $this->requestId = $requestLog->getId();
             
             $this->requestId = date('YmdHis') . '_' . uniqid();
         }
@@ -269,7 +269,7 @@ abstract class AbstractRequest
     protected function getParams()
     {
         $this->initRequest();
-$this->readerWriter->createLog('getParams()');
+        $this->readerWriter->createLog('getParams()');
         $params = [
             'merchantId'        => $this->config->getMerchantId(),
             'merchantSiteId'    => $this->config->getMerchantSiteId(),
