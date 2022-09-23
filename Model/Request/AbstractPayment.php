@@ -5,6 +5,7 @@ namespace Nuvei\Checkout\Model\Request;
 //use Magento\Sales\Model\Order\Payment as OrderPayment;
 //use Nuvei\Checkout\Lib\Http\Client\Curl;
 use Nuvei\Checkout\Model\AbstractRequest;
+
 //use Nuvei\Checkout\Model\Config;
 //use Nuvei\Checkout\Model\Logger as Logger;
 //use Nuvei\Checkout\Model\Request\Factory as RequestFactory;

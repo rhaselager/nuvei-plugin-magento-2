@@ -6,13 +6,11 @@ use Magento\Sales\Model\Order\StatusFactory as OrderStatusFactory;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Sales\Model\Order;
+use Magento\Eav\Setup\EavSetup;
+use Magento\Eav\Setup\EavSetupFactory;
 
-/**
- * Description of AddNuveiData
- *
- * @author miroslavs
- */
-class AddNuveiData implements DataPatchInterface {
+class AddNuveiData implements DataPatchInterface
+{
     /** @var ModuleDataSetupInterface */
     private $moduleDataSetup;
 
@@ -23,13 +21,14 @@ class AddNuveiData implements DataPatchInterface {
     private $orderStatusFactory;
    
     /**
-     * @param ModuleDataSetupInterface $moduleDataSetup
-     * @param EavSetupFactory $eavSetupFactory
+     * @param OrderStatusFactory        $orderStatusFactory
+     * @param ModuleDataSetupInterface  $moduleDataSetup
+     * @param EavSetupFactory           $eavSetupFactory
      */
     public function __construct(
-        OrderStatusFactory $orderStatusFactory,
-        ModuleDataSetupInterface $moduleDataSetup,
-        EavSetupFactory $eavSetupFactory
+        OrderStatusFactory          $orderStatusFactory,
+        ModuleDataSetupInterface    $moduleDataSetup,
+        EavSetupFactory             $eavSetupFactory
     ) {
         $this->moduleDataSetup      = $moduleDataSetup;
         $this->eavSetupFactory      = $eavSetupFactory;
@@ -334,12 +333,12 @@ class AddNuveiData implements DataPatchInterface {
     /**
      * If the module version number in our database is higher than the version
      * we specified here in our file, the patch will not execute.
-     * 
+     *
      * {@inheritdoc}
      */
     public static function getVersion()
     {
-       return '1.1.0';
+        return '1.1.0';
     }
     
     /**
@@ -357,5 +356,4 @@ class AddNuveiData implements DataPatchInterface {
     {
         return [];
     }
-
 }

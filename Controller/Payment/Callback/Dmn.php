@@ -430,7 +430,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
         
         $resp_save_data = $this->finalSaveData($ord_trans_addit_info);
         
-        if(!$resp_save_data) {
+        if (!$resp_save_data) {
             return $this->jsonOutput;
         }
         
@@ -1489,10 +1489,10 @@ class Dmn extends Action implements CsrfAwareActionInterface
     }
     
     /**
-     * 
+     *
      * @param array $ord_trans_addit_info
      * @param int $tries
-     * 
+     *
      * @return boolean
      */
     private function finalSaveData($ord_trans_addit_info, $tries = 0)
