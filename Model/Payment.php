@@ -190,22 +190,24 @@ class Payment extends Cc implements TransparentInterface
     /**
      * Payment constructor.
      *
-     * @param Context                         $context
-     * @param CoreRegistry                    $registry
-     * @param ExtensionAttributesFactory      $extensionFactory
-     * @param AttributeValueFactory           $customAttributeFactory
-     * @param Data                            $paymentData
-     * @param ScopeConfigInterface            $scopeConfig
-     * @param PaymentLogger                   $logger
-     * @param ModuleListInterface             $moduleList
-     * @param TimezoneInterface               $localeDate
-     * @param PaymentRequestFactory           $paymentRequestFactory
-     * @param CustomerSession                 $customerSession
-     * @param ModuleConfig                    $moduleConfig
-     * @param CheckoutSession                 $checkoutSession
-     * @param AbstractResource|null           $resource
-     * @param AbstractDb|null                 $resourceCollection
-     * @param array                           $data
+     * @param Context                       $context
+     * @param CoreRegistry                  $registry
+     * @param ExtensionAttributesFactory    $extensionFactory
+     * @param AttributeValueFactory         $customAttributeFactory
+     * @param Data                          $paymentData
+     * @param ScopeConfigInterface          $scopeConfig
+     * @param PaymentLogger                 $logger
+     * @param ModuleListInterface           $moduleList
+     * @param TimezoneInterface             $localeDate
+     * @param PaymentRequestFactory         $paymentRequestFactory
+     * @param CustomerSession               $customerSession
+     * @param ModuleConfig                  $moduleConfig
+     * @param CheckoutSession               $checkoutSession
+     * @param Order                         $orderResourceModel
+     * @param ReaderWriter                  $readerWriter
+     * @param AbstractResource|null         $resource
+     * @param AbstractDb|null               $resourceCollection
+     * @param array                         $data
      */
     public function __construct(
         Context $context,
@@ -221,10 +223,10 @@ class Payment extends Cc implements TransparentInterface
         CustomerSession $customerSession,
         ModuleConfig $moduleConfig,
         CheckoutSession $checkoutSession,
-        AbstractResource $resource = null,
-        AbstractDb $resourceCollection = null,
         \Magento\Sales\Model\ResourceModel\Order $orderResourceModel,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
+        AbstractResource $resource = null,
+        AbstractDb $resourceCollection = null,
         array $data = []
     ) {
         parent::__construct(
