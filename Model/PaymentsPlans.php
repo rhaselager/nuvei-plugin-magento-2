@@ -64,103 +64,104 @@ class PaymentsPlans
                 }
                 
                 // if there are more than 1 products in the Cart we assume there are no product with a Plan
-                if (count($items) > 1) {
-                    $this->readerWriter->createLog('getProductPlanData() - the Items in the Cart are more than 1. '
-                        . 'We assume there is no Product with a plan amongs them.');
-                    return $return_arr;
-                }
+//                if (count($items) > 1) {
+//                    $this->readerWriter->createLog('getProductPlanData() - the Items in the Cart are more than 1. '
+//                        . 'We assume there is no Product with a plan amongs them.');
+//                    return $return_arr;
+//                }
                 
-//                foreach($items as $item) {
+                foreach($items as $item) {
                     $item = current($items);
 
-                if (!is_object($item)) {
-                    $this->readerWriter->createLog('getProductPlanData() Error - '
-                        . 'the Item in the Cart is not an Object.');
-                    return $return_arr;
-//                        continue;
-                }
+                    if (!is_object($item)) {
+                        $this->readerWriter->createLog('getProductPlanData() Error - '
+                            . 'the Item in the Cart is not an Object.');
+//                        return $return_arr;
+                            continue;
+                    }
 
                     $options = $item->getProduct()->getTypeInstance(true)
                         ->getOrderOptions($item->getProduct());
+                    
                     $this->readerWriter->createLog($options, 'getProductPlanData $options');
 
                     // stop the proccess
-                if (empty($options['info_buyRequest'])
+                    if (empty($options['info_buyRequest'])
                         || !is_array($options['info_buyRequest'])
                     ) {
-                    return $return_arr;
-//                        continue;
-                }
+//                        return $return_arr;
+                            continue;
+                    }
 
                     // 1.1 in case of configurable product
                     // 1.1.1. when we have selected_configurable_option paramter
-                if (!empty($options['info_buyRequest']['selected_configurable_option'])) {
-                    $product_id = $options['info_buyRequest']['selected_configurable_option'];
-                    $product    = $this->productObj->load($product_id);
+                    if (!empty($options['info_buyRequest']['selected_configurable_option'])) {
+                        $product_id = $options['info_buyRequest']['selected_configurable_option'];
+                        $product    = $this->productObj->load($product_id);
 
-                    $nuvei_sub_enabled = $product->getCustomAttribute('nuvei_sub_enabled');
-                    $this->readerWriter->createLog(
-                        $nuvei_sub_enabled,
-                        'getProductPlanData get nuvei_sub_enabled on configurable product'
-                    );
-                        
-                    if (!is_object($nuvei_sub_enabled)) {
-                        return $return_arr;
-//                            continue;
+                        $nuvei_sub_enabled = $product->getCustomAttribute('nuvei_sub_enabled');
+                        $this->readerWriter->createLog(
+                            $nuvei_sub_enabled,
+                            'getProductPlanData get nuvei_sub_enabled on configurable product'
+                        );
+
+                        if (!is_object($nuvei_sub_enabled)) {
+//                            return $return_arr;
+                            continue;
+                        }
                     }
-                }
                     // 1.1.2. when we have super_attribute
-                elseif (!empty($options['info_buyRequest']['super_attribute'])
-                        && !empty($options['info_buyRequest']['product'])
-                    ) {
-                    $parent     = $this->productRepository->getById($options['info_buyRequest']['product']);
-                    $product    = $this->configurable->getProductByAttributes(
-                        $options['info_buyRequest']['super_attribute'],
-                        $parent
-                    );
-                    $product_id = $product->getId();
+                    elseif (!empty($options['info_buyRequest']['super_attribute'])
+                            && !empty($options['info_buyRequest']['product'])
+                        ) {
+                        $parent     = $this->productRepository->getById($options['info_buyRequest']['product']);
+                        $product    = $this->configurable->getProductByAttributes(
+                            $options['info_buyRequest']['super_attribute'],
+                            $parent
+                        );
+                        $product_id = $product->getId();
 
-                    $nuvei_sub_enabled = $product->getCustomAttribute('nuvei_sub_enabled');
-                    $this->readerWriter->createLog(
-                        $nuvei_sub_enabled,
-                        'getProductPlanData get nuvei_sub_enabled on configurable product'
-                    );
+                        $nuvei_sub_enabled = $product->getCustomAttribute('nuvei_sub_enabled');
+                        $this->readerWriter->createLog(
+                            $nuvei_sub_enabled,
+                            'getProductPlanData get nuvei_sub_enabled on configurable product'
+                        );
 
-                    if (!is_object($nuvei_sub_enabled)) {
-                        return $return_arr;
-//                            continue;
+                        if (!is_object($nuvei_sub_enabled)) {
+//                            return $return_arr;
+                            continue;
+                        }
                     }
-                }
 
-                if (!empty($product) && 0 != $product_id) {
-//                        $plan_data[$product_id]     = $this->buildPlanDetailsArray($product);
-                    $plan_data                  = $this->buildPlanDetailsArray($product);
-                    $items_data[$product_id]    = [
-                        'quantity'  => $item->getQty(),
-                        'price'     => round((float) $item->getPrice(), 2),
-                    ];
-                        
-                    $plan_data['recurringAmount'] *= $items_data[$product_id]['quantity'];
-
-                    $this->readerWriter->createLog(
-                        $plan_data,
-                        'getProductPlanData $plan_data'
-                    );
-
-                    // return plan details only if the subscription is enabled
-//                        if (!empty($plan_data[$product_id])) {
-                    if (!empty($plan_data)) {
-                        $return_arr = [
-                            'subs_data'     => $plan_data,
-                            'items_data'    => $items_data,
+                    if (!empty($product) && 0 != $product_id) {
+    //                        $plan_data[$product_id]     = $this->buildPlanDetailsArray($product);
+                        $plan_data                  = $this->buildPlanDetailsArray($product);
+                        $items_data[$product_id]    = [
+                            'quantity'  => $item->getQty(),
+                            'price'     => round((float) $item->getPrice(), 2),
                         ];
+
+                        $plan_data['recurringAmount'] *= $items_data[$product_id]['quantity'];
+
+                        $this->readerWriter->createLog(
+                            $plan_data,
+                            'getProductPlanData $plan_data'
+                        );
+
+                        // return plan details only if the subscription is enabled
+    //                        if (!empty($plan_data[$product_id])) {
+                        if (!empty($plan_data)) {
+                            $return_arr = [
+                                'subs_data'     => $plan_data,
+                                'items_data'    => $items_data,
+                            ];
+                        }
+
+                        return $return_arr;
                     }
-                        
-                    return $return_arr;
-                }
 
                     // 1.2 in case of simple product
-                    $product = $this->productObj->load($options['info_buyRequest']['product']);
+                    $product            = $this->productObj->load($options['info_buyRequest']['product']);
                     $nuvei_sub_enabled  = $product->getCustomAttribute('nuvei_sub_enabled');
 
                     $this->readerWriter->createLog(
@@ -168,10 +169,10 @@ class PaymentsPlans
                         'getProductPlanData get nuvei_sub_enabled on simple product'
                     );
 
-                if (!is_object($nuvei_sub_enabled)) {
-                    return $return_arr;
-//                        continue;
-                }
+                    if (!is_object($nuvei_sub_enabled)) {
+//                        return $return_arr;
+                        continue;
+                    }
 
 //                    $plan_data[$options['info_buyRequest']['product']] = $this->buildPlanDetailsArray($product);
                     $plan_data                  = $this->buildPlanDetailsArray($product);
@@ -192,9 +193,9 @@ class PaymentsPlans
                     }
 
 //                    return $return_arr;
-//                }
+                }
                 
-                    return $return_arr;
+                return $return_arr;
             }
 
             # 2. in case we pass product ID and product options as array.

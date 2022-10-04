@@ -17,13 +17,6 @@ use Magento\Sales\Model\Order\Payment as OrderPayment;
  */
 class Register implements ObserverInterface
 {
-//    private $config;
-//
-//    public function __construct(\Nuvei\Checkout\Model\Config $config)
-//    {
-//        $this->config = $config;
-//    }
-    
     private $readerWriter;
     
     public function __construct(\Nuvei\Checkout\Model\ReaderWriter $readerWriter)

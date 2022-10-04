@@ -6,16 +6,13 @@ use Nuvei\Checkout\Model\Payment;
 
 class MethodAvailable
 {
-//    private $config;
     private $paymentsPlans;
     private $readerWriter;
     
     public function __construct(
-        //        \Nuvei\Checkout\Model\Config $config,
         \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
-//        $this->config           = $config;
         $this->paymentsPlans    = $paymentsPlans;
         $this->readerWriter     = $readerWriter;
     }

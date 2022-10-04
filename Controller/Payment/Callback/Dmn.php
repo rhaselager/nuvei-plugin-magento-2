@@ -18,6 +18,11 @@ use Magento\Framework\App\CsrfAwareActionInterface;
 class Dmn extends Action implements CsrfAwareActionInterface
 {
     /**
+     * @var CurrencyFactory
+     */
+    private $currencyFactory;
+    
+    /**
      * @var ModuleConfig
      */
     private $moduleConfig;
@@ -93,6 +98,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
         \Nuvei\Checkout\Model\Payment $paymentModel,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         \Magento\Sales\Model\Order\Payment\Transaction\Repository $transactionRepository,
+        \Magento\Directory\Model\CurrencyFactory $currencyFactory,
         \Magento\Framework\Registry $registry // TODO Registry class is depricated
     ) {
         $this->moduleConfig             = $moduleConfig;
@@ -116,6 +122,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
         $this->readerWriter             = $readerWriter;
         $this->registry                 = $registry;
         $this->transactionRepository    = $transactionRepository;
+        $this->currencyFactory          = $currencyFactory;
         
         parent::__construct($context);
     }
@@ -372,7 +379,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
                 $this->processAuthDmn($params, $order_total, $dmn_total); // AUTH
                 $this->processSaleAndSettleDMN($params, $order_total, $dmn_total, $last_record); // SALE and SETTLE
                 $this->processVoidDmn($tr_type_param); // VOID
-                $this->processRefundDmn($params); // REFUND/CREDIT
+                $this->processRefundDmn($params, $ord_trans_addit_info); // REFUND/CREDIT
                 
                 $this->order->setStatus($this->sc_transaction_type);
 
@@ -719,9 +726,10 @@ class Dmn extends Action implements CsrfAwareActionInterface
     }
     
     /**
-     * @param array $params Incoming parameters.
+     * @param array $params                 Incoming parameters.
+     * @param array $ord_trans_addit_info   Previous transactions data.
      */
-    private function processRefundDmn($params)
+    private function processRefundDmn($params, $ord_trans_addit_info)
     {
         if (!in_array(strtolower($params['transactionType']), ['credit', 'refund'])) {
             return;
@@ -729,15 +737,36 @@ class Dmn extends Action implements CsrfAwareActionInterface
         
         $this->readerWriter->createLog('', 'processRefundDmn', 'INFO');
         
-        $this->transactionType        = Transaction::TYPE_REFUND;
-        $this->sc_transaction_type    = Payment::SC_REFUNDED;
-
-        if ((!empty($params['totalAmount']) && 'cc_card' == $params["payment_method"])
+        $this->transactionType      = Transaction::TYPE_REFUND;
+        $this->sc_transaction_type  = Payment::SC_REFUNDED;
+        $total_amount               = (float) $params['totalAmount'];
+        
+        if ( (!empty($params['totalAmount']) && 'cc_card' == $params["payment_method"])
             || false !== strpos($params["merchant_unique_id"], 'gwp')
         ) {
             $this->refund_msg = '<br/>Refunded amount: '
                 . number_format($params['totalAmount'], 2, '.', '') . ' ' . $params['currency'];
         }
+        
+        // set Order Refund amounts
+        foreach($ord_trans_addit_info as $tr) {
+            if(in_array(strtolower($tr['transaction_type']), ['credit', 'refund'])) {
+                $total_amount += $tr['total_amount']; // this is in Base value
+            }
+        }
+        
+        $this->order->setBaseTotalRefunded($total_amount);
+        
+        if($this->order->getOrderCurrencyCode() != $this->order->getBaseCurrencyCode()) {
+            // Get rate Base to Order Curr
+            $rate = $this->currencyFactory->create()
+                ->load($this->order->getBaseCurrencyCode())->getAnyRate($this->order->getOrderCurrencyCode());
+            // Get amount in Order curr
+            $converted_amount = $total_amount * $rate;
+            
+            $this->order->setTotalRefunded($converted_amount);
+        }
+        // /set Order Refund amounts
 
         $this->curr_trans_info['invoice_id'] = $this->httpRequest->getParam('invoice_id');
     }
