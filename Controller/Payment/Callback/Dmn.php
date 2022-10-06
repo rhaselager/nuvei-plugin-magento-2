@@ -755,6 +755,8 @@ class Dmn extends Action implements CsrfAwareActionInterface
             }
         }
         
+        $converted_amount = $total_amount;
+        
         $this->order->setBaseTotalRefunded($total_amount);
         
         if($this->order->getOrderCurrencyCode() != $this->order->getBaseCurrencyCode()) {
@@ -763,9 +765,9 @@ class Dmn extends Action implements CsrfAwareActionInterface
                 ->load($this->order->getBaseCurrencyCode())->getAnyRate($this->order->getOrderCurrencyCode());
             // Get amount in Order curr
             $converted_amount = $total_amount * $rate;
-            
-            $this->order->setTotalRefunded($converted_amount);
         }
+        
+        $this->order->setTotalRefunded($converted_amount);
         // /set Order Refund amounts
 
         $this->curr_trans_info['invoice_id'] = $this->httpRequest->getParam('invoice_id');
