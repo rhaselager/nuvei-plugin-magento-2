@@ -8,7 +8,6 @@ use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Nuvei\Checkout\Model\AbstractRequest;
 use Nuvei\Checkout\Model\Config as ModuleConfig;
-//use Nuvei\Checkout\Model\Logger as Logger;
 use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
 
 /**
@@ -37,14 +36,13 @@ class OpenOrder extends Action
      * Redirect constructor.
      *
      * @param Context           $context
-     * @param Logger            $logger
      * @param ModuleConfig      $moduleConfig
      * @param JsonFactory       $jsonResultFactory
      * @param RequestFactory    $requestFactory
+     * @param ReaderWriter      $readerWriter
      */
     public function __construct(
         Context $context,
-        //        Logger $logger,
         ModuleConfig $moduleConfig,
         JsonFactory $jsonResultFactory,
         RequestFactory $requestFactory,
@@ -63,10 +61,12 @@ class OpenOrder extends Action
      */
     public function execute()
     {
-        $result = $this->jsonResultFactory->create()->setHttpResponseCode(\Magento\Framework\Webapi\Response::HTTP_OK);
+        $result = $this->jsonResultFactory->create()
+            ->setHttpResponseCode(\Magento\Framework\Webapi\Response::HTTP_OK);
 
-        if (!$this->moduleConfig->isActive()) {
-            $this->readerWriter->createLog('OpenOrder error - Nuvei checkout module is not active at the moment!');
+        if (!$this->moduleConfig->getConfigValue('active')) {
+            $this->readerWriter->createLog('OpenOrder error - '
+                . 'Nuvei checkout module is not active at the moment!');
             
             return $result->setData([
                 'error_message' => __('OpenOrder error - Nuvei checkout module is not active at the moment!')

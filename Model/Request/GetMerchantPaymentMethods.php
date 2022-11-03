@@ -83,7 +83,7 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
      */
     public function process()
     {
-        if (!$this->config->isActive()) {
+        if (!$this->config->getConfigValue('active')) {
             $this->readerWriter->createLog('GetMerchantPaymentMethods Error - '
                 . 'Nuvei payments module is not active at the moment!');
             return [];
@@ -100,7 +100,7 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
             $this->readerWriter->createLog('GetMerchantPaymentMethods Error - merchant secret key is empty!');
             return [];
         }
-        if (empty($this->config->getHash())) {
+        if (empty($this->config->getConfigValue('hash'))) {
             $this->readerWriter->createLog('GetMerchantPaymentMethods Error - merchant hash is empty!');
             return [];
         }
@@ -143,8 +143,6 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
             parent::getParams(),
             [
                 'sessionToken'  => !empty($tokenResponse['sessionToken']) ? $tokenResponse['sessionToken'] : '',
-            //                "currencyCode"  => $this->config->getStoreCurrency(),
-            //                "countryCode"   => $country_code,
                 "languageCode"  => $languageCode,
             ]
         );

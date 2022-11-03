@@ -21,21 +21,23 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
      */
     protected $requestFactory;
     
-    protected $readerWriter;
-
     /**
      * @var array
      */
     protected $orderData;
     
+    protected $readerWriter;
+
     private $cart;
     private $paymentsPlans;
     
     /**
-     * @param Config           $config
-     * @param Curl             $curl
-     * @param ResponseFactory  $responseFactory
-     * @param Factory          $requestFactory
+     * @param Config            $config
+     * @param Curl              $curl
+     * @param ResponseFactory   $responseFactory
+     * @param Cart              $cart
+     * @param ReaderWriter      $readerWriter
+     * @param PaymentsPlans     $paymentsPlans
      */
     public function __construct(
         Config $config,
@@ -160,7 +162,6 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
             ? $this->orderData['clientRequestId'] : '';
         
         // for rebilling
-//        if (!empty($this->config->getProductPlanData())) {
         if (!empty($items_data)) {
             $params['isRebilling'] = 0;
             $params['paymentOption']['card']['threeD']['rebillFrequency']   = 1;
@@ -173,7 +174,7 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
         }
         
         $params['checksum'] = hash(
-            $this->config->getHash(),
+            $this->config->getConfigValue('hash'),
             $this->config->getMerchantId() . $this->config->getMerchantSiteId() . $params['clientRequestId']
                 . $params['amount'] . $params['currency'] . $params['timeStamp'] . $this->config->getMerchantSecretKey()
         );

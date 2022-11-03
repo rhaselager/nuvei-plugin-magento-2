@@ -21,24 +21,12 @@ class ConfigProvider extends CcGenericConfigProvider
     private $moduleConfig;
 
     /**
-     * @var CustomerSession
-     */
-//    private $customerSession;
-
-    /**
      * @var UrlInterface
      */
     private $urlBuilder;
 
-    /**
-     * @var RequestFactory
-     */
-//    private $requestFactory;
-    
     private $apmsRequest;
-//    private $storeManager;
     private $scopeConfig;
-//    private $cart;
     private $assetRepo;
     private $paymentsPlans;
     private $readerWriter;
@@ -46,37 +34,29 @@ class ConfigProvider extends CcGenericConfigProvider
     /**
      * ConfigProvider constructor.
      *
-     * @param CcConfig          $ccConfig
-     * @param PaymentHelper     $paymentHelper
-     * @param Config            $moduleConfig
-     * @param CustomerSession   $customerSession
-     * @param UrlInterface      $urlBuilder
-     * @param RequestFactory    $requestFactory
-     * @param array             $methodCodes
-     * @param AssetRepository   $assetRepo
+     * @param CcConfig              $ccConfig
+     * @param PaymentHelper         $paymentHelper
+     * @param Config                $moduleConfig
+     * @param UrlInterface          $urlBuilder
+     * @param ScopeConfigInterface  $scopeConfig
+     * @param Repository            $assetRepo
+     * @param PaymentsPlans         $paymentsPlans
+     * @param ReaderWriter          $readerWriter
      */
     public function __construct(
         CcConfig $ccConfig,
         PaymentHelper $paymentHelper,
         ModuleConfig $moduleConfig,
-        //        CustomerSession $customerSession,
         UrlInterface $urlBuilder,
-        //        RequestFactory $requestFactory,
-        //        \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        //        \Magento\Checkout\Model\Cart $cart,
         \Magento\Framework\View\Asset\Repository $assetRepo,
         \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         array $methodCodes
     ) {
         $this->moduleConfig     = $moduleConfig;
-//        $this->customerSession  = $customerSession;
         $this->urlBuilder       = $urlBuilder;
-//        $this->requestFactory   = $requestFactory;
-//        $this->storeManager     = $storeManager;
         $this->scopeConfig      = $scopeConfig;
-//        $this->cart             = $cart;
         $this->assetRepo        = $assetRepo;
         $this->paymentsPlans    = $paymentsPlans;
         $this->readerWriter     = $readerWriter;
@@ -100,8 +80,8 @@ class ConfigProvider extends CcGenericConfigProvider
      */
     public function getConfig()
     {
-        if (!$this->moduleConfig->isActive()) {
-            $this->readerWriter->createLog($this->moduleConfig->isActive(), 'Mudule is not active');
+        if (!$this->moduleConfig->getConfigValue('active')) {
+            $this->readerWriter->createLog('Mudule is not active');
             
             return $config = [
                 'payment' => [
@@ -119,7 +99,7 @@ class ConfigProvider extends CcGenericConfigProvider
         
         # blocked_cards
         $blocked_cards     = [];
-        $blocked_cards_str = $this->moduleConfig->getBlockedCards();
+        $blocked_cards_str = $this->moduleConfig->getConfigValue('block_cards', 'advanced');
         
         // clean the string from brakets and quotes
         $blocked_cards_str = str_replace('],[', ';', $blocked_cards_str);
@@ -141,7 +121,7 @@ class ConfigProvider extends CcGenericConfigProvider
         }
         # blocked_cards END
         
-        $blocked_pms = $this->moduleConfig->getPMsBlackList();
+        $blocked_pms = $this->moduleConfig->getConfigValue('block_pms', 'advanced');
         
         $billing_address    = $this->moduleConfig->getQuoteBillingAddress();
         $payment_plan_data  = $this->paymentsPlans->getProductPlanData();
@@ -174,7 +154,7 @@ class ConfigProvider extends CcGenericConfigProvider
                         ->getUrl('nuvei_checkout/payment/UpdateQuotePaymentMethod'),
                     
                     'isPaymentPlan'             => !empty($payment_plan_data) ? 1 : 0,
-                    'useDevSdk'                 => $this->moduleConfig->useDevSdk(),
+                    'useDevSdk'                 => $this->moduleConfig->getConfigValue('use_dev_sdk'),
                     
                     // we will set some of the parameters in the JS file
                     'nuveiCheckoutParams' => [
@@ -186,20 +166,20 @@ class ConfigProvider extends CcGenericConfigProvider
                         'currency'                  => $this->moduleConfig->getQuoteBaseCurrency(),
 //                        'amount'                    => $this->moduleConfig->getQuoteBaseTotal(),
                         'renderTo'                  => '#nuvei_checkout',
-                        'useDCC'                    =>  $this->moduleConfig->useDCC(),
+                        'useDCC'                    =>  $this->moduleConfig->getConfigValue('use_dcc'),
                         'strict'                    => false,
                         'savePM'                    => $save_pm,
                         'showUserPaymentOptions'    => $show_upo,
-//                        'pmBlacklist'               => $this->moduleConfig->getPMsBlackList(),
+//                        'pmBlacklist'               => $this->moduleConfig->getConfigValue('block_pms', 'advanced'),
 //                        'pmWhitelist'               => null,
                         'alwaysCollectCvv'          => true,
                         'fullName'                  => trim($billing_address['firstName'] . ' ' . $billing_address['lastName']),
                         'email'                     => $billing_address['email'],
-                        'payButton'                 => $this->moduleConfig->getPayButtnoText(),
+                        'payButton'                 => $this->moduleConfig->getConfigValue('pay_btn_text'),
                         'showResponseMessage'       => false, // shows/hide the response popups
                         'locale'                    => substr($locale, 0, 2),
-                        'autoOpenPM'                => (bool) $this->moduleConfig->autoExpandPms(),
-                        'logLevel'                  => $this->moduleConfig->getCheckoutLogLevel(),
+                        'autoOpenPM'                => (bool) $this->moduleConfig->getConfigValue('auto_expand_pms'),
+                        'logLevel'                  => $this->moduleConfig->getConfigValue('checkout_log_level'),
                         'maskCvv'                   => true,
                         'i18n'                      => $this->moduleConfig->getCheckoutTransl(),
                         'blockCards'                => $blocked_cards,

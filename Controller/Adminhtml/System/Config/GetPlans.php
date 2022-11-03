@@ -33,7 +33,7 @@ class GetPlans extends \Magento\Backend\App\Action
         $result = $this->jsonResultFactory->create()
             ->setHttpResponseCode(\Magento\Framework\Webapi\Response::HTTP_OK);
 
-        if (!$this->moduleConfig->isActive()) {
+        if (!$this->moduleConfig->getConfigValue('active')) {
             $this->readerWriter->createLog('Nuvei payments module is not active at the moment!');
            
             return $result->setData([

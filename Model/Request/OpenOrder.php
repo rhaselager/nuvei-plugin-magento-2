@@ -41,13 +41,15 @@ class OpenOrder extends AbstractRequest implements RequestInterface
      * OpenOrder constructor.
      *
      * @param Logger $logger
-     * @param Config           $config
-     * @param Curl             $curl
-     * @param ResponseFactory  $responseFactory
-     * @param Factory          $requestFactory
+     * @param Config            $config
+     * @param Curl              $curl
+     * @param ResponseFactory   $responseFactory
+     * @param Factory           $requestFactory
+     * @param Cart              $cart
+     * @param ReaderWriter      $readerWriter
+     * @param PaymentsPlans     $paymentsPlans
      */
     public function __construct(
-        //        \Nuvei\Checkout\Model\Logger $logger,
         Config $config,
         Curl $curl,
         ResponseFactory $responseFactory,
@@ -57,7 +59,6 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans
     ) {
         parent::__construct(
-//            $logger,
             $config,
             $curl,
             $responseFactory,
@@ -177,7 +178,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             'deviceDetails'     => $this->config->getDeviceDetails(),
             'shippingAddress'   => $this->config->getQuoteShippingAddress(),
             'billingAddress'    => $billing_address,
-            'transactionType'   => $this->config->getPaymentAction(),
+            'transactionType'   => $this->config->getConfigValue('payment_action'),
 
             'urlDetails'        => [
                 'successUrl'        => $this->config->getCallbackSuccessUrl(),
@@ -216,7 +217,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         }
         
         // auto_close_popup
-        if (1 == $this->config->autoCloseApmPopup()) {
+        if (1 == $this->config->getConfigValue('auto_close_popup')) {
             $params['urlDetails']['successUrl'] = $params['urlDetails']['pendingUrl']
                                                 = $params['urlDetails']['failureUrl']
                                                 = Config::NUVEI_SDK_AUTOCLOSE_URL;

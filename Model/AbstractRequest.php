@@ -277,7 +277,6 @@ abstract class AbstractRequest
             'timeStamp'         => date('YmdHis'),
             'webMasterId'       => $this->config->getSourcePlatformField(),
             'sourceApplication' => $this->config->getSourceApplication(),
-//            'encoding'          => 'UTF-8',
             'merchantDetails'   => [
                 'customField3'      => 'Magento v.' . $this->config->getMagentoVersion(), // Magento version
             ],
@@ -405,7 +404,7 @@ abstract class AbstractRequest
         $concat .= $this->config->getMerchantSecretKey();
         $concat = utf8_encode($concat);
         
-        $params['checksum'] = hash($this->config->getHash(), $concat);
+        $params['checksum'] = hash($this->config->getConfigValue('hash'), $concat);
 
         return $params;
     }

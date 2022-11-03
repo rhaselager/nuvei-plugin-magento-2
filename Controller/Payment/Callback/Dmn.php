@@ -157,7 +157,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
         $order_tr_type  = '';
         $last_record    = []; // last transaction data
         
-        if (!$this->moduleConfig->isActive()) {
+        if (!$this->moduleConfig->getConfigValue('active')) {
             $msg = 'DMN Error - Nuvei payment module is not active!';
             
             $this->readerWriter->createLog($msg);
@@ -1100,7 +1100,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
                 }
             }
 
-            $checksum = hash($this->moduleConfig->getHash(), $concat);
+            $checksum = hash($this->moduleConfig->getConfigValue('hash'), $concat);
 
             if ($params["advanceResponseChecksum"] !== $checksum) {
                 $msg = 'Checksum validation failed for advanceResponseChecksum and Order #' . $orderIncrementId;
@@ -1135,7 +1135,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
         }
         
         $concat_final   = $concat . $this->moduleConfig->getMerchantSecretKey();
-        $checksum       = hash($this->moduleConfig->getHash(), $concat_final);
+        $checksum       = hash($this->moduleConfig->getConfigValue('hash'), $concat_final);
 
         if ($param_responsechecksum !== $checksum) {
             $msg = 'Checksum validation failed for responsechecksum and Order #' . $orderIncrementId;

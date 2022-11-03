@@ -13,9 +13,7 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
     
     private $httpRequest;
     private $jsonResultFactory;
-//    private $productRepository;
     private $request;
-//    private $configurable;
     private $helper;
     private $eavAttribute;
     private $config;
@@ -23,18 +21,12 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
     private $readerWriter;
     private $paymentsPlans;
 
-    /**
-     * @param Context $context
-     * @param PageFactory $resultPageFactory
-     */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Magento\Framework\View\Result\PageFactory $resultPageFactory,
         \Magento\Framework\App\Request\Http $httpRequest,
         \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory,
-        //        \Magento\Catalog\Model\ProductRepository $productRepository,
         \Magento\Framework\App\RequestInterface $request,
-        //        \Magento\ConfigurableProduct\Model\Product\Type\Configurable $configurable,
         \Magento\Framework\Pricing\Helper\Data $helper,
         \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute,
         Config $config,
@@ -45,9 +37,7 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
         $this->resultPageFactory    = $resultPageFactory;
         $this->httpRequest          = $httpRequest;
         $this->jsonResultFactory    = $jsonResultFactory;
-//        $this->productRepository    = $productRepository;
         $this->request              = $request;
-//        $this->configurable         = $configurable;
         $this->helper               = $helper;
         $this->eavAttribute         = $eavAttribute;
         $this->config               = $config;
@@ -93,7 +83,7 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
         }
         
         $resultPage = $this->resultPageFactory->create();
-        $resultPage->getConfig()->getTitle()->set(__('My Nuvei Subscriptions'));
+        $resultPage->getConfig()->getConfigValue('title')->set(__('My Nuvei Subscriptions'));
 
 //        $block = $resultPage->getLayout()->getBlock('customer.account.link.back');
 //        if ($block) {
@@ -125,7 +115,6 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
             }
             
             if (is_string($params['params'])) {
-//                parse_str($params['params'], $hash_params);
                 $this->zendUri->setQuery($params['params']);
                 $hash_params = $this->zendUri->getQueryAsArray();
             } else {
@@ -149,7 +138,10 @@ class SubscriptionsHistory extends \Magento\Framework\App\Action\Action implemen
                 $attributeId = $this->eavAttribute->getIdByCode('catalog_product', $key);
                 
                 if (!$attributeId) {
-                    $this->readerWriter->createLog($attributeId, 'SubscriptionsHistory Error - attribute ID must be int.');
+                    $this->readerWriter->createLog(
+                        $attributeId, 
+                        'SubscriptionsHistory Error - attribute ID must be int.'
+                    );
                     continue;
                 }
                 

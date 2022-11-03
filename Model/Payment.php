@@ -9,27 +9,29 @@ use Magento\Framework\Api\ExtensionAttributesFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Data\Collection\AbstractDb;
 use Magento\Framework\DataObject;
+use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Model\Context;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\Module\ModuleListInterface;
 use Magento\Framework\Registry as CoreRegistry;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use Magento\Payment\Gateway\Data\PaymentDataObjectFactory;
+use Magento\Payment\Gateway\Command\CommandManagerInterface;
+use Magento\Payment\Gateway\Command\CommandPoolInterface;
 use Magento\Payment\Helper\Data;
 use Magento\Payment\Model\InfoInterface;
-use Magento\Payment\Model\Method\Cc;
+use Magento\Payment\Model\MethodInterface;
 use Magento\Payment\Model\Method\Logger as PaymentLogger;
-use Magento\Payment\Model\Method\TransparentInterface;
+use Magento\Quote\Api\Data\CartInterface;
 use Magento\Quote\Api\Data\PaymentInterface;
 use Nuvei\Checkout\Model\Config as ModuleConfig;
 use Nuvei\Checkout\Model\Request\Payment\Factory as PaymentRequestFactory;
 
 /**
  * Nuvei Checkout payment model.
- *
- * * TODO - Cc class is deprecated. Use \Magento\Payment\Model\MethodInterface instead.
  */
-class Payment extends Cc implements TransparentInterface
+class Payment implements MethodInterface
 {
     /**
      * Method code const.
@@ -83,173 +85,82 @@ class Payment extends Cc implements TransparentInterface
     const PAYMETNS_SUPPORT_REFUND = ['cc_card', 'apmgw_expresscheckout'];
 
     /**
-     * @var string
-     */
-    protected $_code = self::METHOD_CODE;
-
-    /**
-     * Form block.
-     *
-     * @var string
-     */
-    protected $_formBlockType = \Magento\Payment\Block\Transparent\Info::class;
-
-    /**
-     * Info block.
-     *
-     * @var string
-     */
-    protected $_infoBlockType = \Nuvei\Checkout\Block\ConfigurableInfo::class;
-
-    /**
-     * Payment Method feature.
-     *
-     * @var bool
-     */
-    protected $_isGateway = true;
-
-    /**
-     * Payment Method feature.
-     *
-     * @var bool
-     */
-    protected $_canAuthorize = true;
-
-    /**
-     * Payment Method feature.
-     *
-     * @var bool
-     */
-    protected $_canCapture = true;
-
-    /**
-     * Payment Method feature.
-     *
-     * @var bool
-     */
-    protected $_canCapturePartial = true;
-
-    /**
-     * Payment Method feature.
-     *
-     * @var bool
-     */
-    protected $_canRefund = true;
-
-    /**
-     * Payment Method feature.
-     *
-     * @var bool
-     */
-    protected $_canRefundInvoicePartial = true;
-
-    /**
-     * Payment Method feature.
-     *
-     * @var bool
-     */
-    protected $_canVoid = true;
-
-    /**
-     * Payment Method feature.
-     *
-     * @var bool
-     */
-    protected $_canUseCheckout = true;
-
-    /**
-     * Payment Method feature.
-     *
-     * @var bool
-     */
-    protected $_isInitializeNeeded = false;
-
-    /**
      * @var PaymentRequestFactory
      */
     private $paymentRequestFactory;
 
     /**
-     * @var CustomerSession
-     */
-//    private $customerSession;
-
-    /**
      * @var ModuleConfig
      */
-//    private $moduleConfig;
+    private $moduleConfig;
 
     /**
-     * @var CheckoutSession
+     * @var int
      */
-//    private $checkoutSession;
+    private $storeId;
+    
+    /**
+     * @var InfoInterface
+     */
+    private $infoInstance;
+    
+    /**
+     * @var PaymentDataObjectFactory
+     */
+    private $paymentDataObjectFactory;
+    
+    /**
+     * @var \Magento\Payment\Gateway\Command\CommandManagerInterface
+     */
+    private $commandExecutor;
+    
+    /**
+     * @var CommandPoolInterface
+     */
+    private $commandPool;
+    
+    /**
+     * @var ManagerInterface
+     */
+    private $eventManager;
     
     private $orderResourceModel;
     private $readerWriter;
+    private $scopeConfig;
 
     /**
      * Payment constructor.
      *
-     * @param Context                       $context
-     * @param CoreRegistry                  $registry
-     * @param ExtensionAttributesFactory    $extensionFactory
-     * @param AttributeValueFactory         $customAttributeFactory
-     * @param Data                          $paymentData
      * @param ScopeConfigInterface          $scopeConfig
-     * @param PaymentLogger                 $logger
-     * @param ModuleListInterface           $moduleList
-     * @param TimezoneInterface             $localeDate
      * @param PaymentRequestFactory         $paymentRequestFactory
-     * @param CustomerSession               $customerSession
      * @param ModuleConfig                  $moduleConfig
-     * @param CheckoutSession               $checkoutSession
      * @param Order                         $orderResourceModel
      * @param ReaderWriter                  $readerWriter
-     * @param AbstractResource|null         $resource
-     * @param AbstractDb|null               $resourceCollection
-     * @param array                         $data
+     * @param ManagerInterface              $eventManager
+     * @param PaymentDataObjectFactory      $paymentDataObjectFactory
+     * @param CommandManagerInterface|null  $commandExecutor
+     * @param CommandPoolInterface|null     $commandPool
      */
     public function __construct(
-        Context $context,
-        CoreRegistry $registry,
-        ExtensionAttributesFactory $extensionFactory,
-        AttributeValueFactory $customAttributeFactory,
-        Data $paymentData,
         ScopeConfigInterface $scopeConfig,
-        PaymentLogger $logger,
-        ModuleListInterface $moduleList,
-        TimezoneInterface $localeDate,
         PaymentRequestFactory $paymentRequestFactory,
-        CustomerSession $customerSession,
         ModuleConfig $moduleConfig,
-        CheckoutSession $checkoutSession,
         \Magento\Sales\Model\ResourceModel\Order $orderResourceModel,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
-        AbstractResource $resource = null,
-        AbstractDb $resourceCollection = null,
-        array $data = []
+        ManagerInterface $eventManager,
+        PaymentDataObjectFactory $paymentDataObjectFactory,
+        CommandManagerInterface $commandExecutor = null,
+        CommandPoolInterface $commandPool = null
     ) {
-        parent::__construct(
-            $context,
-            $registry,
-            $extensionFactory,
-            $customAttributeFactory,
-            $paymentData,
-            $scopeConfig,
-            $logger,
-            $moduleList,
-            $localeDate,
-            $resource,
-            $resourceCollection,
-            $data
-        );
-
         $this->paymentRequestFactory    = $paymentRequestFactory;
-//        $this->customerSession          = $customerSession;
-//        $this->moduleConfig             = $moduleConfig;
-//        $this->checkoutSession          = $checkoutSession;
         $this->orderResourceModel       = $orderResourceModel;
         $this->readerWriter             = $readerWriter;
+        $this->scopeConfig              = $scopeConfig;
+        $this->paymentDataObjectFactory = $paymentDataObjectFactory;
+        $this->commandExecutor          = $commandExecutor;
+        $this->commandPool              = $commandPool;
+        $this->moduleConfig             = $moduleConfig;
+        $this->eventManager             = $eventManager;
     }
 
     /**
@@ -262,18 +173,12 @@ class Payment extends Cc implements TransparentInterface
      */
     public function assignData(DataObject $data)
     {
-        parent::assignData($data);
-
         $additionalData = $data->getData(PaymentInterface::KEY_ADDITIONAL_DATA);
 
         $chosenApmMethod = !empty($additionalData[self::KEY_CHOSEN_APM_METHOD])
             ? $additionalData[self::KEY_CHOSEN_APM_METHOD] : null;
         
-//        $lastSessionToken = !empty($additionalData[self::KEY_LAST_ST])
-//            ? $additionalData[self::KEY_LAST_ST] : null;
-
         $info = $this->getInfoInstance();
-//        $info->setAdditionalInformation(self::KEY_LAST_ST, $lastSessionToken);
         $info->setAdditionalInformation(self::KEY_CHOSEN_APM_METHOD, $chosenApmMethod);
 
         return $this;
@@ -294,8 +199,9 @@ class Payment extends Cc implements TransparentInterface
      * Check if payment method can be used for provided currency.
      *
      * @param string $currencyCode
-     *
      * @return bool
+     * 
+     * @inheritdoc
      */
     public function canUseForCurrency($currencyCode)
     {
@@ -315,8 +221,6 @@ class Payment extends Cc implements TransparentInterface
      */
     public function authorize(InfoInterface $payment, $amount)
     {
-        parent::authorize($payment, $amount);
-
         $this->processPayment($payment, $amount);
 
         return $this;
@@ -335,8 +239,6 @@ class Payment extends Cc implements TransparentInterface
      */
     public function refund(InfoInterface $payment, $amount)
     {
-        parent::refund($payment, $amount);
-        
         /** @var RequestInterface $request */
         $request = $this->paymentRequestFactory->create(
             AbstractRequest::PAYMENT_REFUND_METHOD,
@@ -360,8 +262,6 @@ class Payment extends Cc implements TransparentInterface
      */
     public function cancel(InfoInterface $payment)
     {
-        parent::cancel($payment);
-
         $this->void($payment);
 
         return $this;
@@ -401,8 +301,6 @@ class Payment extends Cc implements TransparentInterface
         }
         // /Void of Zero Total amount
         
-        parent::void($payment);
-        
         /** @var RequestInterface $request */
         $request = $this->paymentRequestFactory->create(
             AbstractRequest::PAYMENT_VOID_METHOD,
@@ -433,7 +331,6 @@ class Payment extends Cc implements TransparentInterface
             }
 
             $last_record    = end($ord_trans_addit_info);
-//            $subsc_ids      = json_decode($last_record[self::SUBSCR_IDS]);
             $id             = $last_record[self::SUBSCR_IDS];
             
             $this->readerWriter->createLog(
@@ -441,10 +338,8 @@ class Payment extends Cc implements TransparentInterface
                 'cancelSubscription()'
             );
 
-//            if (empty($subsc_ids) || !is_array($subsc_ids)) {
             if (empty($id)) {
                 $this->readerWriter->createLog(
-//                    $subsc_ids,
                     $id,
                     'cancelSubscription() Error - $subsc_ids is empty or not an array.'
                 );
@@ -459,10 +354,9 @@ class Payment extends Cc implements TransparentInterface
             $order  = $payment->getOrder();
             $msg    = '';
 
-//            foreach ($subsc_ids as $id) {
-                $resp = $request
-                    ->setSubscrId($id)
-                    ->process();
+            $resp = $request
+                ->setSubscrId($id)
+                ->process();
 
                 // add note to the Order - Success
             if (!$resp || !is_array($resp) || 'SUCCESS' != $resp['status']) {
@@ -473,9 +367,8 @@ class Payment extends Cc implements TransparentInterface
                 }
             }
 
-                $order->addStatusHistoryComment($msg);
-                $this->orderResourceModel->save($order);
-//            }
+            $order->addStatusHistoryComment($msg);
+            $this->orderResourceModel->save($order);
 
             return empty($msg) ? true : false;
         } catch (\Exception $ex) {
@@ -484,20 +377,568 @@ class Payment extends Cc implements TransparentInterface
     }
 
     /**
-     * {inheritdoc}
-     */
-    public function getConfigInterface()
-    {
-        return $this;
-    }
-    
-    /**
      * Check void availability
+     * 
      * @return bool
      * @internal param \Magento\Framework\DataObject $payment
+     * 
+     * @inheritdoc
      */
     public function canVoid()
     {
-        return $this->_canVoid;
+        return true;
     }
+    
+    /**
+     * @inheritdoc
+     */
+    public function getCode()
+    {
+        return self::METHOD_CODE;
+    }
+    
+    /**
+     * Retrieve block type for method form generation
+     *
+     * @return string
+     *
+     * @deprecated 100.0.2
+     * 
+     * @inheritdoc
+     */
+    public function getFormBlockType()
+    {
+        return \Magento\Payment\Block\Transparent\Info::class;
+    }
+
+    /**
+     * Retrieve payment method title
+     *
+     * @return string
+     * 
+     * @inheritdoc
+     *
+     */
+    public function getTitle()
+    {
+        return $this->moduleConfig->getConfigValue('title');
+    }
+
+    /**
+     * Store id setter
+     * 
+     * @param int $storeId
+     * @return void
+     * 
+     * @inheritdoc
+     */
+    public function setStore($storeId)
+    {
+        $this->storeId = (int)$storeId;
+    }
+
+    /**
+     * Store id getter
+     * 
+     * @return int
+     * 
+     * @inheritdoc
+     */
+    public function getStore()
+    {
+        return $this->storeId;
+    }
+
+    /**
+     * Check order availability
+     *
+     * @return bool
+     * 
+     * @inheritdoc
+     */
+    public function canOrder()
+    {
+        return true;
+    }
+
+    /**
+     * Check capture availability
+     *
+     * @return bool
+     * 
+     * @inheritdoc
+     */
+    public function canCapture()
+    {
+        return true;
+    }
+
+    /**
+     * Check partial capture availability
+     *
+     * @return bool
+     * 
+     * @inheritdoc
+     */
+    public function canCapturePartial()
+    {
+        return true;
+    }
+
+    /**
+     * Check whether capture can be performed once and no further capture possible
+     *
+     * @return bool
+     * 
+     * @inheritdoc
+     */
+    public function canCaptureOnce()
+    {
+        return false;
+    }
+
+    /**
+     * Check refund availability
+     *
+     * @return bool
+     * 
+     * @inheritdoc
+     */
+    public function canRefund()
+    {
+        return true;
+    }
+
+    /**
+     * Check partial refund availability for invoice
+     *
+     * @return bool
+     * 
+     * @inheritdoc
+     */
+    public function canRefundPartialPerInvoice()
+    {
+        return true;
+    }
+
+    /**
+     * Using internal pages for input payment data
+     * Can be used in admin
+     *
+     * TODO ???
+     * 
+     * @return bool
+     * 
+     * @inheritdoc
+     */
+    public function canUseInternal()
+    {
+        return true;
+    }
+
+    /**
+     * Can be used in regular checkout
+     *
+     * @return bool
+     * 
+     * @inheritdoc
+     */
+    public function canUseCheckout()
+    {
+        return true;
+    }
+
+    /**
+     * Can be edit order (renew order)
+     *
+     * TODO ???
+     * 
+     * @return bool
+     * 
+     * @inheritdoc
+     */
+    public function canEdit()
+    {
+        return true;
+    }
+
+    /**
+     * Check fetch transaction info availability
+     *
+     * @return bool
+     * 
+     * @inheritdoc
+     */
+    public function canFetchTransactionInfo()
+    {
+        return true;
+    }
+
+    /**
+     * Fetch transaction info
+     *
+     * TODO ???
+     * 
+     * @param InfoInterface $payment
+     * @param string $transactionId
+     * 
+     * @return array
+     * 
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * 
+     * @inheritdoc
+     *
+     */
+    public function fetchTransactionInfo(InfoInterface $payment, $transactionId)
+    {
+        return $this->executeCommand(
+            'fetch_transaction_information',
+            ['payment' => $payment, 'transactionId' => $transactionId]
+        );
+    }
+
+    /**
+     * Retrieve payment system relation flag
+     *
+     * @return bool
+     * 
+     * @inheritdoc
+     */
+    public function isGateway()
+    {
+        return true;
+    }
+
+    /**
+     * Retrieve payment method online/offline flag
+     *
+     * @return bool
+     * 
+     * @inheritdoc
+     */
+    public function isOffline()
+    {
+        return false;
+    }
+
+    /**
+     * Flag if we need to run payment initialize while order place
+     *
+     * @return bool
+     * 
+     * @inheritdoc
+     */
+    public function isInitializeNeeded()
+    {
+        return false;
+    }
+
+    /**
+     * To check billing country is allowed for the payment method
+     *
+     * @param string $country
+     * @return bool
+     * 
+     * @inheritdoc
+     */
+    public function canUseForCountry($country)
+    {
+        return true;
+    }
+
+    /**
+     * Retrieve block type for display method information
+     *
+     * @return string
+     *
+     * @deprecated 100.0.2
+     * 
+     * @inheritdoc
+     */
+    public function getInfoBlockType()
+    {
+        return \Nuvei\Checkout\Block\ConfigurableInfo::class;
+    }
+
+    /**
+     * Retrieve payment information model object
+     *
+     * @return InfoInterface
+     * 
+     * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @deprecated 100.0.2
+     * 
+     * @inheritdoc
+     */
+    public function getInfoInstance()
+    {
+        return $this->infoInstance;
+    }
+
+    /**
+     * Retrieve payment information model object
+     *
+     * @param InfoInterface $info
+     * @return void
+     * 
+     * @inheritdoc
+     *
+     * @deprecated 100.0.2
+     */
+    public function setInfoInstance(InfoInterface $info)
+    {
+        $this->infoInstance = $info;
+    }
+
+
+    /**
+     * Order payment abstract method
+     *
+     * @param InfoInterface $payment
+     * @param float $amount
+     * 
+     * @return $this
+     * 
+     * @inheritdoc
+     */
+    public function order(\Magento\Payment\Model\InfoInterface $payment, $amount)
+    {
+        $this->executeCommand(
+            'order',
+            ['payment' => $payment, 'amount' => $amount]
+        );
+
+        return $this;
+    }
+
+    /**
+     * Capture payment abstract method
+     *
+     * @param InfoInterface $payment
+     * @param float $amount
+     * 
+     * @return $this
+     * 
+     * @inheritdoc
+     */
+    public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
+    {
+        $this->executeCommand(
+            'capture',
+            ['payment' => $payment, 'amount' => $amount]
+        );
+
+        return $this;
+    }
+
+
+    /**
+     * Whether this method can accept or deny payment
+     * 
+     * @return bool
+     * 
+     * @inheritdoc
+     */
+    public function canReviewPayment()
+    {
+        return true;
+    }
+
+    /**
+     * Attempt to accept a payment that us under review
+     *
+     * @param InfoInterface $payment
+     * @return false
+     * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @inheritdoc
+     */
+    public function acceptPayment(InfoInterface $payment)
+    {
+        $this->executeCommand('accept_payment', ['payment' => $payment]);
+
+        return $this;
+    }
+
+    /**
+     * Attempt to deny a payment that us under review
+     *
+     * @param InfoInterface $payment
+     * @return false
+     * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @inheritdoc
+     */
+    public function denyPayment(InfoInterface $payment)
+    {
+        $this->executeCommand('deny_payment', ['payment' => $payment]);
+
+        return $this;
+    }
+
+    /**
+     * Retrieve information from payment configuration
+     *
+     * @param string $field
+     * @param int|string|null|\Magento\Store\Model\Store $storeId
+     *
+     * @return mixed
+     * 
+     * @inheritdoc
+     */
+    public function getConfigData($field, $storeId = null)
+    {
+        return $this->moduleConfig->getConfigValue($field);
+    }
+
+    /**
+     * Check whether payment method can be used
+     *
+     * @param CartInterface|null $quote
+     * @return bool
+     *
+     * @inheritdoc
+     */
+    public function isAvailable(CartInterface $quote = null)
+    {
+        if (!$this->isActive($quote ? $quote->getStoreId() : null)) {
+            return false;
+        }
+        
+        return true;
+
+//        $checkResult = new DataObject();
+//        $checkResult->setData('is_available', true);
+//        try {
+//            $infoInstance = $this->getInfoInstance();
+//            if ($infoInstance !== null) {
+//                $validator = $this->getValidatorPool()->get('availability');
+//                $result = $validator->validate(
+//                    [
+//                        'payment' => $this->paymentDataObjectFactory->create($infoInstance)
+//                    ]
+//                );
+//
+//                $checkResult->setData('is_available', $result->isValid());
+//            }
+//        // phpcs:ignore Magento2.CodeAnalysis.EmptyBlock
+//        } catch (\Exception $e) {
+//            // pass
+//        }
+//
+//        // for future use in observers
+//        $this->eventManager->dispatch(
+//            'payment_method_is_active',
+//            [
+//                'result' => $checkResult,
+//                'method_instance' => $this,
+//                'quote' => $quote
+//            ]
+//        );
+//
+//        return $checkResult->getData('is_available');
+    }
+
+    /**
+     * Is active
+     *
+     * @param int|null $storeId
+     * @return bool
+     *
+     * @inheritdoc
+     */
+    public function isActive($storeId = null)
+    {
+        return $this->moduleConfig->getConfigValue('active');
+    }
+
+    /**
+     * Method that will be executed instead of authorize or capture
+     * if flag isInitializeNeeded set to true
+     *
+     * @param string $paymentAction
+     * @param object $stateObject
+     *
+     * @return $this
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * 
+     * @inheritdoc
+     *
+     */
+    public function initialize($paymentAction, $stateObject)
+    {
+        $this->executeCommand(
+            'initialize',
+            [
+                'payment' => $this->getInfoInstance(),
+                'paymentAction' => $paymentAction,
+                'stateObject' => $stateObject
+            ]
+        );
+        return $this;
+    }
+
+    /**
+     * Get config payment action url
+     * Used to universalize payment actions when processing payment place
+     *
+     * @return string
+     *
+     * @inheritdoc
+     */
+    public function getConfigPaymentAction()
+    {
+        return $this->moduleConfig->getConfigValue('payment_action');
+    }
+    
+    /**
+     * Check authorize availability
+     *
+     * @return bool
+     *
+     * @inheritdoc
+     */
+    public function canAuthorize()
+    {
+        return true;
+    }
+    
+    private function executeCommand($commandCode, array $arguments = [])
+    {
+        if (!$this->canPerformCommand($commandCode)) {
+            return null;
+        }
+
+        /** @var InfoInterface|null $payment */
+        $payment = null;
+        if (isset($arguments['payment']) && $arguments['payment'] instanceof InfoInterface) {
+            $payment = $arguments['payment'];
+            $arguments['payment'] = $this->paymentDataObjectFactory->create($arguments['payment']);
+        }
+
+        if ($this->commandExecutor !== null) {
+            return $this->commandExecutor->executeByCode($commandCode, $payment, $arguments);
+        }
+
+        if ($this->commandPool === null) {
+            throw new \DomainException("The command pool isn't configured for use.");
+        }
+
+        $command = $this->commandPool->get($commandCode);
+
+        return $command->execute($arguments);
+    }
+    
+    /**
+     * Whether payment command is supported and can be executed
+     *
+     * @param string $commandCode
+     * @return bool
+     */
+    private function canPerformCommand($commandCode)
+    {
+        return $this->moduleConfig->canPerformCommand($commandCode);
+    }
+    
 }

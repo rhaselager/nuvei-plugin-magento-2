@@ -2,6 +2,11 @@
 
 ---
 
+# 2.0.0
+```
+    * Stop using Cc and TransparentInterface.
+```
+
 # 1.1.0
 ```
 	* Added ReaderWriter class, to read and save files for the plugin.

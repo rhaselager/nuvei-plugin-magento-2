@@ -49,7 +49,7 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
      */
     public function isDisplayed()
     {
-        if ($this->modulConfig->isActive() === false) {
+        if ($this->modulConfig->getConfigValue('active') === false) {
             $this->readerWriter->createLog('LatestPluginVersionMessage Error - the module is not active.');
             return;
         }

@@ -121,23 +121,23 @@ class Config
     private $remoteIp;
     private $customerSession;
     private $cookie;
-//    private $productObj;
-//    private $productRepository;
-//    private $configurable;
-//    private $eavAttribute;
-//    private $fileSystem;
-    
     private $clientUniqueIdPostfix = '_sandbox_apm'; // postfix for Sandbox APM payments
 
     /**
      * Object initialization.
      *
-     * @param ScopeConfigInterface  $scopeConfig Scope config object.
-     * @param StoreManagerInterface $storeManager Store manager object.
-     * @param ProductMetadataInterface $productMetadata
-     * @param ModuleListInterface $moduleList
-     * @param CheckoutSession $checkoutSession
-     * @param UrlInterface $urlBuilder
+     * @param ScopeConfigInterface      $scopeConfig Scope config object.
+     * @param StoreManagerInterface     $storeManager Store manager object.
+     * @param ProductMetadataInterface  $productMetadata
+     * @param ModuleListInterface       $moduleList
+     * @param CheckoutSession           $checkoutSession
+     * @param UrlInterface              $urlBuilder
+     * @param FormKey                   $formKey
+     * @param DirectoryList             $directory
+     * @param Header                    $httpHeader
+     * @param RemoteAddress             $remoteIp
+     * @param Session                   $customerSession
+     * @param CookieManagerInterface    $cookie
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
@@ -152,11 +152,6 @@ class Config
         \Magento\Framework\HTTP\PhpEnvironment\RemoteAddress $remoteIp,
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Framework\Stdlib\CookieManagerInterface $cookie
-        //        \Magento\Catalog\Model\Product $productObj
-        //        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository
-        //        \Magento\ConfigurableProduct\Model\Product\Type\Configurable $configurable
-        //        \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute
-        //        ,\Magento\Framework\Filesystem\DriverInterface $fileSystem
     ) {
         $this->scopeConfig      = $scopeConfig;
         $this->storeManager     = $storeManager;
@@ -174,24 +169,8 @@ class Config
         $this->formKey              = $formKey;
         $this->directory            = $directory;
         $this->cookie               = $cookie;
-//        $this->productObj           = $productObj;
-//        $this->productRepository    = $productRepository;
-//        $this->configurable         = $configurable;
-//        $this->eavAttribute         = $eavAttribute;
-//        $this->fileSystem           = $fileSystem;
     }
 
-    /**
-     * Return config path.
-     *
-     * @param string $sub_group The beginning of the Sub group
-     * @return string
-     */
-    private function getConfigPath()
-    {
-        return sprintf('payment/%s/', Payment::METHOD_CODE);
-    }
-    
     public function getTempPath()
     {
         return $this->directory->getPath('log');
@@ -316,10 +295,10 @@ class Config
      *
      * @return mixed
      */
-    private function getConfigValue($fieldKey, $sub_group = '')
+    public function getConfigValue($fieldKey, $sub_group = '')
     {
         if (isset($this->config[$fieldKey]) === false) {
-            $path = $this->getConfigPath();
+            $path = 'payment/' . Payment::METHOD_CODE . '/';
             
             if (!empty($sub_group)) {
                 $path .= $sub_group . '_configuration/';
@@ -335,26 +314,6 @@ class Config
         }
         
         return $this->config[$fieldKey];
-    }
-
-    /**
-     * Return bool value depends of that if payment method is active or not.
-     *
-     * @return bool
-     */
-    public function isActive()
-    {
-        return (bool)$this->getConfigValue('active');
-    }
-
-    /**
-     * Return title.
-     *
-     * @return string
-     */
-    public function getTitle()
-    {
-        return $this->getConfigValue('title');
     }
 
     /**
@@ -385,11 +344,6 @@ class Config
         return $this->getConfigValue('merchant_site_id');
     }
     
-//    public function getMerchantApplePayLabel()
-//    {
-//        return $this->getConfigValue('apple_pay_label', 'basic');
-//    }
-
     /**
      * Return merchant secret key.
      *
@@ -404,16 +358,6 @@ class Config
         return $this->getConfigValue('merchant_secret_key');
     }
 
-    /**
-     * Return hash configuration value.
-     *
-     * @return string
-     */
-    public function getHash()
-    {
-        return $this->getConfigValue('hash');
-    }
-    
     /**
      * Return bool value depends of that if payment method sandbox mode
      * is enabled or not.
@@ -440,7 +384,7 @@ class Config
     
     public function canUseUpos()
     {
-        if ($this->customerSession->isLoggedIn() && 1 == $this->useUPOs()) {
+        if ($this->customerSession->isLoggedIn() && 1 == $this->getConfigValue('use_upos')) {
             return true;
         }
         
@@ -476,51 +420,6 @@ class Config
         return true;
     }
     
-    public function useUPOs()
-    {
-        return (bool)$this->getConfigValue('use_upos');
-    }
-    
-    public function useDCC()
-    {
-        return $this->getConfigValue('use_dcc');
-    }
-    
-    public function useDevSdk()
-    {
-        return $this->getConfigValue('use_dev_sdk');
-    }
-    
-    public function getBlockedCards()
-    {
-        return $this->getConfigValue('block_cards', 'advanced');
-    }
-    
-    public function getPMsBlackList()
-    {
-        return $this->getConfigValue('block_pms', 'advanced');
-    }
-    
-    public function getPayButtnoText()
-    {
-        return $this->getConfigValue('pay_btn_text');
-    }
-    
-    public function autoExpandPms()
-    {
-        return $this->getConfigValue('auto_expand_pms');
-    }
-    
-    public function autoCloseApmPopup()
-    {
-        return $this->getConfigValue('auto_close_popup');
-    }
-    
-    public function getCheckoutLogLevel()
-    {
-        return $this->getConfigValue('checkout_log_level');
-    }
-    
     public function getCheckoutTransl()
     {
         $checkout_transl = str_replace("'", '"', $this->getConfigValue('checkout_transl', 'advanced'));
@@ -546,21 +445,6 @@ class Config
     {
         return $this->productMetadata->getVersion();
     }
-
-    /**
-     * Return full endpoint;
-     *
-     * @return string
-     */
-//    public function getEndpoint()
-//    {
-//        $endpoint = AbstractRequest::LIVE_ENDPOINT;
-//        if ($this->isTestModeEnabled() === true) {
-//            $endpoint = AbstractRequest::TEST_ENDPOINT;
-//        }
-//
-//        return $endpoint . 'purchase.do';
-//    }
 
     /**
      * @return string
@@ -661,9 +545,9 @@ class Config
         return $this->urlBuilder->getUrl('checkout/cart');
     }
     
-    public function getPaymentAction()
+    public function canPerformCommand($commandCode)
     {
-        return $this->getConfigValue('payment_action');
+        return $this->getConfigValue('can_' . $commandCode);
     }
     
     public function getQuoteId()
@@ -827,7 +711,6 @@ class Config
     public function setQuotePaymentMethod($method)
     {
         $quote = $this->checkoutSession->getQuote();
-//        $quote->getPayment()->setMethod($method);
         $quote->setPaymentMethod($method);
         $quote->getPayment()->importData(['method' => $method]);
         $quote->save();
