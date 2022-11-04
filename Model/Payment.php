@@ -724,6 +724,8 @@ class Payment implements MethodInterface
      */
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
+        $this->readerWriter->createLog('Payment->capture()');
+        
         $this->executeCommand(
             'capture',
             ['payment' => $payment, 'amount' => $amount]

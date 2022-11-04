@@ -17,30 +17,15 @@ use Magento\Sales\Model\Order\Payment as OrderPayment;
 class AfterSave implements ObserverInterface
 {
     protected $objectManager;
-//    protected $jsonResultFactory;
     
-//    private $config;
-//    private $paymentRequestFactory;
-//    private $requestFactory;
     private $readerWriter;
-//    private $invRepo;
     
     public function __construct(
-        //        \Nuvei\Checkout\Model\Config $config,
-        //        \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
-        //        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
         \Magento\Framework\ObjectManagerInterface $objectManager,
-        //        \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
-        //        \Magento\Sales\Model\Order\InvoiceRepository $invRepo
     ) {
-//        $this->config                   = $config;
-//        $this->paymentRequestFactory    = $paymentRequestFactory;
-//        $this->requestFactory           = $requestFactory;
         $this->objectManager    = $objectManager;
-//        $this->jsonResultFactory        = $jsonResultFactory;
         $this->readerWriter     = $readerWriter;
-//        $this->invRepo          = $invRepo;
     }
     
     /**

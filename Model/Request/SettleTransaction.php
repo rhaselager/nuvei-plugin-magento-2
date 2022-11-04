@@ -10,31 +10,7 @@ use Magento\Framework\Exception\PaymentException;
 
 class SettleTransaction extends AbstractRequest implements RequestInterface
 {
-//    protected $config;
-//    protected $amount;
-//    protected $payment;
-    
     private $invoice_id;
-    
-    /**
-     * @param Logger           $logger
-     * @param Config           $config
-     * @param Curl             $curl
-     * @param ResponseFactory  $responseFactory
-     */
-//    public function __construct(
-//        \Nuvei\Checkout\Model\Logger $logger,
-//        \Nuvei\Checkout\Model\Config $config,
-//        \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
-//        \Nuvei\Checkout\Model\Response\Factory $responseFactory
-//    ) {
-//        parent::__construct(
-//            $logger,
-//            $config,
-//            $curl,
-//            $responseFactory
-//        );
-//    }
     
     /**
      * @return AbstractResponse
