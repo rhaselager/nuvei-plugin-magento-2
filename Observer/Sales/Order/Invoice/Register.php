@@ -49,16 +49,20 @@ class Register implements ObserverInterface
         }
 
         if ($payment->getMethod() !== Payment::METHOD_CODE) {
-            $this->readerWriter->createLog($payment->getMethod(), 'Invoice Register - payment method is not Nuvei, but');
+            $this->readerWriter->createLog(
+                $payment->getMethod(),
+                'Invoice Register - payment method is not Nuvei, but'
+            );
             
             return $this;
         }
 
         /** @var Invoice $invoice */
         $invoice    = $observer->getInvoice();
-        $inv_state  = Invoice::STATE_OPEN; // in case of auth we will change it when DMN come
+        $invoice->setCanVoidFlag(true); // set this flag to can Void the Settle later
+//        $inv_state  = Invoice::STATE_OPEN; // in case of auth we will change it when DMN come
         
-        $invoice->setState($inv_state);
+//        $invoice->setState($inv_state);
         
         return $this;
     }

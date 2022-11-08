@@ -11,35 +11,17 @@ namespace Nuvei\Checkout\Plugin;
 class PreventAddToCart
 {
     private $config;
-//    private $request;
-//    private $messanger;
-//    private $product_obj;
-//    private $productRepository;
-//    private $productTypeInstance;
-//    private $eavModel;
     private $configurableProduct;
     private $paymentsPlans;
     private $readerWriter;
 
     public function __construct(
         \Nuvei\Checkout\Model\Config $config,
-        //        \Magento\Framework\App\Request\Http $request,
-        //        \Magento\Framework\Message\ManagerInterface $messanger,
-        //        \Magento\Catalog\Model\Product $product_obj,
-        //        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
-        //        \Magento\ConfigurableProduct\Model\Product\Type\Configurable $productTypeInstance,
-        //        \Magento\Catalog\Model\ResourceModel\Eav\Attribute $eavModel,
         \Magento\ConfigurableProduct\Model\Product\Type\Configurable $configurableProduct,
         \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->config               = $config;
-//        $this->request              = $request;
-//        $this->messanger            = $messanger;
-//        $this->product_obj          = $product_obj;
-//        $this->productRepository    = $productRepository;
-//        $this->productTypeInstance  = $productTypeInstance;
-//        $this->eavModel             = $eavModel;
         $this->configurableProduct  = $configurableProduct;
         $this->paymentsPlans        = $paymentsPlans;
         $this->readerWriter         = $readerWriter;
@@ -88,8 +70,5 @@ class PreventAddToCart
                 throw new \Magento\Framework\Exception\LocalizedException(__($error_msg_2));
             }
         }
-//        } catch (\Exception $e) {
-//            $this->readerWriter->createLog($e->getMessage(), 'Exception:');
-//        }
     }
 }

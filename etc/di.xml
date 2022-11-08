@@ -35,49 +35,6 @@
         </arguments>
     </virtualType>
     
-<!--    <type name="Nuvei\Checkout\Model\ResourceModel\Request\Grid\Collection">
-        <arguments>
-            <argument name="mainTable"
-                      xsi:type="string">nuvei_checkout_api_request_log</argument>
-            <argument name="eventPrefix"
-                      xsi:type="string">nuvei_checkout_api_request_log_grid_collection</argument>
-            <argument name="eventObject"
-                      xsi:type="string">api_request_grid_collection</argument>
-            <argument name="resourceModel"
-                      xsi:type="string">Nuvei\Checkout\Model\ResourceModel\Request</argument>
-        </arguments>
-    </type>-->
-    
-<!--    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
-        <arguments>
-            <argument name="collections"
-                      xsi:type="array">
-                <item name="nuvei_checkout_api_request_log_listing_data_source"
-                      xsi:type="string">Nuvei\HelloWorld\Checkout\ResourceModel\Request\Grid\Collection</item>
-            </argument>
-        </arguments>
-    </type>-->
-
-    <!-- Logger configuration. -->
-<!--    <type name="Nuvei\Checkout\Model\Logger\Handler">
-        <arguments>
-            <argument name="filesystem"
-                      xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
-        </arguments>
-    </type>-->
-    
-<!--    <type name="Nuvei\Checkout\Model\Logger">
-        <arguments>
-            <argument name="name"
-                      xsi:type="string">logger</argument>
-            <argument name="handlers"
-                      xsi:type="array">
-                <item name="system"
-                      xsi:type="object">Nuvei\Checkout\Model\Logger\Handler</item>
-            </argument>
-        </arguments>
-    </type>-->
-	
 	<type name="Magento\Checkout\Model\Cart">
         <plugin name="prevent_add_to" 
 				type="Nuvei\Checkout\Plugin\PreventAddToCart"/>
@@ -102,11 +59,4 @@
                 type="Nuvei\Checkout\Plugin\QuoteAddressValidatorPlugin" 
                 disabled="false" />
     </type>
-    
-    <!-- Interface preferences. -->
-<!--    <preference for="Nuvei\Checkout\Api\RequestLogRepositoryInterface"
-                type="Nuvei\Checkout\Model\ResourceModel\RequestLogRepository"/>
-    
-    <preference for="Nuvei\Checkout\Api\Data\RequestLogInterface"
-                type="Nuvei\Checkout\Model\Data\RequestLog"/>-->
 </config>

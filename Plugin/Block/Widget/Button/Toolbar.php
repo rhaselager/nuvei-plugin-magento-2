@@ -6,18 +6,15 @@ use Nuvei\Checkout\Model\Payment;
 
 class Toolbar
 {
-//    private $config;
     private $orderRepository;
     private $request;
     private $readerWriter;
     
     public function __construct(
-        //        \Nuvei\Checkout\Model\Config $config,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
         \Magento\Framework\App\RequestInterface $request,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
-//        $this->config           = $config;
         $this->orderRepository  = $orderRepository;
         $this->request          = $request;
         $this->readerWriter     = $readerWriter;
@@ -77,7 +74,7 @@ class Toolbar
             //            ]
             //        );
             
-//            $this->readerWriter->createLog($buttonList->getItems(), 'buttonList');
+            $this->readerWriter->createLog($buttonList->getItems(), 'buttonList');
             
             // the plugin does not support reorder from the admin
             $buttonList->remove('order_reorder');
@@ -103,6 +100,8 @@ class Toolbar
             if ('cc_card' !== $payment_method
                 || in_array($ord_status, [Payment::SC_REFUNDED, Payment::SC_PROCESSING, Payment::SC_VOIDED, 'closed'])
             ) {
+                $this->readerWriter->createLog('Toolbar remove void_paiment button');
+                
                 $buttonList->remove('void_payment');
             }
 //            elseif (!isset($buttonList->getItems()[0]['void_payment'])) {

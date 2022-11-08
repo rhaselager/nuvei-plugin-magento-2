@@ -15,10 +15,10 @@
                   instance="Nuvei\Checkout\Observer\Sales\Order\Invoice\Register"/>
     </event>
     
-    <event name="sales_order_invoice_save_after">
+<!--    <event name="sales_order_invoice_save_after">
         <observer name="nuvei_invoice_pay"
                   instance="Nuvei\Checkout\Observer\Sales\Order\Invoice\AfterSave"/>
-    </event>
+    </event>-->
 	
     <event name="sales_order_payment_void">
         <observer name="nuvei_void_order_status_update"

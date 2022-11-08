@@ -470,6 +470,8 @@ class Payment implements MethodInterface
      */
     public function canCapture()
     {
+//        $this->readerWriter->createLog(@$_REQUEST, 'Payment->canCapture()');
+        
         return true;
     }
 
@@ -482,6 +484,8 @@ class Payment implements MethodInterface
      */
     public function canCapturePartial()
     {
+//        $this->readerWriter->createLog(@$_REQUEST, 'Payment->canCapturePartial()');
+        
         return true;
     }
 
@@ -724,7 +728,7 @@ class Payment implements MethodInterface
      */
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
-        $this->readerWriter->createLog('Payment->capture()');
+//        $this->readerWriter->createLog('Payment->capture()');
         
         $this->executeCommand(
             'capture',

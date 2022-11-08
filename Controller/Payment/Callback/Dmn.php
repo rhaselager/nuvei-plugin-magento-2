@@ -445,7 +445,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
         $this->jsonOutput->setData('DMN process end for order #' . $orderIncrementId);
 
         # try to create Subscription plans
-        $resp = $this->createSubscription($params, $last_record, $orderIncrementId);
+        $this->createSubscription($params, $last_record, $orderIncrementId, $last_record);
 
         return $this->jsonOutput;
     }
@@ -477,19 +477,19 @@ class Dmn extends Action implements CsrfAwareActionInterface
         }
         
         // check for Zero Total Order with Rebilling
-        $rebillling_data = json_decode($params['customField2'], true);
-        
-        if (0 == $order_total
-            && !empty($rebillling_data)
-            && is_array($rebillling_data)
-        ) {
-            $this->start_subscr = true;
-            
-            $this->order->addStatusHistoryComment(
-                __("This is Zero Total Auth Transaction, you no need to Settle it."),
-                $this->sc_transaction_type
-            );
-        }
+//        $rebillling_data = json_decode($params['customField2'], true);
+//        
+//        if (0 == $order_total
+//            && !empty($rebillling_data)
+//            && is_array($rebillling_data)
+//        ) {
+//            $this->start_subscr = true;
+//            
+//            $this->order->addStatusHistoryComment(
+//                __("This is Zero Total Auth Transaction, you no need to Settle it."),
+//                $this->sc_transaction_type
+//            );
+//        }
 
         $this->orderPayment
             ->setAuthAmount($params['totalAmount'])
@@ -534,14 +534,14 @@ class Dmn extends Action implements CsrfAwareActionInterface
         }
 
         // set Start Subscription flag
-        if ('sale' == $tr_type_param && !empty($params['customField2'])) {
-            $this->start_subscr = true;
-        } elseif ('settle' == $tr_type_param
-            && !empty($last_tr_record)
-            && !empty($last_tr_record['start_subscr_data'])
-        ) {
-            $this->start_subscr = true;
-        }
+//        if ('sale' == $tr_type_param && !empty($params['customField2'])) {
+//            $this->start_subscr = true;
+//        } elseif ('settle' == $tr_type_param
+//            && !empty($last_tr_record)
+//            && !empty($last_tr_record['start_subscr_data'])
+//        ) {
+//            $this->start_subscr = true;
+//        }
         // set Start Subscription flag END
         
         if ($params["payment_method"] == 'cc_card') {
@@ -1161,75 +1161,77 @@ class Dmn extends Action implements CsrfAwareActionInterface
      * @param array $last_record
      * @param int   $orderIncrementId
      *
-     * @return bool
+     * @return void
      */
     
     private function createSubscription($params, $last_record, $orderIncrementId)
     {
-        $this->readerWriter->createLog($this->start_subscr, 'createSubscription()');
+        $this->readerWriter->createLog('createSubscription() - check for subscription data.');
+        
+        $dmn_subscr_data = json_decode($params['customField2'], true);
+        
+        if (empty($dmn_subscr_data) || !is_array($dmn_subscr_data)) {
+            $this->readerWriter->createLog(
+                $dmn_subscr_data,
+                'There is no rebilling data or it is not an array. Stop the proccess.'
+            );
+            
+            return;
+        }
+        
+        if (!in_array($params['transactionType'], ['Sale', 'Settle', 'Auth'])) {
+            $this->readerWriter->createLog('We start Rebilling only after Auth, '
+                . 'Settle or Sale. Stop the proccess.');
+            return;
+        }
+        
+        if ('Auth' == $params['transactionType']
+            && 0 != (float) $params['totalAmount']
+        ) {
+            $this->readerWriter->createLog('Non Zero Autj. Stop the proccess.');
+            return;
+        }
+        
+        if ('Settle' == $params['transactionType']
+            && empty($last_record['start_subscr_data'])
+        ) {
+            $this->readerWriter->createLog(
+                $last_record,
+                'Missing rebilling data into previous transaction. Stop the proccess.'
+            );
+            return;
+        }
         
         // no need to create a Subscription
-        if (!$this->start_subscr) {
-            return false;
-        }
+//        if (!$this->start_subscr) {
+//            return false;
+//        }
             
-        $subscr_data   = json_decode($params['customField2'], true);
-        $items_list   = json_decode($params['customField5'], true);
-        $subsc_data     = [];
-//        $subscr_count   = 0;
+//        $dmn_subscr_data    = json_decode($params['customField2'], true);
+        $items_list         = json_decode($params['customField5'], true);
+        $subsc_data         = [];
 
         // we allow only one Product in the Order to be with Payment Plan,
         // so the list with the products must be with length = 1
-        if (!empty($subscr_data) && is_array($subscr_data)) {
-//            $subsc_data = current($subscr_data);
-            $subsc_data = $subscr_data;
+        if (!empty($dmn_subscr_data) && is_array($dmn_subscr_data)) {
+            $subsc_data = $dmn_subscr_data;
         } elseif (!empty($last_record[Payment::TRANSACTION_UPO_ID])
             && is_numeric($last_record[Payment::TRANSACTION_UPO_ID])
         ) {
-//            $subsc_data = current($last_record['start_subscr_data']);
             $subsc_data = $last_record['start_subscr_data'];
         }
         
-        if (empty($subsc_data) || !is_array($subsc_data)) {
-            $this->readerWriter->createLog($subsc_data, 'createSubscription() problem with the subscription data.');
-            return false;
-        }
-
-        // we create as many Subscriptions as the Product quantity is
-//        if (!empty($items_list) && is_array($items_list)) {
-//            $customField5_curr = current($items_list);
-//
-//            if (isset($customField5_curr['quantity']) && is_numeric($customField5_curr['quantity'])) {
-//                $subscr_count = (int) $customField5_curr['quantity'];
-//            }
-//        } else {
-//            $items = $this->order->getAllItems();
-//
-//            foreach ($items as $item) {
-//                $subscr_count += $item->getQtyOrdered();
-//            }
-//        }
-
-        // Error - missing Subscription details
-//        if (empty($subsc_data) || 0 == $subscr_count) {
-//            $this->readerWriter->createLog(
-//                [
-//                    'subsc_data'    => $subsc_data,
-//                    'subscr_count'  => $subscr_count,
-//                ],
-//                'DMN Error - can not create Subscription beacuse of missing data:'
-//            );
-//
+//        if (empty($subsc_data) || !is_array($subsc_data)) {
+//            $this->readerWriter->createLog($subsc_data, 'createSubscription() problem with the subscription data.');
 //            return false;
 //        }
-        
+
         // create subscriptions for each of the Products
         $request = $this->requestFactory->create(AbstractRequest::CREATE_SUBSCRIPTION_METHOD);
         
-//        do {
-            $subsc_data['userPaymentOptionId'] = $params['userPaymentOptionId'];
-            $subsc_data['userTokenId']         = $params['email'];
-            $subsc_data['currency']            = $params['currency'];
+        $subsc_data['userPaymentOptionId'] = $params['userPaymentOptionId'];
+        $subsc_data['userTokenId']         = $params['email'];
+        $subsc_data['currency']            = $params['currency'];
             
         try {
             $params = array_merge(
@@ -1262,10 +1264,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
             $this->readerWriter->createLog('createSubscription - Error: ' . $e->getMessage());
         }
             
-//            $subscr_count--;
-//        } while ($subscr_count > 0);
-        
-        return true;
+        return;
     }
     
     private function getOrCreateOrder($params, $orderIncrementId)
