@@ -123,8 +123,13 @@ class PaymentsPlans
                     }
 
                     if (!empty($product) && 0 != $product_id) {
-                        $plan_data                  = $this->buildPlanDetailsArray($product);
-                        $items_data[$product_id]    = [
+                        $plan_data = $this->buildPlanDetailsArray($product);
+                        
+                        if (empty($plan_data)) {
+                            return $return_arr;
+                        }
+                        
+                        $items_data[$product_id] = [
                             'quantity'  => $item->getQty(),
                             'price'     => round((float) $item->getPrice(), 2),
                         ];
@@ -160,7 +165,12 @@ class PaymentsPlans
                         continue;
                     }
 
-                    $plan_data                  = $this->buildPlanDetailsArray($product);
+                    $plan_data = $this->buildPlanDetailsArray($product);
+                    
+                    if (empty($plan_data)) {
+                        return $return_arr;
+                    }
+                    
                     $items_data[$item->getId()] = [
                         'quantity'  => $item->getQty(),
                         'price'     => round((float) $item->getPrice(), 2),

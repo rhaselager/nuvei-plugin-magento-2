@@ -13,12 +13,6 @@ use Nuvei\Checkout\Model\Payment;
  */
 class Status extends Column
 {
-    /**
-     * @var string[]
-     */
-//    protected $statuses;
-    
-//    private $config;
     private $collection;
 
     /**
@@ -34,14 +28,11 @@ class Status extends Column
         ContextInterface $context,
         UiComponentFactory $uiComponentFactory,
         CollectionFactory $collectionFactory,
-        //        \Nuvei\Checkout\Model\Config $config,
         \Magento\Sales\Model\Order $collection,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         array $components = [],
         array $data = []
     ) {
-//        $this->statuses     = $collectionFactory->create()->toOptionHash();
-//        $this->config       = $config;
         $this->collection   = $collection;
         $this->readerWriter = $readerWriter;
         
@@ -69,20 +60,16 @@ class Status extends Column
                         $this->readerWriter->createLog($ord_trans_data);
                     }
                     
-                    if (empty($ord_trans_data) || !is_array($ord_trans_data)) {
-                        $dataSource['data']['items'][$key]['has_nuvei_subscr'] = 0;
-                        continue;
-                    }
-                        
-                    foreach (array_reverse($ord_trans_data) as $data) {
-                        if (!in_array(strtolower($data['transaction_type']), ['sale', 'settle', 'auth'])) {
-                            continue;
-                        }
-                        
-                        $subscr_ids = !empty($data[Payment::SUBSCR_IDS]) ? 1 : 0;
-                    }
+//                    $this->readerWriter->createLog(
+//                        [
+//                            $item['increment_id'],
+//                            $orderPayment->getAdditionalInformation('nuvei_subscription_id'),
+//                        ], 
+//                        'getAdditionalInformation'
+//                    );
                     
-                    $dataSource['data']['items'][$key]['has_nuvei_subscr'] = !empty($subscr_ids) ? 1 : 0;
+                    $dataSource['data']['items'][$key]['has_nuvei_subscr']
+                        = (bool) $orderPayment->getAdditionalInformation('nuvei_subscription_id');
                 } catch (\Exception $e) {
                     $this->readerWriter->createLog($e->getMessage(), 'Exeception in Order Grid Status class:');
                     $dataSource['data']['items'][$key]['has_nuvei_subscr'] = 0;

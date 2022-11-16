@@ -2,29 +2,15 @@
 
 namespace Nuvei\Checkout\Model;
 
-use Magento\Checkout\Model\Session as CheckoutSession;
-use Magento\Customer\Model\Session as CustomerSession;
-use Magento\Framework\Api\AttributeValueFactory;
-use Magento\Framework\Api\ExtensionAttributesFactory;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\Data\Collection\AbstractDb;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Model\Context;
-use Magento\Framework\Model\ResourceModel\AbstractResource;
-use Magento\Framework\Module\ModuleListInterface;
-use Magento\Framework\Registry as CoreRegistry;
-use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectFactory;
 use Magento\Payment\Gateway\Command\CommandManagerInterface;
 use Magento\Payment\Gateway\Command\CommandPoolInterface;
-use Magento\Payment\Helper\Data;
 use Magento\Payment\Model\InfoInterface;
 use Magento\Payment\Model\MethodInterface;
-use Magento\Payment\Model\Method\Logger as PaymentLogger;
 use Magento\Quote\Api\Data\CartInterface;
-use Magento\Quote\Api\Data\PaymentInterface;
 use Nuvei\Checkout\Model\Config as ModuleConfig;
 use Nuvei\Checkout\Model\Request\Payment\Factory as PaymentRequestFactory;
 
@@ -49,22 +35,22 @@ class Payment implements MethodInterface
     /**
      * Transaction keys const.
      */
-    const TRANSACTION_REQUEST_ID                = 'transaction_request_id';
-    const TRANSACTION_ORDER_ID                  = 'nuvei_order_id';
-    const TRANSACTION_AUTH_CODE                 = 'authorization_code';
-    const TRANSACTION_ID                        = 'transaction_id';
-    const TRANSACTION_PAYMENT_SOLUTION          = 'payment_solution';
-    const TRANSACTION_PAYMENT_METHOD            = 'external_payment_method';
-    const TRANSACTION_STATUS                    = 'status';
-    const TRANSACTION_TYPE                      = 'transaction_type';
-    const SUBSCR_IDS                            = 'subscr_ids'; // list with subscription IDs
-    const TRANSACTION_UPO_ID                    = 'upo_id';
-    const TRANSACTION_TOTAL_AMOUN               = 'total_amount';
-    const REFUND_TRANSACTION_AMOUNT             = 'refund_amount';
-    const AUTH_PARAMS                           = 'auth_params';
-    const SALE_SETTLE_PARAMS                    = 'sale_settle_params';
-    const ORDER_TRANSACTIONS_DATA               = 'nuvei_order_transactions_data';
-    const CREATE_ORDER_DATA                     = 'nuvei_create_order_data';
+    const TRANSACTION_REQUEST_ID        = 'transaction_request_id';
+    const TRANSACTION_ORDER_ID          = 'nuvei_order_id';
+    const TRANSACTION_AUTH_CODE         = 'authorization_code';
+    const TRANSACTION_ID                = 'transaction_id';
+    const TRANSACTION_PAYMENT_SOLUTION  = 'payment_solution';
+    const TRANSACTION_PAYMENT_METHOD    = 'external_payment_method';
+    const TRANSACTION_STATUS            = 'status';
+    const TRANSACTION_TYPE              = 'transaction_type';
+    const SUBSCR_IDS                    = 'subscr_ids'; // list with subscription IDs
+    const TRANSACTION_UPO_ID            = 'upo_id';
+    const TRANSACTION_TOTAL_AMOUN       = 'total_amount';
+    const REFUND_TRANSACTION_AMOUNT     = 'refund_amount';
+    const AUTH_PARAMS                   = 'auth_params';
+    const SALE_SETTLE_PARAMS            = 'sale_settle_params';
+    const ORDER_TRANSACTIONS_DATA       = 'nuvei_order_transactions_data';
+    const CREATE_ORDER_DATA             = 'nuvei_create_order_data';
 
     /**
      * Order statuses.
@@ -81,7 +67,7 @@ class Payment implements MethodInterface
     const SOLUTION_INTERNAL     = 'internal';
     const SOLUTION_EXTERNAL     = 'external';
     const APM_METHOD_CC         = 'cc_card';
-    
+    // it is same for Void
     const PAYMETNS_SUPPORT_REFUND = ['cc_card', 'apmgw_expresscheckout'];
 
     /**
@@ -131,7 +117,6 @@ class Payment implements MethodInterface
     /**
      * Payment constructor.
      *
-     * @param ScopeConfigInterface          $scopeConfig
      * @param PaymentRequestFactory         $paymentRequestFactory
      * @param ModuleConfig                  $moduleConfig
      * @param Order                         $orderResourceModel
@@ -142,7 +127,6 @@ class Payment implements MethodInterface
      * @param CommandPoolInterface|null     $commandPool
      */
     public function __construct(
-        ScopeConfigInterface $scopeConfig,
         PaymentRequestFactory $paymentRequestFactory,
         ModuleConfig $moduleConfig,
         \Magento\Sales\Model\ResourceModel\Order $orderResourceModel,
@@ -155,7 +139,6 @@ class Payment implements MethodInterface
         $this->paymentRequestFactory    = $paymentRequestFactory;
         $this->orderResourceModel       = $orderResourceModel;
         $this->readerWriter             = $readerWriter;
-        $this->scopeConfig              = $scopeConfig;
         $this->paymentDataObjectFactory = $paymentDataObjectFactory;
         $this->commandExecutor          = $commandExecutor;
         $this->commandPool              = $commandPool;
@@ -173,13 +156,13 @@ class Payment implements MethodInterface
      */
     public function assignData(DataObject $data)
     {
-        $additionalData = $data->getData(PaymentInterface::KEY_ADDITIONAL_DATA);
-
-        $chosenApmMethod = !empty($additionalData[self::KEY_CHOSEN_APM_METHOD])
-            ? $additionalData[self::KEY_CHOSEN_APM_METHOD] : null;
-        
-        $info = $this->getInfoInstance();
-        $info->setAdditionalInformation(self::KEY_CHOSEN_APM_METHOD, $chosenApmMethod);
+//        $additionalData = $data->getData(PaymentInterface::KEY_ADDITIONAL_DATA);
+//
+//        $chosenApmMethod = !empty($additionalData[self::KEY_CHOSEN_APM_METHOD])
+//            ? $additionalData[self::KEY_CHOSEN_APM_METHOD] : null;
+//        
+//        $info = $this->getInfoInstance();
+//        $info->setAdditionalInformation(self::KEY_CHOSEN_APM_METHOD, $chosenApmMethod);
 
         return $this;
     }
@@ -239,13 +222,28 @@ class Payment implements MethodInterface
      */
     public function refund(InfoInterface $payment, $amount)
     {
+        $order  = $payment->getOrder();
+        $order->setStatus(Payment::SC_PROCESSING);
+//        $this->orderResourceModel->save($order);
+        
         /** @var RequestInterface $request */
         $request = $this->paymentRequestFactory->create(
             AbstractRequest::PAYMENT_REFUND_METHOD,
             $payment,
             $amount
         );
-        $request->process();
+        
+        $resp = $request->process();
+//        $this->readerWriter->createLog($resp, 'Paymen->refund()');
+        
+        if(empty($resp['transactionStatus']) || 'APPROVED' != $resp['transactionStatus']) {
+            if (!empty($resp['gwErrorReason'])) {
+                throw new \Magento\Framework\Exception\LocalizedException(__($resp['gwErrorReason']));
+            }
+            
+            throw new \Magento\Framework\Exception\LocalizedException(
+                __('Refund request error, you can check Nuvei log for more information.'));
+        }
 
         return $this;
     }
@@ -271,7 +269,6 @@ class Payment implements MethodInterface
      * Refund payment method.
      *
      * @param InfoInterface $payment
-     *
      * @return Payment
      * @throws \Magento\Framework\Exception\LocalizedException
      *
@@ -293,9 +290,6 @@ class Payment implements MethodInterface
                 throw new LocalizedException(__('This Order can not be Cancelled.'));
             }
             
-            $order->setStatus(self::SC_VOIDED);
-            $this->orderResourceModel->save($order);
-            
             return $this;
             
         }
@@ -307,6 +301,9 @@ class Payment implements MethodInterface
             $payment
         );
         
+        $order->setStatus(self::SC_PROCESSING);
+//        $this->orderResourceModel->save($order);
+        
         $request->process();
         return $this;
     }
@@ -317,30 +314,42 @@ class Payment implements MethodInterface
      * @param object $payment
      * @return bool
      */
-    public function cancelSubscription($payment)
+    public function cancelSubscription(InfoInterface $payment)
     {
+        $this->readerWriter->createLog('cancelSubscription()');
+        
         try {
-            $ord_trans_addit_info = $payment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
+//            $ord_trans_addit_info = $payment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
+//
+//            if (empty($ord_trans_addit_info) || !is_array($ord_trans_addit_info)) {
+//                $this->readerWriter->createLog(
+//                    $ord_trans_addit_info,
+//                    'cancelSubscription() Error - $ord_trans_addit_info is empty or not an array.'
+//                );
+//                return false;
+//            }
 
-            if (empty($ord_trans_addit_info) || !is_array($ord_trans_addit_info)) {
+//            $last_record    = end($ord_trans_addit_info);
+//            $subs_id        = $last_record[self::SUBSCR_IDS];
+            $subs_id    = $payment->getAdditionalInformation('nuvei_subscription_id');
+            $subs_state = $payment->getAdditionalInformation('nuvei_subscription_state');
+            
+            if (!is_numeric($subs_id) || $subs_id <= 0 || 'active' != $subs_state) {
                 $this->readerWriter->createLog(
-                    $ord_trans_addit_info,
-                    'cancelSubscription() Error - $ord_trans_addit_info is empty or not an array.'
+                    [
+                        '$subs_id'      => $subs_id,
+                        '$subs_state'   => $subs_state,
+                    ],
+                    'cancelSubscription() Error - missing mandatory Subscription data.'
                 );
                 return false;
             }
-
-            $last_record    = end($ord_trans_addit_info);
-            $id             = $last_record[self::SUBSCR_IDS];
             
-            $this->readerWriter->createLog(
-                [$ord_trans_addit_info],
-                'cancelSubscription()'
-            );
+//            $this->readerWriter->createLog($ord_trans_addit_info, 'cancelSubscription()');
 
-            if (empty($id)) {
+            if (empty($subs_id)) {
                 $this->readerWriter->createLog(
-                    $id,
+                    $subs_id,
                     'cancelSubscription() Error - $subsc_ids is empty or not an array.'
                 );
                 return false;
@@ -355,7 +364,7 @@ class Payment implements MethodInterface
             $msg    = '';
 
             $resp = $request
-                ->setSubscrId($id)
+                ->setSubscrId($subs_id)
                 ->process();
 
                 // add note to the Order - Success
@@ -728,7 +737,20 @@ class Payment implements MethodInterface
      */
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
-//        $this->readerWriter->createLog('Payment->capture()');
+        $this->readerWriter->createLog('Payment->capture()');
+        
+        $order          = $payment->getOrder();
+        $invCollection  = $order->getInvoiceCollection();
+        
+        $order->setCanCreditmemo(true);
+        
+        $this->readerWriter->createLog(empty($invCollection), 'Payment->capture() empty($invCollection)');
+        
+        if (!empty($invCollection)) {
+            foreach ($invCollection as $inv) {
+                $inv->setCanVoidFlag(true);
+            }
+        }
         
         $this->executeCommand(
             'capture',

@@ -2,6 +2,8 @@
 
 /**
  * @author Nuvei
+ * 
+ * Create Settle before create Invoice.
  */
 
 namespace Nuvei\Checkout\Plugin;
@@ -12,28 +14,31 @@ class BeforeCreateInvoice
 {
     private $objectManager;
     private $readerWriter;
+    private $request;
     
     public function __construct(
         \Magento\Framework\ObjectManagerInterface $objectManager,
-        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
+        \Magento\Framework\App\RequestInterface $request
     ) {
         $this->objectManager    = $objectManager;
         $this->readerWriter     = $readerWriter;
+        $this->params           = $request->getParams();
     }
     
     public function beforeToInvoice(\Magento\Sales\Model\Convert\Order $subject, \Magento\Sales\Model\Order $order)
     {
-        $this->readerWriter->createLog($_REQUEST, 'BeforeCreateInvoice->beforeToInvoice()');
+        $this->readerWriter->createLog($this->params, 'BeforeCreateInvoice->beforeToInvoice()');
         
         // the second condition is when the merchant click on "UpdateQty's" button
-        if (empty($_REQUEST['invoice']['items']) || isset($_REQUEST['isAjax'])) {
+        if (empty($this->params['invoice']['items']) || isset($this->params['isAjax'])) {
             return;
         }
         
-        $items_for_invoice = [];
-        $inv_amount = 0;
+        $items_for_invoice  = [];
+        $inv_amount         = 0;
 
-        foreach ($_REQUEST['invoice']['items'] as $id => $available) {
+        foreach ($this->params['invoice']['items'] as $id => $available) {
             if(1 == $available) {
                 $items_for_invoice[] = $id;
             }
@@ -44,10 +49,13 @@ class BeforeCreateInvoice
                 $inv_amount += round($item->getBasePriceInclTax(), 2) 
                     - round($item->getBaseDiscountAmount(), 2);
             }
-
         }
+        
+        // add the shipping also
+        $inv_amount += round($order->getBaseShippingInclTax(), 2);
             
         if (0 == $inv_amount) {
+            $this->readerWriter->createLog('beforeToInvoice - Calculated Invoice amoutn is Zero.');
             throw new \Magento\Framework\Exception\LocalizedException(__('Calculated Invoice amoutn is Zero.'));
         }
         

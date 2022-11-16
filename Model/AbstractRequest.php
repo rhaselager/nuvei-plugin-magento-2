@@ -427,7 +427,7 @@ abstract class AbstractRequest
     /**
      * Function sendRequest
      *
-     * @param bool $continue_process When is true return the response parameters to the sender
+     * @param bool $continue_process    When is true return the response parameters to the sender
      * @param bool $accept_error_status When is true, do not throw exception if get error response
      *
      * @return AbstractRequest

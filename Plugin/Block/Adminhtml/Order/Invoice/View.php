@@ -43,20 +43,10 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
                 return;
             }
 
-            $order                  = current($orderList);
-            $orderPayment           = $order->getPayment();
-            $ord_status             = $order->getStatus();
-            $ord_trans_addit_info   = $orderPayment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
-            $payment_method         = '';
-
-            if (!empty($ord_trans_addit_info) && is_array($ord_trans_addit_info)) {
-                foreach ($ord_trans_addit_info as $trans) {
-                    if (!empty($trans[Payment::TRANSACTION_PAYMENT_METHOD])) {
-                        $payment_method = $trans[Payment::TRANSACTION_PAYMENT_METHOD];
-                        break;
-                    }
-                }
-            }
+            $order          = current($orderList);
+            $orderPayment   = $order->getPayment();
+            $ord_status     = $order->getStatus();
+            $payment_method = $orderPayment->getAdditionalInformation(Payment::TRANSACTION_PAYMENT_METHOD);
 
             if ($orderPayment->getMethod() != Payment::METHOD_CODE) {
                 $this->readerWriter->createLog('beforeSetLayout - this is not a Nuvei Order.');
@@ -65,16 +55,17 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
                 
             $this->readerWriter->createLog('beforeSetLayout');
 
-
             if (!in_array($payment_method, Payment::PAYMETNS_SUPPORT_REFUND)
                 || in_array($ord_status, [Payment::SC_VOIDED, Payment::SC_PROCESSING])
             ) {
                 $view->removeButton('credit-memo');
             }
+            
+                $this->readerWriter->createLog(($view->getButton('void')), 'admin beforeSetLayout buttonList');
 
             // hide the button all the time, looks like we have order with multi partial settled items,
             // the Void logic is different than the logic of the Void button in Information tab
-            if ('cc_card' !== $payment_method
+            if (!in_array($payment_method, Payment::PAYMETNS_SUPPORT_REFUND)
                 || in_array(
                     $ord_status,
                     [Payment::SC_REFUNDED, Payment::SC_PROCESSING]
@@ -85,8 +76,23 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
 
                 $view->removeButton('void');
             }
+            // if we do not remove the Void button add to it Confirm prompt
+            elseif ($invoiceDetails->canVoid()) {
+                $message = __('Are you sure you want to void the payment?');
+                
+                $view->buttonList->add(
+                    'void',
+                    [
+                        'label'     => __('Void'),
+                        'class'     => 'void',
+                        'onclick'   => "confirmSetLocation('{$message}', '{$view->getVoidUrl()}')",
+                    ]
+                );
+            }
+            
         } catch (\Exception $ex) {
             $this->readerWriter->createLog($ex->getMessage(), 'admin beforeSetLayout');
         }
     }
+    
 }

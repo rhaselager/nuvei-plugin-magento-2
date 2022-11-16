@@ -42,8 +42,8 @@ class Cancel extends AbstractPayment implements RequestInterface
             $readerWriter
         );
 
-        $this->request                  = $request;
-        $this->readerWriter             = $readerWriter;
+        $this->request      = $request;
+        $this->readerWriter = $readerWriter;
     }
     
     /**
@@ -156,11 +156,6 @@ class Cancel extends AbstractPayment implements RequestInterface
         ];
 
         $params = array_merge_recursive($params, parent::getParams());
-
-//        $this->logger->updateRequest(
-//            $this->getRequestId(),
-//            ['increment_id' => $order->getIncrementId()]
-//        );
 
         return $params;
     }

@@ -193,7 +193,8 @@ class Dmn extends Action implements CsrfAwareActionInterface
             // modify it because of the PayPal Sandbox problem with duplicate Orders IDs
             // we modify it also in Class PaymenAPM getParams().
             if (!empty($params['payment_method']) && 'cc_card' != $params['payment_method']) {
-                $params["merchant_unique_id"] = $this->moduleConfig->getClientUniqueId($params["merchant_unique_id"]);
+                $params["merchant_unique_id"] 
+                    = $this->moduleConfig->getClientUniqueId($params["merchant_unique_id"]);
             }
             
             // try to find Order ID
@@ -247,10 +248,37 @@ class Dmn extends Action implements CsrfAwareActionInterface
             }
             // /Try to create the Order.
             
-            // last saved Additional Info for the transaction
+            $parent_trans_id = isset($params['relatedTransactionId'])
+                ? $params['relatedTransactionId'] : null;
+            
+            // set Order Payment global data
+//            $this->orderPayment
+//                ->setTransactionId($params['TransactionID'])
+//                ->setParentTransactionId($parent_trans_id)
+//                ->setAuthCode($params['AuthCode']);
+            
+            // set additional data
+            if (!empty($params['payment_method'])) {
+                $this->orderPayment->setAdditionalInformation(
+                    Payment::TRANSACTION_PAYMENT_METHOD,
+                    $params['payment_method']
+                );
+            }
+            if (!empty($params['customField2'])) {
+                $this->orderPayment->setAdditionalInformation(
+                    'nuvei_subscription_data',
+                    json_decode($params['customField2'], true)
+                );
+            }
+            // /set additional data
+            
+            // the saved Additional Info for the transaction
             $ord_trans_addit_info = $this->orderPayment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
             
-            $this->readerWriter->createLog($ord_trans_addit_info, 'DMN $ord_trans_addit_info');
+            $this->readerWriter->createLog(
+                $this->orderPayment->getAdditionalInformation(),
+                'DMN order payment getAdditionalInformation'
+            );
             
             if (empty($ord_trans_addit_info) || !is_array($ord_trans_addit_info)) {
                 $ord_trans_addit_info = [];
@@ -264,11 +292,21 @@ class Dmn extends Action implements CsrfAwareActionInterface
                     ? $last_record[Payment::TRANSACTION_TYPE] : '';
             }
             
+            // do not save same DMN data more than once
+            if (array_key_exists($params['TransactionID'], $ord_trans_addit_info)) {
+                $msg = 'Same transaction already saved. Stop proccess';
+                
+                $this->readerWriter->createLog($msg);
+                $this->jsonOutput->setData($msg);
+
+                return $this->jsonOutput;
+            }
+            
             // prepare current transaction data for save
             $this->prepareCurrTrInfo($params);
             
             // check for Subscription State DMN
-            $stop = $this->processSubscrDmn($params, $orderIncrementId, $ord_trans_addit_info);
+            $stop = $this->processSubscrDmn($params, $ord_trans_addit_info);
             
             if ($stop) {
                 $msg = 'Process Subscr DMN ends for order #' . $orderIncrementId;
@@ -345,21 +383,6 @@ class Dmn extends Action implements CsrfAwareActionInterface
             }
             // /do not overwrite Order status
 
-            $parent_trans_id = isset($params['relatedTransactionId'])
-                ? $params['relatedTransactionId'] : null;
-            
-            $this->orderPayment
-                ->setTransactionId($params['TransactionID'])
-                ->setParentTransactionId($parent_trans_id)
-                ->setAuthCode($params['AuthCode']);
-            
-            if (!empty($params['payment_method'])) {
-                $this->orderPayment->setAdditionalInformation(
-                    Payment::TRANSACTION_PAYMENT_METHOD,
-                    $params['payment_method']
-                );
-            }
-            
             // compare them later
             $order_total    = round((float) $this->order->getBaseGrandTotal(), 2);
             $dmn_total      = round((float) $params['totalAmount'], 2);
@@ -420,7 +443,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
                 );
             }
             
-            $ord_trans_addit_info[] = $this->curr_trans_info;
+            $ord_trans_addit_info[$params['TransactionID']] = $this->curr_trans_info;
         } catch (\Exception $e) {
             $msg = $e->getMessage();
 
@@ -433,8 +456,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
             $this->order->addStatusHistoryComment($msg);
         }
         
-        $this->readerWriter->createLog('', 'DMN before finalSaveData()', 'DEBUG');
-        
+//        $this->readerWriter->createLog('', 'DMN before finalSaveData()', 'DEBUG');
         $resp_save_data = $this->finalSaveData($ord_trans_addit_info);
         
         if (!$resp_save_data) {
@@ -715,14 +737,16 @@ class Dmn extends Action implements CsrfAwareActionInterface
             }
         }
         // mark the Order Invoice as Canceld END
+        
+        $this->order->setData('state', Order::STATE_CLOSED);
 
         // Cancel active Subscriptions, if there are any
         $succsess = $this->paymentModel->cancelSubscription($this->orderPayment);
 
         // if we cancel any subscription set state Close
-        if ($succsess) {
-            $this->order->setData('state', Order::STATE_CLOSED);
-        }
+//        if ($succsess) {
+//            $this->order->setData('state', Order::STATE_CLOSED);
+//        }
     }
     
     /**
@@ -896,12 +920,11 @@ class Dmn extends Action implements CsrfAwareActionInterface
      * Work with Subscription status DMN.
      *
      * @param array $params
-     * @param int   $orderIncrementId
-     * @param array   $ord_trans_addit_info
+     * @param array $ord_trans_addit_info
      *
-     * @return bool|string
+     * @return bool
      */
-    private function processSubscrDmn($params, $orderIncrementId, $ord_trans_addit_info)
+    private function processSubscrDmn($params, $ord_trans_addit_info)
     {
         if (empty($params['dmnType'])
             || 'subscription' != $params['dmnType']
@@ -912,7 +935,9 @@ class Dmn extends Action implements CsrfAwareActionInterface
         
         $this->readerWriter->createLog('processSubscrDmn()');
         
-        if ('active' == strtolower($params['subscriptionState'])) {
+        $subs_state = strtolower($params['subscriptionState']);
+        
+        if ('active' == $subs_state) {
             $this->order->addStatusHistoryComment(
                 __("<b>Subscription</b> is Active. Subscription ID: ") . $params['subscriptionId']. ', '
                     . __('Plan ID: ') . $params['planId']. ', '
@@ -925,18 +950,9 @@ class Dmn extends Action implements CsrfAwareActionInterface
                     continue;
                 }
 
-//                $subsc_ids = json_decode($data[Payment::SUBSCR_IDS]);
+//                $ord_trans_addit_info[$key][Payment::SUBSCR_IDS]    = $params['subscriptionId'];
                 
-//                if (empty($subsc_ids)) {
-//                    $subsc_ids = [];
-//                } elseif (in_array($params['subscriptionId'], $subsc_ids)) {
-//                    continue;
-//                }
-
-//                $subsc_ids[]                                        = $params['subscriptionId'];
-//                $ord_trans_addit_info[$key][Payment::SUBSCR_IDS]    = json_encode($subsc_ids);
-                $ord_trans_addit_info[$key][Payment::SUBSCR_IDS]    = $params['subscriptionId'];
-                
+                // set additional data
                 $this->orderPayment->setAdditionalInformation(
                     Payment::ORDER_TRANSACTIONS_DATA,
                     $ord_trans_addit_info
@@ -945,7 +961,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
             }
         }
         
-        if ('inactive' == strtolower($params['subscriptionState'])) {
+        if ('inactive' == $subs_state) {
             $subscr_msg = __('<b>Subscription</b> is Inactive. ');
 
             if (!empty($params['subscriptionId'])) {
@@ -959,14 +975,18 @@ class Dmn extends Action implements CsrfAwareActionInterface
             $this->order->addStatusHistoryComment($subscr_msg);
         }
         
-        if ('canceled' == strtolower($params['subscriptionState'])) {
+        if ('canceled' == $subs_state) {
             $this->order->addStatusHistoryComment(
                 __('<b>Subscription</b> was canceled. ') . '<br/>'
                 . __('<b>Subscription ID:</b> ') . $params['subscriptionId']
             );
         }
         
+        // save Subscription info into the Payment
+        $this->orderPayment->setAdditionalInformation('nuvei_subscription_state',   $subs_state);
+        $this->orderPayment->setAdditionalInformation('nuvei_subscription_id',      $params['subscriptionId']);
         $this->orderPayment->save();
+        
         $this->orderResourceModel->save($this->order);
         $this->readerWriter->createLog($this->order->getStatus(), 'Process Subscr DMN Order Status', 'DEBUG');
         
@@ -1166,7 +1186,12 @@ class Dmn extends Action implements CsrfAwareActionInterface
     
     private function createSubscription($params, $last_record, $orderIncrementId)
     {
-        $this->readerWriter->createLog('createSubscription() - check for subscription data.');
+        $this->readerWriter->createLog('createSubscription()');
+        
+        if (!in_array($params['transactionType'], ['Auth', 'Settle', 'Sale'])) {
+            $this->readerWriter->createLog('Not allowed transaction type for rebilling. Stop the proccess.');
+            return;
+        }
         
         $dmn_subscr_data = json_decode($params['customField2'], true);
         
@@ -1188,38 +1213,38 @@ class Dmn extends Action implements CsrfAwareActionInterface
         if ('Auth' == $params['transactionType']
             && 0 != (float) $params['totalAmount']
         ) {
-            $this->readerWriter->createLog('Non Zero Autj. Stop the proccess.');
+            $this->readerWriter->createLog('Non Zero Auth. Stop the proccess.');
             return;
         }
         
-        if ('Settle' == $params['transactionType']
-            && empty($last_record['start_subscr_data'])
-        ) {
+        $payment_subs_data = $this->orderPayment->getAdditionalInformation('nuvei_subscription_data');
+            
+        $this->readerWriter->createLog($payment_subs_data, '$payment_subs_data');
+        
+        if ('Settle' == $params['transactionType'] && empty($payment_subs_data)) {
             $this->readerWriter->createLog(
-                $last_record,
-                'Missing rebilling data into previous transaction. Stop the proccess.'
+                $payment_subs_data,
+                'Missing rebilling data into Order Payment. Stop the proccess.'
             );
             return;
         }
         
-        // no need to create a Subscription
-//        if (!$this->start_subscr) {
-//            return false;
-//        }
-            
-//        $dmn_subscr_data    = json_decode($params['customField2'], true);
-        $items_list         = json_decode($params['customField5'], true);
-        $subsc_data         = [];
+        $items_list = json_decode($params['customField5'], true);
+        $subsc_data = [];
 
-        // we allow only one Product in the Order to be with Payment Plan,
-        // so the list with the products must be with length = 1
+        // we allow only one Product in the Order to be with Payment Plan
         if (!empty($dmn_subscr_data) && is_array($dmn_subscr_data)) {
             $subsc_data = $dmn_subscr_data;
-        } elseif (!empty($last_record[Payment::TRANSACTION_UPO_ID])
-            && is_numeric($last_record[Payment::TRANSACTION_UPO_ID])
-        ) {
-            $subsc_data = $last_record['start_subscr_data'];
+        } 
+        elseif (!empty($payment_subs_data)) {
+            $subsc_data = $payment_subs_data;
         }
+        
+//        if (!empty($last_record[Payment::TRANSACTION_UPO_ID])
+//            && is_numeric($last_record[Payment::TRANSACTION_UPO_ID])
+//        ) {
+//            $subsc_data = $last_record['start_subscr_data'];
+//        }
         
 //        if (empty($subsc_data) || !is_array($subsc_data)) {
 //            $this->readerWriter->createLog($subsc_data, 'createSubscription() problem with the subscription data.');
@@ -1400,9 +1425,6 @@ class Dmn extends Action implements CsrfAwareActionInterface
             Payment::TRANSACTION_TYPE           => '',
             Payment::TRANSACTION_UPO_ID         => '',
             Payment::TRANSACTION_TOTAL_AMOUN    => '',
-            Payment::TRANSACTION_PAYMENT_METHOD => '',
-            Payment::SUBSCR_IDS                 => '',
-            'start_subscr_data'                 => '',
         ];
 
         // some subscription DMNs does not have TransactionID
@@ -1424,12 +1446,12 @@ class Dmn extends Action implements CsrfAwareActionInterface
         if (isset($params['totalAmount'])) {
             $this->curr_trans_info[Payment::TRANSACTION_TOTAL_AMOUN] = $params['totalAmount'];
         }
-        if (isset($params['payment_method'])) {
-            $this->curr_trans_info[Payment::TRANSACTION_PAYMENT_METHOD] = $params['payment_method'];
-        }
-        if (!empty($params['customField2'])) {
-            $this->curr_trans_info['start_subscr_data'] = $params['customField2'];
-        }
+//        if (isset($params['payment_method'])) {
+//            $this->curr_trans_info[Payment::TRANSACTION_PAYMENT_METHOD] = $params['payment_method'];
+//        }
+//        if (!empty($params['customField2'])) {
+//            $this->curr_trans_info['start_subscr_data'] = $params['customField2'];
+//        }
     }
     
     /**
@@ -1536,13 +1558,16 @@ class Dmn extends Action implements CsrfAwareActionInterface
         if ($tries > 5) {
             $this->readerWriter->createLog($tries, 'DMN save Order data maximum recursive retries reached.');
             $this->jsonOutput->setData('DMN save Order data maximum recursive retries reached.');
-//            exit('DMN save Order data maximum recursive retries reached.');
             return false;
         }
         
         try {
-            $this->readerWriter->createLog($ord_trans_addit_info, 'DMN before save $ord_trans_addit_info', 'DEBUG');
+            $this->readerWriter->createLog(
+                $ord_trans_addit_info, 
+                'DMN before save $ord_trans_addit_info', 'DEBUG'
+            );
             
+            // set additional data
             $this->orderPayment
                 ->setAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA, $ord_trans_addit_info)
                 ->save();

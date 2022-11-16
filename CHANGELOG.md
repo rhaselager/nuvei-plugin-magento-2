@@ -5,6 +5,9 @@
 # 2.0.0
 ```
     * Stop using Cc and TransparentInterface.
+    * All Observers were removed.
+    * When save Transaction data for the Order, use TransacionID as key. By it try to preved saving same Transaction data more than once.
+    * Into the Payment->capture() method set canCreditMemo flag to True for the Order.
 ```
 
 # 1.1.0

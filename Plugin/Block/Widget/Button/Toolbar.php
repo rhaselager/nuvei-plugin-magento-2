@@ -59,10 +59,6 @@ class Toolbar
                 }
             }
             
-//            $payment_method        = $orderPayment->getAdditionalInformation(
-//                Payment::TRANSACTION_PAYMENT_METHOD
-//            );
-            
             // Examples
             //        $buttonList->update('order_edit', 'class', 'edit');
             //
@@ -73,11 +69,38 @@ class Toolbar
             //                'class' => 'review'
             //            ]
             //        );
-            
-            $this->readerWriter->createLog($buttonList->getItems(), 'buttonList');
-            
+                      
+//            echo '<pre>'.print_r($buttonList->getItems()[0], true).'</pre>';die;
+           
             // the plugin does not support reorder from the admin
             $buttonList->remove('order_reorder');
+            
+            // remove Magento Cancel button
+            if ($ord_status != Payment::SC_AUTH) {
+                $buttonList->remove('order_cancel');
+            }
+            
+            // TODO - add Cancel Subscription button
+//            if (0 == $order_total
+//               && Payment::SC_AUTH == $ord_status
+//            ) {
+//                $message    = __('Are you sure you want to cancel the Subscription?');
+//                $url        = $context->getUrl('nuvei_checkout/sales_order/cancelSubscription', ['order_id' => $orderId])
+//                    . '?isAjax=false';
+//
+//                $buttonList->getItems()[0]['void_payment']['onclick'] = "confirmSetLocation('{$message}', '{$url}')";
+//                
+//                $buttonList->add('order_nuvei_cancel_subs',
+//                    [
+//                        'label'     => __('Cancel Nuvei Subscription'),
+//                        'onclick'   => "confirmSetLocation('{$message}', '{$url}')",
+//                        'class'     => 'review'
+//                    ]
+//                );
+//                
+////                var_dump($buttonList->getItems()[0]['order_nuvei_cancel_subs']);
+////                die;
+//            }
             
             if (!in_array($payment_method, Payment::PAYMETNS_SUPPORT_REFUND)
                 || in_array($ord_status, [Payment::SC_VOIDED, Payment::SC_PROCESSING])
@@ -97,26 +120,20 @@ class Toolbar
                 $buttonList->remove('order_invoice');
             }
             
-            if ('cc_card' !== $payment_method
-                || in_array($ord_status, [Payment::SC_REFUNDED, Payment::SC_PROCESSING, Payment::SC_VOIDED, 'closed'])
+            if (!in_array($payment_method, Payment::PAYMETNS_SUPPORT_REFUND)
+                || in_array(
+                    $ord_status,
+                    [
+                        Payment::SC_REFUNDED, 
+                        Payment::SC_PROCESSING, 
+                        Payment::SC_VOIDED, 
+//                        Payment::SC_AUTH, 
+                        'closed'
+                    ]
+                )
             ) {
-                $this->readerWriter->createLog('Toolbar remove void_paiment button');
-                
                 $buttonList->remove('void_payment');
             }
-//            elseif (!isset($buttonList->getItems()[0]['void_payment'])) {
-//                // workaround in case of missing Void button on Sale transaction
-//                $message = __('Are you sure you want to void the payment?');
-//                $url = $context->getUrl('sales/*/voidPayment', ['order_id' => $orderId]);
-//
-//                $buttonList->add(
-//                    'void_payment',
-//                    [
-//                        'label' => __('Void'),
-//                        'onclick' => "confirmSetLocation('{$message}', '{$url}')"
-//                    ]
-//                );
-//            }
             
             if (isset($buttonList->getItems()[0]['void_payment'])) {
                 $message    = __('Are you sure you want to void the payment?');

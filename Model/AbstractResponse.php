@@ -226,8 +226,8 @@ abstract class AbstractResponse
      */
     protected function validateResponseData()
     {
-        $requiredKeys = $this->getRequiredResponseDataKeys();
-        $bodyKeys = array_keys($this->getBody());
+        $requiredKeys   = $this->getRequiredResponseDataKeys();
+        $bodyKeys       = array_keys($this->getBody());
         
         $diff = array_diff($requiredKeys, $bodyKeys);
         
