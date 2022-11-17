@@ -293,7 +293,9 @@ class Dmn extends Action implements CsrfAwareActionInterface
             }
             
             // do not save same DMN data more than once
-            if (array_key_exists($params['TransactionID'], $ord_trans_addit_info)) {
+            if (isset($params['TransactionID'])
+                && array_key_exists($params['TransactionID'], $ord_trans_addit_info)
+            ) {
                 $msg = 'Same transaction already saved. Stop proccess';
                 
                 $this->readerWriter->createLog($msg);
