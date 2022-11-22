@@ -47,6 +47,10 @@ class Dmn extends Action implements CsrfAwareActionInterface
      */
     private $jsonResultFactory;
     
+    //    private $start_subscr       = false;
+    private $is_partial_settle  = false;
+    private $curr_trans_info    = []; // collect the info for the current transaction (action)
+    private $refund_msg         = '';
     private $transaction;
     private $invoiceService;
     private $invoiceRepository;
@@ -58,8 +62,6 @@ class Dmn extends Action implements CsrfAwareActionInterface
     private $orderResourceModel;
     private $requestFactory;
     private $httpRequest;
-    
-    // variables for the DMN process
     private $order;
     private $orderPayment;
     private $transactionType;
@@ -68,10 +70,8 @@ class Dmn extends Action implements CsrfAwareActionInterface
     private $paymentModel;
     private $registry;
     private $transactionRepository;
-    private $start_subscr       = false;
-    private $is_partial_settle  = false;
-    private $curr_trans_info    = []; // collect the info for the current transaction (action)
-    private $refund_msg         = '';
+    private $params;
+    private $orderIncrementId;
 
     /**
      * Object constructor.
@@ -167,7 +167,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
         }
         
         try {
-            $params = array_merge(
+            $this->params = $params = array_merge(
                 $this->request->getParams(),
                 $this->request->getPostValue()
             );
@@ -226,8 +226,11 @@ class Dmn extends Action implements CsrfAwareActionInterface
             }
             // /try to find Order ID
             
+            $this->orderIncrementId = $orderIncrementId;
+            
             // try to validate the Cheksum
-            $success = $this->validateChecksum($params, $orderIncrementId);
+//            $success = $this->validateChecksum($params, $orderIncrementId);
+            $success = $this->validateChecksum();
             
             if (!$success) {
                 return $this->jsonOutput;
@@ -241,15 +244,16 @@ class Dmn extends Action implements CsrfAwareActionInterface
              * $this->order
              * $this->orderPayment
              */
-            $success = $this->getOrCreateOrder($params, $orderIncrementId);
+//            $success = $this->getOrCreateOrder($params, $orderIncrementId);
+            $success = $this->getOrCreateOrder();
             
             if (!$success) {
                 return $this->jsonOutput;
             }
             // /Try to create the Order.
             
-            $parent_trans_id = isset($params['relatedTransactionId'])
-                ? $params['relatedTransactionId'] : null;
+//            $parent_trans_id = isset($params['relatedTransactionId'])
+//                ? $params['relatedTransactionId'] : null;
             
             // set Order Payment global data
 //            $this->orderPayment
@@ -402,7 +406,8 @@ class Dmn extends Action implements CsrfAwareActionInterface
                 
                 // try to recognize DMN type
                 $this->processAuthDmn($params, $order_total, $dmn_total); // AUTH
-                $this->processSaleAndSettleDMN($params, $order_total, $dmn_total, $last_record); // SALE and SETTLE
+//                $this->processSaleAndSettleDMN($params, $order_total, $dmn_total, $last_record); // SALE and SETTLE
+                $this->processSaleAndSettleDMN($order_total, $dmn_total, $last_record); // SALE and SETTLE
                 $this->processVoidDmn($tr_type_param); // VOID
                 $this->processRefundDmn($params, $ord_trans_addit_info); // REFUND/CREDIT
                 
@@ -451,7 +456,8 @@ class Dmn extends Action implements CsrfAwareActionInterface
 
             $this->readerWriter->createLog(
                 $msg . "\n\r" . $e->getTraceAsString(),
-                'DMN Excception:'
+                'DMN Excception:',
+                'WARN'
             );
 
             $this->jsonOutput->setData('Error: ' . $msg);
@@ -534,48 +540,67 @@ class Dmn extends Action implements CsrfAwareActionInterface
      * @param array     $params
      * @param float     $order_total
      * @param float     $dmn_total
-     * @param array     $last_tr_record
      */
-    private function processSaleAndSettleDMN($params, $order_total, $dmn_total, $last_tr_record)
+//    private function processSaleAndSettleDMN($params, $order_total, $dmn_total)
+    private function processSaleAndSettleDMN($order_total, $dmn_total)
     {
-        $tr_type_param = strtolower($params['transactionType']);
+        $tr_type_param = strtolower($this->params['transactionType']);
         
-        if (!in_array($tr_type_param, ['sale', 'settle']) || isset($params['dmnType'])) {
+        if (!in_array($tr_type_param, ['sale', 'settle']) || isset($this->params['dmnType'])) {
             return;
         }
         
         $this->readerWriter->createLog('processSaleAndSettleDMN()');
         
-        $this->sc_transaction_type  = Payment::SC_SETTLED;
-        $invCollection              = $this->order->getInvoiceCollection();
-        $dmn_inv_id                 = $this->httpRequest->getParam('invoice_id');
-        $is_cpanel_settle           = false;
+        $invCollection  = $this->order->getInvoiceCollection();
+        $tryouts        = 0;
         
-        if (!empty($params["merchant_unique_id"])
-            && $params["merchant_unique_id"] != $params["order"]
+        do {
+            $tryouts++;
+            
+            if (Payment::SC_PROCESSING != $this->order->getStatus()) {
+                $this->readerWriter->createLog(
+                    [
+                        'order status'  => $this->order->getStatus(),
+                        'tryouts'       => $tryouts,
+                        'count($invCollection)'       => count($invCollection),
+                    ],
+                    'processSaleAndSettleDMN() wait for Magento to set Proccessing status.'
+                );
+                
+                sleep(2);
+                $this->getOrCreateOrder();
+            }
+        }
+        while(Payment::SC_PROCESSING == $this->order->getStatus() && $tryouts < 4);
+        
+        $this->readerWriter->createLog(
+            [
+                'order status'  => $this->order->getStatus(),
+                'tryouts'       => $tryouts,
+                'count($invCollection)'       => count($invCollection),
+            ]
+            , 'processSaleAndSettleDMN() - after the Order Status check.');
+        
+        $this->sc_transaction_type  = Payment::SC_SETTLED;
+        
+        $dmn_inv_id         = $this->httpRequest->getParam('invoice_id');
+        $is_cpanel_settle   = false;
+        
+        if (!empty($this->params["merchant_unique_id"])
+            && $this->params["merchant_unique_id"] != $this->params["order"]
         ) {
             $is_cpanel_settle = true;
         }
 
-        // set Start Subscription flag
-//        if ('sale' == $tr_type_param && !empty($params['customField2'])) {
-//            $this->start_subscr = true;
-//        } elseif ('settle' == $tr_type_param
-//            && !empty($last_tr_record)
-//            && !empty($last_tr_record['start_subscr_data'])
-//        ) {
-//            $this->start_subscr = true;
-//        }
-        // set Start Subscription flag END
-        
-        if ($params["payment_method"] == 'cc_card') {
+        if ($this->params["payment_method"] == 'cc_card') {
             $this->order->setCanVoidPayment(true);
             $this->orderPayment->setCanVoid(true);
         }
         
         // add Partial Settle flag
         if ('settle' == $tr_type_param
-            && ($order_total - round(floatval($params['totalAmount']), 2) > 0.00)
+            && ($order_total - round(floatval($this->params['totalAmount']), 2) > 0.00)
         ) {
             $this->is_partial_settle = true;
         } elseif ($order_total != $dmn_total) { // amount check for Sale only
@@ -585,7 +610,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
                 __('<b>Attention!</b> - There is a problem with the Order. The Order amount is ')
                 . $this->order->getOrderCurrencyCode() . ' '
                 . $order_total . ', ' . __('but the Paid amount is ')
-                . $params['currency'] . ' ' . $dmn_total,
+                . $this->params['currency'] . ' ' . $dmn_total,
                 $this->sc_transaction_type
             );
         }
@@ -606,7 +631,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
                     
                     $invoice->setCanVoidFlag(true);
                     $invoice
-                        ->setTransactionId($params['TransactionID'])
+                        ->setTransactionId($this->params['TransactionID'])
                         ->setState(Invoice::STATE_PAID)
                         ->pay();
                     
@@ -634,8 +659,8 @@ class Dmn extends Action implements CsrfAwareActionInterface
             (
                 'sale' == $tr_type_param // Sale flow
                 || ( // APMs flow
-                    $params["order"] == $params["merchant_unique_id"]
-                    && $params["payment_method"] != 'cc_card'
+                    $this->params["order"] == $this->params["merchant_unique_id"]
+                    && $this->params["payment_method"] != 'cc_card'
                 )
                 || $is_cpanel_settle
             )
@@ -651,12 +676,12 @@ class Dmn extends Action implements CsrfAwareActionInterface
             
             $invoice
                 ->setRequestedCaptureCase(Invoice::CAPTURE_ONLINE)
-                ->setTransactionId($params['TransactionID'])
+                ->setTransactionId($this->params['TransactionID'])
                 ->setState(Invoice::STATE_PAID);
             
             // in case of Cpanel Partial Settle
-            if ($is_cpanel_settle && (float) $params['totalAmount'] < $order_total) {
-                $order_total = round((float) $params['totalAmount'], 2);
+            if ($is_cpanel_settle && (float) $this->params['totalAmount'] < $order_total) {
+                $order_total = round((float) $this->params['totalAmount'], 2);
             }
             
             $invoice
@@ -681,7 +706,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
             $transaction = $this->transObj
                 ->setPayment($this->orderPayment)
                 ->setOrder($this->order)
-                ->setTransactionId($params['TransactionID'])
+                ->setTransactionId($this->params['TransactionID'])
                 ->setFailSafe(true)
                 ->build(Transaction::TYPE_CAPTURE);
 
@@ -1086,9 +1111,10 @@ class Dmn extends Action implements CsrfAwareActionInterface
      *
      * @return mixed
      */
-    private function validateChecksum($params, $orderIncrementId)
+//    private function validateChecksum($params, $orderIncrementId)
+    private function validateChecksum()
     {
-        if (empty($params["advanceResponseChecksum"]) && empty($params['responsechecksum'])) {
+        if (empty($this->params["advanceResponseChecksum"]) && empty($this->params['responsechecksum'])) {
             $msg = 'Required keys advanceResponseChecksum and '
                 . 'responsechecksum for checksum calculation are missing.';
                 
@@ -1099,12 +1125,12 @@ class Dmn extends Action implements CsrfAwareActionInterface
         }
         
         // most of the DMNs with advanceResponseChecksum
-        if (!empty($params["advanceResponseChecksum"])) {
+        if (!empty($this->params["advanceResponseChecksum"])) {
             $concat     = $this->moduleConfig->getMerchantSecretKey();
             $params_arr = ['totalAmount', 'currency', 'responseTimeStamp', 'PPP_TransactionID', 'Status', 'productId'];
 
             foreach ($params_arr as $checksumKey) {
-                if (!isset($params[$checksumKey])) {
+                if (!isset($this->params[$checksumKey])) {
                     $msg = 'Required key '. $checksumKey .' for checksum calculation is missing.';
 
                     $this->readerWriter->createLog($msg);
@@ -1113,23 +1139,23 @@ class Dmn extends Action implements CsrfAwareActionInterface
                     return false;
                 }
 
-                if (is_array($params[$checksumKey])) {
-                    foreach ($params[$checksumKey] as $subVal) {
+                if (is_array($this->params[$checksumKey])) {
+                    foreach ($this->params[$checksumKey] as $subVal) {
                         $concat .= $subVal;
                     }
                 } else {
-                    $concat .= $params[$checksumKey];
+                    $concat .= $this->params[$checksumKey];
                 }
             }
 
             $checksum = hash($this->moduleConfig->getConfigValue('hash'), $concat);
 
-            if ($params["advanceResponseChecksum"] !== $checksum) {
-                $msg = 'Checksum validation failed for advanceResponseChecksum and Order #' . $orderIncrementId;
+            if ($this->params["advanceResponseChecksum"] !== $checksum) {
+                $msg = 'Checksum validation failed for advanceResponseChecksum and Order #' . $this->orderIncrementId;
 
                 if ($this->moduleConfig->isTestModeEnabled() && null !== $this->order) {
                     $this->order->addStatusHistoryComment(__($msg)
-                        . ' ' . __('Transaction type ') . $params['type']);
+                        . ' ' . __('Transaction type ') . $this->params['type']);
                 }
                 
                 $this->readerWriter->createLog($msg);
@@ -1142,13 +1168,13 @@ class Dmn extends Action implements CsrfAwareActionInterface
         }
         
         // subscription DMN with responsechecksum
-        $param_responsechecksum = $params['responsechecksum'];
-        unset($params['responsechecksum']);
+        $param_responsechecksum = $this->params['responsechecksum'];
+        unset($this->params['responsechecksum']);
         
-        $concat = implode('', $params);
+        $concat = implode('', $this->params);
         
         if (empty($concat)) {
-            $msg = 'Checksum string before hash is empty for Order #' . $orderIncrementId;
+            $msg = 'Checksum string before hash is empty for Order #' . $this->orderIncrementId;
             
             $this->readerWriter->createLog($msg);
             $this->jsonOutput->setData($msg);
@@ -1160,11 +1186,11 @@ class Dmn extends Action implements CsrfAwareActionInterface
         $checksum       = hash($this->moduleConfig->getConfigValue('hash'), $concat_final);
 
         if ($param_responsechecksum !== $checksum) {
-            $msg = 'Checksum validation failed for responsechecksum and Order #' . $orderIncrementId;
+            $msg = 'Checksum validation failed for responsechecksum and Order #' . $this->orderIncrementId;
 
             if ($this->moduleConfig->isTestModeEnabled() && null !== $this->order) {
                 $this->order->addStatusHistoryComment(__($msg)
-                    . ' ' . __('Transaction type ') . $params['type']);
+                    . ' ' . __('Transaction type ') . $this->params['type']);
             }
             
             $this->readerWriter->createLog($msg);
@@ -1294,30 +1320,31 @@ class Dmn extends Action implements CsrfAwareActionInterface
         return;
     }
     
-    private function getOrCreateOrder($params, $orderIncrementId)
+//    private function getOrCreateOrder($params, $orderIncrementId)
+    private function getOrCreateOrder()
     {
-        $this->readerWriter->createLog($orderIncrementId, 'getOrCreateOrder for $orderIncrementId');
+        $this->readerWriter->createLog($this->orderIncrementId, 'getOrCreateOrder for $orderIncrementId');
         
         $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('increment_id', $orderIncrementId, 'eq')->create();
+            ->addFilter('increment_id', $this->orderIncrementId, 'eq')->create();
 
         $tryouts    = 0;
         $max_tries  = 5;
         
         // search only once for Refund/Credit
-        if (isset($params['transactionType'])
-            && in_array(strtolower($params['transactionType']), ['refund', 'credit'])
+        if (isset($this->params['transactionType'])
+            && in_array(strtolower($this->params['transactionType']), ['refund', 'credit'])
         ) {
             $max_tries = 0;
         }
         
         // do not search more than once for Auth and Sale, if the DMN response time is more than 24 hours before now
         if ($max_tries > 0
-            && isset($params['transactionType'])
-            && in_array(strtolower($params['transactionType']), ['sale', 'auth'])
-            && !empty($params['customField4'])
-            && is_numeric($params['customField4'])
-            && time() - $params['customField4'] > 3600
+            && isset($this->params['transactionType'])
+            && in_array(strtolower($this->params['transactionType']), ['sale', 'auth'])
+            && !empty($this->params['customField4'])
+            && is_numeric($this->params['customField4'])
+            && time() - $this->params['customField4'] > 3600
         ) {
             $max_tries = 0;
         }
@@ -1328,19 +1355,19 @@ class Dmn extends Action implements CsrfAwareActionInterface
 
             if (!$orderList || empty($orderList)) {
                 $this->readerWriter->createLog('DMN try ' . $tryouts
-                    . ' there is NO order for TransactionID ' . $params['TransactionID'] . ' yet.');
+                    . ' there is NO order for TransactionID ' . $this->params['TransactionID'] . ' yet.');
                 sleep(3);
             }
         } while ($tryouts < $max_tries && empty($orderList));
         
         // try to create the order
         if ((!$orderList || empty($orderList))
-            && !isset($params['dmnType'])
+            && !isset($this->params['dmnType'])
         ) {
-            if (in_array(strtolower($params['transactionType']), ['sale', 'auth'])
-                && strtolower($params['Status']) != 'approved'
+            if (in_array(strtolower($this->params['transactionType']), ['sale', 'auth'])
+                && strtolower($this->params['Status']) != 'approved'
             ) {
-                $msg = 'The Order ' . $orderIncrementId .' is not approved, stop process.';
+                $msg = 'The Order ' . $this->orderIncrementId .' is not approved, stop process.';
                 
                 $this->readerWriter->createLog($msg);
                 $this->jsonOutput->setData($msg);
@@ -1348,9 +1375,9 @@ class Dmn extends Action implements CsrfAwareActionInterface
                 return false;
             }
             
-            $this->readerWriter->createLog('Order '. $orderIncrementId .' not found, try to create it!');
+            $this->readerWriter->createLog('Order '. $this->orderIncrementId .' not found, try to create it!');
 
-            $result = $this->placeOrder($params);
+            $result = $this->placeOrder($this->params);
 
             if ($result->getSuccess() !== true) {
                 $msg = 'DMN Callback error - place order error.';
@@ -1363,7 +1390,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
 
             $orderList = $this->orderRepo->getList($searchCriteria)->getItems();
 
-            $this->readerWriter->createLog('An Order with ID '. $orderIncrementId .' was created in the DMN page.');
+            $this->readerWriter->createLog('An Order with ID '. $this->orderIncrementId .' was created in the DMN page.');
         }
         
         if (!$orderList || empty($orderList)) {
@@ -1403,10 +1430,13 @@ class Dmn extends Action implements CsrfAwareActionInterface
         if ('nuvei' != $method) {
             $msg = 'DMN getOrCreateOrder() error - the order was not made with Nuvei module.';
             
-            $this->readerWriter->createLog([
-                'orderIncrementId' => $orderIncrementId,
-                'module' => $method,
-            ], $msg);
+            $this->readerWriter->createLog(
+                [
+                    'orderIncrementId'  => $this->orderIncrementId,
+                    'module'            => $method,
+                ],
+                $msg
+            );
             $this->jsonOutput->setData($msg);
 
             return false;

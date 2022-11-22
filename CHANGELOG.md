@@ -8,6 +8,7 @@
     * All Observers were removed.
     * When save Transaction data for the Order, use TransacionID as key. By it try to preved saving same Transaction data more than once.
     * Into the Payment->capture() method set canCreditMemo flag to True for the Order.
+    * When we have Settle try to delay DMN logic, because sometime it executes before Magento Capture logic. This can lead to wrong Order Status after Settle.
 ```
 
 # 1.1.0
