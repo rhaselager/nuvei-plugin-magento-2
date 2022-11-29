@@ -114,7 +114,7 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
     
     public function setBillingAddress($billing_address)
     {
-        $this->billing_address = json_decode($billing_address, true);
+        $this->billing_address = json_decode(is_null($billing_address) ? '' : $billing_address, true);
         
         return $this;
     }

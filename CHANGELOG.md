@@ -9,6 +9,7 @@
     * When save Transaction data for the Order, use TransacionID as key. By it try to preved saving same Transaction data more than once.
     * Into the Payment->capture() method set canCreditMemo flag to True for the Order.
     * When we have Settle or Void try to delay DMN logic, because sometime it executes before Magento Capture logic. This can lead to wrong Order Status after Settle or Void.
+    * Fixed some problems with PHP 8.1.
 ```
 
 # 1.1.0

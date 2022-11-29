@@ -57,7 +57,7 @@ abstract class AbstractRequest
         // deviceDetails
         'deviceType' => [
             'length' => 10,
-            'flag'    => FILTER_SANITIZE_STRING
+            'flag'    => FILTER_DEFAULT
         ],
         'deviceName' => [
             'length' => 255,
@@ -108,11 +108,11 @@ abstract class AbstractRequest
         ],
         'country' => [
             'length' => 20,
-            'flag'    => FILTER_SANITIZE_STRING
+            'flag'    => FILTER_DEFAULT
         ],
         'state' => [
             'length' => 2,
-            'flag'    => FILTER_SANITIZE_STRING
+            'flag'    => FILTER_DEFAULT
         ],
         'county' => [
             'length' => 255,
