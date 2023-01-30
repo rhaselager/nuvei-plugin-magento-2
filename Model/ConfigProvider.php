@@ -2,13 +2,11 @@
 
 namespace Nuvei\Checkout\Model;
 
-use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Helper\Data as PaymentHelper;
 use Magento\Payment\Model\CcConfig;
 use Magento\Payment\Model\CcGenericConfigProvider;
 use Nuvei\Checkout\Model\Config as ModuleConfig;
-use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
 
 /**
  * Nuvei Checkout config provider model.
@@ -102,11 +100,13 @@ class ConfigProvider extends CcGenericConfigProvider
         $blocked_cards_str = $this->moduleConfig->getConfigValue('block_cards', 'advanced');
         
         // clean the string from brakets and quotes
-        $blocked_cards_str = str_replace('],[', ';', $blocked_cards_str);
-        $blocked_cards_str = str_replace('[', '', $blocked_cards_str);
-        $blocked_cards_str = str_replace(']', '', $blocked_cards_str);
-        $blocked_cards_str = str_replace('"', '', $blocked_cards_str);
-        $blocked_cards_str = str_replace("'", '', $blocked_cards_str);
+        if (!empty($blocked_cards_str)) {
+            $blocked_cards_str = str_replace('],[', ';', $blocked_cards_str);
+            $blocked_cards_str = str_replace('[', '', $blocked_cards_str);
+            $blocked_cards_str = str_replace(']', '', $blocked_cards_str);
+            $blocked_cards_str = str_replace('"', '', $blocked_cards_str);
+            $blocked_cards_str = str_replace("'", '', $blocked_cards_str);
+        }
         
         if (!empty($blocked_cards_str)) {
             $blockCards_sets = explode(';', $blocked_cards_str);

@@ -9,11 +9,11 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <type name="Magento\Sales\Model\Service\CreditmemoService">
+<!--    <type name="Magento\Sales\Model\Service\CreditmemoService">
         <plugin name="persistRequestLog"
                 type="\Nuvei\Checkout\Model\Plugin\Service\CreditmemoService\Plugin"
                 sortOrder="10"/>
-    </type>
+    </type>-->
     
     <type name="Nuvei\Checkout\Model\Payment">
         <arguments>
@@ -23,11 +23,13 @@
         </arguments>
     </type>
 	
+    <!-- modify Order View buttons -->
 	<type name="Magento\Backend\Block\Widget\Button\Toolbar">
         <plugin name="orderFormToolbarButtons" 
 				type="Nuvei\Checkout\Plugin\Block\Widget\Button\Toolbar" />
     </type>
 	
+    <!-- modify Order Invoice View buttons -->
 	<type name="Magento\Sales\Block\Adminhtml\Order\Invoice\View">
         <plugin name="orderInvoiceFormToolbarButtons" 
 				type="Nuvei\Checkout\Plugin\Block\Adminhtml\Order\Invoice\View" />

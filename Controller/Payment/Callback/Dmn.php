@@ -47,7 +47,6 @@ class Dmn extends Action implements CsrfAwareActionInterface
      */
     private $jsonResultFactory;
     
-    //    private $start_subscr       = false;
     private $is_partial_settle  = false;
     private $curr_trans_info    = []; // collect the info for the current transaction (action)
     private $refund_msg         = '';
@@ -68,7 +67,6 @@ class Dmn extends Action implements CsrfAwareActionInterface
     private $sc_transaction_type;
     private $jsonOutput;
     private $paymentModel;
-    private $registry;
     private $transactionRepository;
     private $params;
     private $orderIncrementId;
@@ -88,7 +86,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
         \Magento\Sales\Api\InvoiceRepositoryInterface $invoiceRepository,
         \Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface $transObj,
         \Magento\Quote\Model\QuoteFactory $quoteFactory,
-        \Magento\Framework\App\RequestInterface $request,
+        RequestInterface $request,
         \Magento\Framework\Event\ManagerInterface $eventManager,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepo,
         \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
@@ -98,8 +96,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
         \Nuvei\Checkout\Model\Payment $paymentModel,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         \Magento\Sales\Model\Order\Payment\Transaction\Repository $transactionRepository,
-        \Magento\Directory\Model\CurrencyFactory $currencyFactory,
-        \Magento\Framework\Registry $registry // TODO Registry class is depricated
+        \Magento\Directory\Model\CurrencyFactory $currencyFactory
     ) {
         $this->moduleConfig             = $moduleConfig;
         $this->captureCommand           = $captureCommand;
@@ -120,7 +117,6 @@ class Dmn extends Action implements CsrfAwareActionInterface
         $this->httpRequest              = $httpRequest;
         $this->paymentModel             = $paymentModel;
         $this->readerWriter             = $readerWriter;
-        $this->registry                 = $registry;
         $this->transactionRepository    = $transactionRepository;
         $this->currencyFactory          = $currencyFactory;
         
@@ -857,10 +853,8 @@ class Dmn extends Action implements CsrfAwareActionInterface
                 foreach ($invCollection as $invoice) {
                     if ($dmn_inv_id == $invoice->getId()) {
                         $invoice
-//                            ->setRequestedCaptureCase(Invoice::NOT_CAPTURE)
                             ->setRequestedCaptureCase(Invoice::CAPTURE_ONLINE)
                             ->setTransactionId($this->params['TransactionID'])
-//                            ->setState(Invoice::STATE_CANCELED);
                             ->setState(Invoice::STATE_PAID);
                         
                         $this->invoiceRepository->save($invoice);
@@ -868,36 +862,6 @@ class Dmn extends Action implements CsrfAwareActionInterface
                         break;
                     }
                 }
-                
-                
-                // to enable Delete action
-//                $this->registry->register('isSecureArea', true);
-                
-                // Delete the Invoice and the Transaction
-//                $invoice_data = $this->invoiceRepository->get($dmn_inv_id);
-                
-//                if(!is_object($invoice_data)) {
-//                    $this->readerWriter->createLog(
-//                        'processDeclinedSaleOrSettleDmn() Error - $invoice_data is not an object.');
-//
-//                    return;
-//                }
-                
-//                $transaction_id = $invoice_data->getTransactionId();
-//                $transaction    = $invoice_data->getTransaction();
-//                $transaction    = $this->transactionRepository->get($transaction_id);
-////                $transaction    = $this->transactionRepository->getByTransactionId($transaction_id);
-//
-//                if(!$transaction) {
-//                    $this->readerWriter->createLog(
-//                        'processDeclinedSaleOrSettleDmn() Error - there is no $transaction.');
-//
-//                    return;
-//                }
-                
-//                $this->transactionRepository->delete($transaction);
-                
-//                $this->invoiceRepository->delete($invoice_data);
             } elseif ('Sale' == $this->params['transactionType']) {
                 $invCollection                          = $this->order->getInvoiceCollection();
                 $invoice                                = current($invCollection);

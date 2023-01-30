@@ -5,7 +5,6 @@ namespace Nuvei\Checkout\Ui\Component\Listing\Column;
 use Magento\Ui\Component\Listing\Columns\Column;
 use Magento\Framework\View\Element\UiComponent\ContextInterface;
 use Magento\Framework\View\Element\UiComponentFactory;
-use Magento\Sales\Model\ResourceModel\Order\Status\CollectionFactory;
 use Nuvei\Checkout\Model\Payment;
 
 /**
@@ -20,14 +19,12 @@ class Status extends Column
      *
      * @param ContextInterface $context
      * @param UiComponentFactory $uiComponentFactory
-     * @param CollectionFactory $collectionFactory
      * @param array $components
      * @param array $data
      */
     public function __construct(
         ContextInterface $context,
         UiComponentFactory $uiComponentFactory,
-        CollectionFactory $collectionFactory,
         \Magento\Sales\Model\Order $collection,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         array $components = [],

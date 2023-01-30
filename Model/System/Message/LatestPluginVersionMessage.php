@@ -59,7 +59,8 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
             return;
         }
         
-        $git_version = 0;
+        $git_version    = 0;
+        $this_version   = 0;
         
         try {
             $file = $this->directory->getPath('log') . DIRECTORY_SEPARATOR . 'nuvei-plugin-latest-version.txt';
@@ -76,9 +77,14 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
                 $this->readerWriter->createLog($result, 'LatestPluginVersionMessage Error - missing version.');
                 return;
             }
-
-            $git_version    = (int) str_replace('.', '', $array['version']);
-            $res            = $this->readerWriter->saveFile(
+            
+            $arr_v = $array['version'];
+            
+            if (!empty($arr_v)) {
+                $git_version = (int) str_replace('.', '', $arr_v);
+            }
+            
+            $res = $this->readerWriter->saveFile(
                 $this->directory->getPath('log'),
                 'nuvei-plugin-latest-version.txt',
                 $array['version']
@@ -105,12 +111,23 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
             }
         }
         
-        if (0 == $git_version) {
-            $git_version = (int) str_replace('.', '', trim($this->readerWriter->readFile($file)));
+        $file = trim($this->readerWriter->readFile($file));
+        
+        if (0 == $git_version && !empty($file)) {
+            $git_version = (int) str_replace('.', '', $file);
         }
+        
         $this->readerWriter->createLog('isDisplayed()');
-        $this_version = str_replace('Magento Plugin ', '', $this->modulConfig->getSourcePlatformField());
-        $this_version = (int) str_replace('.', '', $this_version);
+        
+        $sourcePlatformField = $this->modulConfig->getSourcePlatformField();
+        
+        if (!empty($sourcePlatformField)) {
+            $this_version = str_replace('Magento Plugin ', '', $sourcePlatformField);
+        }
+        
+        if (!empty($this_version)) {
+            $this_version = (int) str_replace('.', '', $this_version);
+        }
         
         if ($git_version > $this_version) {
             return true;

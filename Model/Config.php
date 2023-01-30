@@ -48,7 +48,7 @@ class Config
     
     const STORE_SUBS_DROPDOWN                   = 'nuvei_sub_store_dropdown';
     const STORE_SUBS_DROPDOWN_LABEL             = 'Nuvei Subscription Options';
-    const STORE_SUBS_DROPDOWN_NAME              = 'nuvei_subscription_options';
+//    const STORE_SUBS_DROPDOWN_NAME              = 'nuvei_subscription_options';
     
     const NUVEI_SDK_AUTOCLOSE_URL               = 'https://cdn.safecharge.com/safecharge_resources/v1/websdk/autoclose.html';
     
@@ -165,10 +165,15 @@ class Config
 
         $this->storeId              = $this->getStoreId();
         $this->storeId              = $this->getStoreId();
-        $this->versionNum           = (int) str_replace('.', '', $this->productMetadata->getVersion());
         $this->formKey              = $formKey;
         $this->directory            = $directory;
         $this->cookie               = $cookie;
+        
+        $git_version = $this->productMetadata->getVersion();
+        
+        if (!empty($git_version)) {
+            $this->versionNum = (int) str_replace('.', '', $git_version);
+        }
     }
 
     public function getTempPath()
@@ -422,7 +427,13 @@ class Config
     
     public function getCheckoutTransl()
     {
-        $checkout_transl = str_replace("'", '"', $this->getConfigValue('checkout_transl', 'advanced'));
+        $transl             = $this->getConfigValue('checkout_transl', 'advanced');
+        $checkout_transl    = '';
+        
+        if (!empty($transl)) {
+            $checkout_transl = str_replace("'", '"', $transl);
+        }
+        
         return json_decode($checkout_transl, true);
     }
 

@@ -31,9 +31,9 @@ class ReaderWriter
     /**
      * Prepare and save log.
      *
-     * @param mixed $data
-     * @param string $title
-     * @param string $log_level
+     * @param mixed $data       Data to save. Can be simple message also.
+     * @param string $title     Title or description.
+     * @param string $log_level Company Log level.
      *
      * @return void
      */
@@ -133,7 +133,7 @@ class ReaderWriter
             if (is_string($title)) {
                 $string .= $title . $tab;
             } else {
-                if ($this->isTestModeEnabled()) {
+                if ($this->config->isTestModeEnabled()) {
                     $string .= "\r\n" . json_encode($title, JSON_PRETTY_PRINT) . "\r\n";
                 } else {
                     $string .= json_encode($title) . $tab;
@@ -195,7 +195,11 @@ class ReaderWriter
             }
 
             if (is_dir($path)) {
-                return file_put_contents($path . DIRECTORY_SEPARATOR . $name, $data, $option);
+                if (is_null($option)) {
+                    return file_put_contents($path . DIRECTORY_SEPARATOR . $name, $data);
+                } else {
+                    return file_put_contents($path . DIRECTORY_SEPARATOR . $name, $data, $option);
+                }
             }
         } catch (\Exception $ex) {
             

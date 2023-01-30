@@ -27,8 +27,6 @@
         require([
             'jquery'
         ], function($){
-            var prodOptions = {};
-            
             function nuveiShowPlanDetails(params) {
                 var strParams = '';
                 
@@ -94,32 +92,35 @@
             
                 // on change of the attribute
                 $('select.super-attribute-select').on('change', function() {
-                    console.log('nuvei change option');
+                    var _self           = $(this);
+                    var attrId          = _self.attr('id').replace('attribute', '');
+                    var nuveiAttrVal    = _self.val();
                     
-                    var _self       = $(this);
-                    var attrId      = _self.attr('id').replace('attribute', '');
-                    var attrVal     = _self.val();
+                    console.log('nuvei change option', [attrId, nuveiAttrVal, '<?= $nuvei_texts['nuvei_attr_id']; ?>']);
                     
-                    if(<?= $block->escapeHtml($nuvei_texts['nuvei_attr_id']); ?> == attrId
-                        && '' != attrVal
+                    if('<?= $block->escapeHtml($nuvei_texts['nuvei_attr_id']); ?>' == attrId
+                        && '' != nuveiAttrVal
                     ) {
-                        nuveiShowPlanDetails(attrId + '=' + attrVal);
+                        nuveiShowPlanDetails(attrId + '=' + nuveiAttrVal);
+                    }
+                    else {
+                        $('#nuvei_plan_details').css('display', 'none');
                     }
                 });
                 
                 // on change nuvei_subscription_options
-                $('body').on('change', '.nuvei_subscription_options', function(event) {
-                    console.log('change nuvei_subscription_options')
-                    
-                    var _self   = $(this);
-                    
-                    if(_self.val() != 0 && _self.val() != '') {
-                        nuveiShowPlanDetails(<?= $block->escapeHtml($nuvei_texts['nuvei_attr_id']); ?>
-                            + '=' + _self.val());
-                    }
-                    
-                    event.stopPropagation();
-                });
+//                $('body').on('change', '.nuvei_subscription_options', function(event) {
+//                    console.log('change nuvei_subscription_options')
+//                    
+//                    var _self = $(this);
+//                    
+//                    if(_self.val() != 0 && _self.val() != '') {
+//                        nuveiShowPlanDetails(<?= $block->escapeHtml($nuvei_texts['nuvei_attr_id']); ?>
+//                            + '=' + _self.val());
+//                    }
+//                    
+//                    event.stopPropagation();
+//                });
             });
         });
     </script>

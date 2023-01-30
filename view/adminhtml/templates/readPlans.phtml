@@ -1,92 +1,117 @@
 <script>
+    var nuveiData               = <?= /* @noEscape */ $block->getPaymentPlans(); ?>;
+    var nuveiPaymentPlans       = nuveiData.plans;
+    var nuveiDropdownPlanVal    = 1;
+    
+    console.log(nuveiPaymentPlans);
+    
     require([
-        'jquery'
-    ], function($){
-        var nuveiPaymentPlans   = <?= /* @noEscape */ $block->getPaymentPlans(); ?>;
-        
-        function nuveiGetUnitsPeriodData(incomingObj) {
-            var data = {
-                units   : '',
-                period  : 0
-            };
-            
-            if(incomingObj.hasOwnProperty('day') && parseInt(incomingObj.day) > 0) {
-                data.units   = 'day';
-                data.period  = parseInt(incomingObj.day);
-                
-                if(incomingObj.hasOwnProperty('month') && parseInt(incomingObj.month) > 0) {
-                    data.period += parseInt(incomingObj.month) * 30;
-                }
-                
-                if(incomingObj.hasOwnProperty('year') && parseInt(incomingObj.year) > 0) {
-                    data.period += parseInt(incomingObj.year) * 365;
-                }
-            }
-            else if(incomingObj.hasOwnProperty('month') && parseInt(incomingObj.month) > 0) {
-                data.units   = 'month';
-                data.period  = parseInt(incomingObj.month);
-                
-                if(incomingObj.hasOwnProperty('year') && parseInt(incomingObj.year) > 0) {
-                    data.period += parseInt(incomingObj.year) * 12;
-                }
-            }
-            else if(incomingObj.hasOwnProperty('year') && parseInt(incomingObj.year) > 0) {
-                data.units   = 'year';
-                data.period  = parseInt(incomingObj.year);
-            }
-            
-            return data;
-        }
-        
-        $(function() {
-            $('body').on('change', 'select[name="product[nuvei_payment_plans]"]', function(){
-                $val = $('select[name="product\\[nuvei_payment_plans\\]"]').val();
+        'jquery',
+        'Magento_Ui/js/lib/view/utils/dom-observer'
+    ], function ($, $do) {
+            function nuveiGetUnitsPeriodData(incomingObj) {
+                var data = {
+                    units: '',
+                    period: 0
+                };
 
-                if(!nuveiPaymentPlans.hasOwnProperty($val)) {
-                    console.log('There is no Nuvei plan with ID ' + $val);
+                if(incomingObj.hasOwnProperty('day') && parseInt(incomingObj.day) > 0) {
+                    data.units   = 'day';
+                    data.period  = parseInt(incomingObj.day);
+
+                    if(incomingObj.hasOwnProperty('month') && parseInt(incomingObj.month) > 0) {
+                        data.period += parseInt(incomingObj.month) * 30;
+                    }
+
+                    if(incomingObj.hasOwnProperty('year') && parseInt(incomingObj.year) > 0) {
+                        data.period += parseInt(incomingObj.year) * 365;
+                    }
+                }
+                else if(incomingObj.hasOwnProperty('month') && parseInt(incomingObj.month) > 0) {
+                    data.units   = 'month';
+                    data.period  = parseInt(incomingObj.month);
+
+                    if(incomingObj.hasOwnProperty('year') && parseInt(incomingObj.year) > 0) {
+                        data.period += parseInt(incomingObj.year) * 12;
+                    }
+                }
+                else if(incomingObj.hasOwnProperty('year') && parseInt(incomingObj.year) > 0) {
+                    data.units   = 'year';
+                    data.period  = parseInt(incomingObj.year);
+                }
+
+                return data;
+            }
+
+            /**
+             * @param int nuveiPlanVal Current Plan Id for the product.
+             * @returns void
+             */
+            function nuveiPopulateData(nuveiPlanVal) {
+                console.log('nuveiPopulateData() nuveiPlanVal', nuveiPlanVal);
+
+                if (!nuveiPaymentPlans.hasOwnProperty(nuveiPlanVal)) {
                     return;
                 }
 
                 // set recurring amount
-                if(nuveiPaymentPlans[$val].hasOwnProperty('recurringAmount')) {
+                if(nuveiPaymentPlans[nuveiPlanVal].hasOwnProperty('recurringAmount')) {
                     $('input[name="product\\[nuvei_sub_rec_amount\\]"]')
-                        .val(nuveiPaymentPlans[$val].recurringAmount);
+                        .val(nuveiPaymentPlans[nuveiPlanVal].recurringAmount);
                     $('input[name="product[nuvei_sub_rec_amount]"').trigger('change');
                 }
 
                 // set recurring units and period
-                if(nuveiPaymentPlans[$val].hasOwnProperty('recurringPeriod')) {
-                    var data = nuveiGetUnitsPeriodData(nuveiPaymentPlans[$val].recurringPeriod);
-                    
+                if(nuveiPaymentPlans[nuveiPlanVal].hasOwnProperty('recurringPeriod')) {
+                    var data = nuveiGetUnitsPeriodData(nuveiPaymentPlans[nuveiPlanVal].recurringPeriod);
+
                     $('select[name="product\\[nuvei_sub_recurr_units\\]"]').val(data.units);
                     $('select[name="product[nuvei_sub_recurr_units]"').trigger('change');
-                    
+
                     $('input[name="product\\[nuvei_sub_recurr_period\\]"]').val(data.period);
                     $('input[name="product[nuvei_sub_recurr_period]"').trigger('change');
                 }
 
                 // set trail units and period
-                if(nuveiPaymentPlans[$val].hasOwnProperty('startAfter')) {
-                    var data = nuveiGetUnitsPeriodData(nuveiPaymentPlans[$val].startAfter);
-                    
+                if(nuveiPaymentPlans[nuveiPlanVal].hasOwnProperty('startAfter')) {
+                    var data = nuveiGetUnitsPeriodData(nuveiPaymentPlans[nuveiPlanVal].startAfter);
+
                     $('select[name="product\\[nuvei_sub_trial_units\\]"]').val(data.units);
                     $('select[name="product[nuvei_sub_trial_units]"').trigger('change');
-                    
+
                     $('input[name="product\\[nuvei_sub_trial_period\\]"]').val(data.period);
                     $('input[name="product[nuvei_sub_trial_period]"').trigger('change');
                 }
-                
+
                 // set end-after units and period
-                if(nuveiPaymentPlans[$val].hasOwnProperty('endAfter')) {
-                    var data = nuveiGetUnitsPeriodData(nuveiPaymentPlans[$val].endAfter);
-                    
+                if(nuveiPaymentPlans[nuveiPlanVal].hasOwnProperty('endAfter')) {
+                    var data = nuveiGetUnitsPeriodData(nuveiPaymentPlans[nuveiPlanVal].endAfter);
+
                     $('select[name="product\\[nuvei_sub_end_after_units\\]"]').val(data.units);
                     $('select[name="product[nuvei_sub_end_after_units]"').trigger('change');
-                    
+
                     $('input[name="product\\[nuvei_sub_end_after_period\\]"]').val(data.period);
                     $('input[name="product[nuvei_sub_end_after_period]"').trigger('change');
                 }
+            }
+
+            $(document).ready(function(){
+                $do.get('select[name="product[nuvei_payment_plans]"]', function(elem){
+                    nuveiDropdownPlanVal = elem.value;
+                    
+                    nuveiPopulateData(nuveiDropdownPlanVal);
+                    
+                    $('body').on('change', 'select[name="product[nuvei_payment_plans]"]', function(){
+                        nuveiDropdownPlanVal = $(this).val();
+                        
+                        if(!nuveiPaymentPlans.hasOwnProperty(nuveiDropdownPlanVal)) {
+                            console.log('There is no Nuvei plan with ID ' + nuveiDropdownPlanVal);
+                            return;
+                        }
+
+                        nuveiPopulateData(nuveiDropdownPlanVal);
+                    });
+                });
             });
         });
-    });
 </script>

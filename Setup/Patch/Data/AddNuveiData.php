@@ -121,7 +121,7 @@ class AddNuveiData implements DataPatchInterface
                 'input'                     => 'select',
                 'visible'                   => true,
                 'required'                  => false,
-                'user_defined'              => false,
+                'user_defined'              => true,
                 'default'                   => '',
                 'searchable'                => false,
                 'filterable'                => false,
@@ -302,32 +302,6 @@ class AddNuveiData implements DataPatchInterface
             ]
         );
         # Admin > Product > Nuvei Subscription details END
-        
-        
-        
-        
-/*
-        $eavSetup->addAttribute(\Magento\Catalog\Model\Product::ENTITY, 'enable_color', [
-            'type' => 'int',
-            'backend' => '',
-            'frontend' => '',
-            'label' => 'Enable Color',
-            'input' => 'select',
-            'class' => '',
-            'source' => \Magento\Catalog\Model\Product\Attribute\Source\Boolean::class,
-            'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
-            'visible' => true,
-            'required' => true,
-            'user_defined' => false,
-            'default' => '',
-            'searchable' => false,
-            'filterable' => false,
-            'comparable' => false,
-            'visible_on_front' => false,
-            'used_in_product_listing' => true,
-            'unique' => false,
-        ]);
- */
     }
     
     /**

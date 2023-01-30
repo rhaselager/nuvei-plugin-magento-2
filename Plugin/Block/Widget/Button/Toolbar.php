@@ -9,15 +9,20 @@ class Toolbar
     private $orderRepository;
     private $request;
     private $readerWriter;
+    private $urlInterface;
     
     public function __construct(
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
         \Magento\Framework\App\RequestInterface $request,
-        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
+        \Magento\Framework\UrlInterface $urlInterface,
+        \Magento\Framework\Url $urlBuilder
     ) {
         $this->orderRepository  = $orderRepository;
         $this->request          = $request;
         $this->readerWriter     = $readerWriter;
+        $this->urlInterface     = $urlInterface;
+        $this->urlBuilder       = $urlBuilder;
     }
     
     /**
@@ -44,11 +49,14 @@ class Toolbar
             $order_total            = round((float) $order->getBaseGrandTotal(), 2);
             $orderPayment           = $order->getPayment();
             $ord_trans_addit_info   = $orderPayment->getAdditionalInformation(Payment::ORDER_TRANSACTIONS_DATA);
+            $subs_state             = $orderPayment->getAdditionalInformation('nuvei_subscription_state');
             $payment_method         = '';
             
             if ($orderPayment->getMethod() !== Payment::METHOD_CODE) {
                 return [$context, $buttonList];
             }
+            
+            $this->readerWriter->createLog($buttonList->getItems()[0]);
             
             if (!empty($ord_trans_addit_info) && is_array($ord_trans_addit_info)) {
                 foreach ($ord_trans_addit_info as $trans) {
@@ -70,8 +78,6 @@ class Toolbar
             //            ]
             //        );
                       
-//            echo '<pre>'.print_r($buttonList->getItems()[0], true).'</pre>';die;
-           
             // the plugin does not support reorder from the admin
             $buttonList->remove('order_reorder');
             
@@ -80,15 +86,15 @@ class Toolbar
                 $buttonList->remove('order_cancel');
             }
             
-            // TODO - add Cancel Subscription button
-//            if (0 == $order_total
-//               && Payment::SC_AUTH == $ord_status
-//            ) {
+            // add Cancel Subscription button
+//            if ('active' == $subs_state) {
 //                $message    = __('Are you sure you want to cancel the Subscription?');
-//                $url        = $context->getUrl('nuvei_checkout/sales_order/cancelSubscription', ['order_id' => $orderId])
-//                    . '?isAjax=false';
-//
-//                $buttonList->getItems()[0]['void_payment']['onclick'] = "confirmSetLocation('{$message}', '{$url}')";
+//                $url        = $context->getUrl(
+//                    'nuvei_checkout/sales_order/cancelSubscription',
+//                    ['order_id' => $orderId]
+//                ) . '?isAjax=false';
+//                
+////                $buttonList->getItems()[0]['void_payment']['onclick'] = "confirmSetLocation('{$message}', '{$url}')";
 //                
 //                $buttonList->add('order_nuvei_cancel_subs',
 //                    [
@@ -97,9 +103,6 @@ class Toolbar
 //                        'class'     => 'review'
 //                    ]
 //                );
-//                
-////                var_dump($buttonList->getItems()[0]['order_nuvei_cancel_subs']);
-////                die;
 //            }
             
             if (!in_array($payment_method, Payment::PAYMETNS_SUPPORT_REFUND)

@@ -353,7 +353,11 @@ abstract class AbstractRequest
                     $this->readerWriter->createLog($key1, 'Limit');
                 }
                 
-                $params[$key1] = str_replace('\\', ' ', filter_var($new_val, $this->params_validation[$key1]['flag']));
+                $filtered_val = filter_var($new_val, $this->params_validation[$key1]['flag']);
+                
+                if (!empty($filtered_val)) {
+                    $params[$key1] = str_replace('\\', ' ', $filtered_val);
+                }
             } elseif (is_array($val1) && !empty($val1)) {
                 foreach ($val1 as $key2 => $val2) {
                     if (!is_array($val2) && !empty($val2) && array_key_exists($key2, $this->params_validation)) {
@@ -364,12 +368,12 @@ abstract class AbstractRequest
                             
                             $this->readerWriter->createLog($key2, 'Limit');
                         }
-
-                        $params[$key1][$key2] = str_replace(
-                            '\\',
-                            ' ',
-                            filter_var($new_val, $this->params_validation[$key2]['flag'])
-                        );
+                        
+                        $filtered_val = filter_var($new_val, $this->params_validation[$key2]['flag']);
+                
+                        if (!empty($filtered_val)) {
+                            $params[$key1][$key2] = str_replace('\\', ' ', $filtered_val);
+                        }
                     }
                 }
             }

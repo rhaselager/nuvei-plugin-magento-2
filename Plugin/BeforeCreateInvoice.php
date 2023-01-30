@@ -68,8 +68,9 @@ class BeforeCreateInvoice
         }
 
         if ($payment->getMethod() !== Payment::METHOD_CODE) {
-            $this->readerWriter->createLog($payment->getMethod(), 'beforeToInvoice - payment method is');
-            throw new \Magento\Framework\Exception\LocalizedException(__('The Payment does not belong to Nuvei.'));
+            $this->readerWriter->createLog($payment->getMethod(), 'The Payment does not belong to Nuvei, but to');
+            return;
+//            throw new \Magento\Framework\Exception\LocalizedException(__('The Payment does not belong to Nuvei.'));
         }
 
         // Settle request

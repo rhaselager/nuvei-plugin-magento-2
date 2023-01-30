@@ -2,15 +2,21 @@
 
 namespace Nuvei\Checkout\Block\Adminhtml;
 
+use Nuvei\Checkout\Model\Config;
+
 class ReadPlans extends \Magento\Backend\Block\Template
 {
     protected $_template = 'Nuvei_Checkout::readPlans.phtml';
     
     private $config;
     private $readerWriter;
+    private $request;
+    private $product;
 
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
+        \Magento\Catalog\Model\Product $product,
+        \Magento\Framework\App\RequestInterface $request,
         \Nuvei\Checkout\Model\Config $config,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         array $data = []
@@ -19,6 +25,8 @@ class ReadPlans extends \Magento\Backend\Block\Template
         
         $this->config       = $config;
         $this->readerWriter = $readerWriter;
+        $this->request      = $request;
+        $this->product      = $product;
     }
     
     /**
@@ -27,6 +35,11 @@ class ReadPlans extends \Magento\Backend\Block\Template
      */
     public function getPaymentPlans()
     {
+        $prod_id        = $this->request->getParam('id');
+        $product        = $this->product->load($prod_id);
+//        $enabled_subs   = $product->getData(Config::PAYMENT_SUBS_ENABLE);
+        $subs_pan_id    = (int) $product->getData(Config::PAYMENT_PLANS_ATTR_NAME);
+        
         $file_name = $this->config->getTempPath() . DIRECTORY_SEPARATOR
             . \Nuvei\Checkout\Model\Config::PAYMENT_PLANS_FILE_NAME;
         
@@ -45,6 +58,13 @@ class ReadPlans extends \Magento\Backend\Block\Template
             $plans[$data['planId']] = $data;
         }
         
-        return json_encode($plans);
+        $data = [
+            'plans'         => $plans,
+            'selected_plan' => $subs_pan_id <= 0 ? 1 : $subs_pan_id,
+        ];
+        
+        $this->readerWriter->createLog($data, '$plans');
+        
+        return json_encode($data);
     }
 }

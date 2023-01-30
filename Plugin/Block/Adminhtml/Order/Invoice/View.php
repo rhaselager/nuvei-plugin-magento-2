@@ -5,7 +5,8 @@ namespace Nuvei\Checkout\Plugin\Block\Adminhtml\Order\Invoice;
 use Nuvei\Checkout\Model\Payment;
 use Magento\Sales\Model\Order\Invoice;
 
-class View extends \Magento\Backend\Block\Widget\Form\Container
+//class View extends \Magento\Backend\Block\Widget\Form\Container
+class View
 {
     private $request;
     private $invoice;
@@ -14,6 +15,7 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
     private $readerWriter;
 
     public function __construct(
+//        \Magento\Backend\Block\Widget\Context $context,
         \Magento\Framework\App\RequestInterface $request,
         Invoice $invoice,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepo,
@@ -25,6 +27,8 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
         $this->orderRepo                = $orderRepo;
         $this->searchCriteriaBuilder    = $searchCriteriaBuilder;
         $this->readerWriter             = $readerWriter;
+        
+//        parent::__construct($context);
     }
 
     public function beforeSetLayout(\Magento\Sales\Block\Adminhtml\Order\Invoice\View $view)
@@ -53,7 +57,7 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
                 return;
             }
                 
-            $this->readerWriter->createLog('beforeSetLayout');
+//            $this->readerWriter->createLog('beforeSetLayout');
 
             if (!in_array($payment_method, Payment::PAYMETNS_SUPPORT_REFUND)
                 || in_array($ord_status, [Payment::SC_VOIDED, Payment::SC_PROCESSING])
@@ -61,8 +65,6 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
                 $view->removeButton('credit-memo');
             }
             
-                $this->readerWriter->createLog(($view->getButton('void')), 'admin beforeSetLayout buttonList');
-
             // hide the button all the time, looks like we have order with multi partial settled items,
             // the Void logic is different than the logic of the Void button in Information tab
             if (!in_array($payment_method, Payment::PAYMETNS_SUPPORT_REFUND)
@@ -80,7 +82,8 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
             elseif ($invoiceDetails->canVoid()) {
                 $message = __('Are you sure you want to void the payment?');
                 
-                $view->buttonList->add(
+//                $view->buttonList->add(
+                $view->addButton(
                     'void',
                     [
                         'label'     => __('Void'),

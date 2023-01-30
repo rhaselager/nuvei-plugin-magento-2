@@ -2,13 +2,15 @@
 
 namespace Nuvei\Checkout\Block\Frontend\Product;
 
+use Magento\Catalog\Block\Product\View;
 use Nuvei\Checkout\Model\Config;
 
-class NuveiPlanDetails extends \Magento\Catalog\Block\Product\View
+class NuveiPlanDetails extends View
 {
     private $urlBuilder;
     private $configurable;
     private $eavAttribute;
+    private $readerWriter;
     
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
@@ -24,6 +26,7 @@ class NuveiPlanDetails extends \Magento\Catalog\Block\Product\View
         \Magento\ConfigurableProduct\Model\Product\Type\Configurable $configurable,
         \Magento\Framework\UrlInterface $urlBuilder,
         \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute,
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         array $data = []
     ) {
         parent::__construct(
@@ -43,12 +46,11 @@ class NuveiPlanDetails extends \Magento\Catalog\Block\Product\View
         $this->configurable = $configurable;
         $this->urlBuilder   = $urlBuilder;
         $this->eavAttribute = $eavAttribute;
+        $this->readerWriter = $readerWriter;
     }
 
     /**
-     * Function isProductWithPlan
-     *
-     * Checks if the product has Nuvei Plan options
+     * Checks if the product has Nuvei Plan options.
      *
      * @return bool
      */
@@ -77,18 +79,15 @@ class NuveiPlanDetails extends \Magento\Catalog\Block\Product\View
     }
     
     /**
-     * Function getTexts
-     *
      * Get translated texts.
      *
      * @return array
      */
     public function getTexts()
     {
-        $nuvei_prod_attr_code   = \Nuvei\Checkout\Model\Config::STORE_SUBS_DROPDOWN_NAME;
+        $nuvei_prod_attr_code   = Config::PAYMENT_PLANS_ATTR_NAME;
         $nuvei_prod_attr_id     = $this->eavAttribute->getIdByCode('catalog_product', $nuvei_prod_attr_code);
-        
-        return [
+        $tpl_data               = [
             'table_title'       => __('Nuvei Plan Details'),
             'rec_length'        => __('Recurring length'),
             'rec_period'        => __('Recurring period'),
@@ -96,8 +95,9 @@ class NuveiPlanDetails extends \Magento\Catalog\Block\Product\View
             'trial_period'      => __('Trial period'),
             'nuvei_ajax_url'    => $this->urlBuilder->getUrl('nuvei_checkout/frontend/order_subscriptionsHistory'),
             'nuvei_prod_id'     => $this->getProduct()->getId(),
-//            'nuvei_attr_code'   => $nuvei_prod_attr_code,
             'nuvei_attr_id'     => $nuvei_prod_attr_id,
         ];
+        
+        return $tpl_data;
     }
 }

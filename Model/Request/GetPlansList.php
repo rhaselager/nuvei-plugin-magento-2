@@ -11,6 +11,7 @@ class GetPlansList extends AbstractRequest implements RequestInterface
 //    protected $config;
     
 //    private $fileSystem;
+    private $directory;
     
     public function __construct(
         //        \Nuvei\Checkout\Model\Logger $logger,
@@ -19,7 +20,8 @@ class GetPlansList extends AbstractRequest implements RequestInterface
         \Nuvei\Checkout\Model\Response\Factory $responseFactory,
         \Nuvei\Checkout\Model\Request\Factory $requestFactory,
         //        \Magento\Framework\Filesystem\DriverInterface $fileSystem,
-        \Nuvei\Checkout\Model\ReaderWriter $readerWriter
+        \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
+        \Magento\Framework\Filesystem\DirectoryList $directory
     ) {
         parent::__construct(
 //            $logger,
@@ -31,6 +33,7 @@ class GetPlansList extends AbstractRequest implements RequestInterface
 
         $this->requestFactory   = $requestFactory;
 //        $this->fileSystem       = $fileSystem;
+        $this->directory        = $directory;
     }
     
     public function process()
@@ -92,7 +95,7 @@ class GetPlansList extends AbstractRequest implements RequestInterface
     private function savePlansFile($plans)
     {
         try {
-            $tempPath = $this->config->getTempPath();
+            $tempPath = $this->directory->getPath('log');
 
             if (empty($plans['status']) || $plans['status'] != 'SUCCESS'
                 || empty($plans['total']) || (int) $plans['total'] < 1
@@ -107,17 +110,18 @@ class GetPlansList extends AbstractRequest implements RequestInterface
 //                json_encode($plans)
 //            );
             
-            $this->readerWriter->saveFile(
+            return (bool) $this->readerWriter->saveFile(
                 $tempPath,
                 \Nuvei\Checkout\Model\Config::PAYMENT_PLANS_FILE_NAME,
                 json_encode($plans)
             );
+            
         } catch (\Exception $e) {
             $this->readerWriter->createLog($e->getMessage(), 'GetPlansList Exception');
             
             return false;
         }
         
-        return true;
+        return false;
     }
 }
