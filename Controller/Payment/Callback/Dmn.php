@@ -187,17 +187,13 @@ class Dmn extends Action implements CsrfAwareActionInterface
             ### DEBUG
             
             // modify it because of the PayPal Sandbox problem with duplicate Orders IDs
-            // we modify it also in Class PaymenAPM getParams().
-            if (!empty($params['payment_method']) && 'cc_card' != $params['payment_method']) {
-                $params["merchant_unique_id"] 
-                    = $this->moduleConfig->getClientUniqueId($params["merchant_unique_id"]);
-            }
+            $merchant_unique_id = current(explode('_', $params["merchant_unique_id"]));
             
             // try to find Order ID
             if (!empty($params["order"])) {
                 $orderIncrementId = $params["order"];
-            } elseif (!empty($params["merchant_unique_id"]) && (int) $params["merchant_unique_id"] != 0) {
-                $orderIncrementId = $params["merchant_unique_id"];
+            } elseif (!empty($merchant_unique_id) && (int) $merchant_unique_id != 0) {
+                $orderIncrementId = $merchant_unique_id;
             } elseif (!empty($params["orderId"])) {
                 $orderIncrementId = $params["orderId"];
             } elseif (!empty($params['dmnType'])

@@ -727,46 +727,6 @@ class Config
         $quote->save();
     }
     
-    /**
-     * Function setClientUniqueId
-     *
-     * Set client unique id.
-     * We change it only for Sandbox (test) mode.
-     *
-     * @param int $order_id - cart or order id
-     * @return int|string
-     */
-    public function setClientUniqueId($order_id)
-    {
-        if (!$this->isDebugEnabled()) {
-            return (int)$order_id;
-        }
-        
-        return $order_id . '_' . time() . $this->clientUniqueIdPostfix;
-    }
-    
-    /**
-     * Function getCuid
-     *
-     * Get client unique id.
-     * We change it only for Sandbox (test) mode.
-     *
-     * @param string|int $merchant_unique_id
-     * @return int|string
-     */
-    public function getClientUniqueId($merchant_unique_id)
-    {
-        if (!$this->isDebugEnabled()) {
-            return $merchant_unique_id;
-        }
-        
-        if (strpos($merchant_unique_id, $this->clientUniqueIdPostfix) !== false) {
-            return current(explode('_', $merchant_unique_id));
-        }
-        
-        return $merchant_unique_id;
-    }
-    
     public function getUserEmail($empty_on_fail = false)
     {
         $quote    = $this->checkoutSession->getQuote();
