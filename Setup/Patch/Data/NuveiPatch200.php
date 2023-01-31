@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Add new patch file or change the namer of the current one,
+ * every time we need to add something new into it.
+ */
+
 namespace Nuvei\Checkout\Setup\Patch\Data;
 
 use Magento\Sales\Model\Order\StatusFactory as OrderStatusFactory;
@@ -9,7 +14,7 @@ use Magento\Sales\Model\Order;
 use Magento\Eav\Setup\EavSetup;
 use Magento\Eav\Setup\EavSetupFactory;
 
-class AddNuveiData implements DataPatchInterface
+class NuveiPatch200 implements DataPatchInterface
 {
     /** @var ModuleDataSetupInterface */
     private $moduleDataSetup;
@@ -19,6 +24,8 @@ class AddNuveiData implements DataPatchInterface
     
     /** @var OrderStatusFactory */
     private $orderStatusFactory;
+    
+    private $readerWriter;
    
     /**
      * @param OrderStatusFactory        $orderStatusFactory
@@ -26,9 +33,9 @@ class AddNuveiData implements DataPatchInterface
      * @param EavSetupFactory           $eavSetupFactory
      */
     public function __construct(
-        OrderStatusFactory          $orderStatusFactory,
-        ModuleDataSetupInterface    $moduleDataSetup,
-        EavSetupFactory             $eavSetupFactory
+        OrderStatusFactory                  $orderStatusFactory,
+        ModuleDataSetupInterface            $moduleDataSetup,
+        EavSetupFactory                     $eavSetupFactory
     ) {
         $this->moduleDataSetup      = $moduleDataSetup;
         $this->eavSetupFactory      = $eavSetupFactory;
@@ -312,7 +319,7 @@ class AddNuveiData implements DataPatchInterface
      */
     public static function getVersion()
     {
-        return '1.1.0';
+        return '2.0.0';
     }
     
     /**
