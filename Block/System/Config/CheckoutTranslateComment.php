@@ -22,8 +22,8 @@ class CheckoutTranslateComment implements \Magento\Config\Model\Config\CommentIn
             . '</br>}</code>'
             . '</br>'
             . __('For more information, please check the <a href="'
-                . 'https://docs.nuvei.com/documentation/accept-payment/web-sdk/'
-                . 'advanced-styling/#i18n-styling" target="_blank">Documentation</a>.')
+                . 'https://docs.nuvei.com/documentation/accept-payment/simply-connect/'
+                    . 'ui-customization/#text-and-translation" target="_blank">Documentation</a>.')
             
             ;
     }

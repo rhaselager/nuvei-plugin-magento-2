@@ -10,6 +10,7 @@
     * Into the Payment->capture() method set canCreditMemo flag to True for the Order.
     * When we have Settle or Void try to delay DMN logic, because sometime it executes before Magento Capture logic. This can lead to wrong Order Status after Settle or Void.
     * Fixed some problems with PHP 8.1.
+    * Fixed the links to Nuvei Documentation into the plugin settings.
 ```
 
 # 1.1.0
