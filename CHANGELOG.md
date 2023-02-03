@@ -11,6 +11,7 @@
     * When we have Settle or Void try to delay DMN logic, because sometime it executes before Magento Capture logic. This can lead to wrong Order Status after Settle or Void.
     * Fixed some problems with PHP 8.1.
     * Fixed the links to Nuvei Documentation into the plugin settings.
+    * Show better message if the merchant currency is not supported by the APM.
 ```
 
 # 1.1.0

@@ -157,8 +157,26 @@ function nuveiAfterSdkResponse(resp) {
 		}
 	}
 
+    // a specific Error
+    if(resp.status == 'ERROR') {
+        if (resp.hasOwnProperty('reason')
+            && resp.reason.toLowerCase().search('the currency is not supported') >= 0
+        ) {
+            scFormFalse(resp.reason);
+            return;
+            
+            
+            if(!alert(resp.reason)) {
+                jQuery('body').trigger('processStop');
+                return;
+            }
+        }
+
+        scFormFalse("{l s='Your Payment was DECLINED. Please try another payment method!' mod='nuvei'}");
+        return;
+    }
+
 	// on Success, Approved
-//	window.location.href = window.checkoutConfig.payment[nuveiGetCode()].successUrl;
     jQuery('#nuvei_default_pay_btn').trigger('click');
 	jQuery('body').trigger('processStop');
 	return;
