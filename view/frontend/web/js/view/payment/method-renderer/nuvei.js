@@ -111,6 +111,16 @@ function nuveiUpdateOrder(resolve, reject, secondCall = false) {
 function nuveiAfterSdkResponse(resp) {
 	console.log('nuveiAfterSdkResponse() resp', resp);
 
+    // a specific Error
+    if(resp.status == 'ERROR'
+        && resp.hasOwnProperty('reason')
+        && resp.reason.toLowerCase().search('the currency is not supported') >= 0
+    ) {
+        if(!alert(resp.reason)) {
+            jQuery('body').trigger('processStop');
+            return;
+        }
+    }
 	// on unexpected error
 	if(typeof resp == 'undefined'
 		|| !resp.hasOwnProperty('result')
@@ -156,25 +166,6 @@ function nuveiAfterSdkResponse(resp) {
 			return;
 		}
 	}
-
-    // a specific Error
-    if(resp.status == 'ERROR') {
-        if (resp.hasOwnProperty('reason')
-            && resp.reason.toLowerCase().search('the currency is not supported') >= 0
-        ) {
-            scFormFalse(resp.reason);
-            return;
-            
-            
-            if(!alert(resp.reason)) {
-                jQuery('body').trigger('processStop');
-                return;
-            }
-        }
-
-        scFormFalse("{l s='Your Payment was DECLINED. Please try another payment method!' mod='nuvei'}");
-        return;
-    }
 
 	// on Success, Approved
     jQuery('#nuvei_default_pay_btn').trigger('click');
