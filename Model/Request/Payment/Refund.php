@@ -43,7 +43,7 @@ class Refund extends AbstractPayment implements RequestInterface
             $curl,
             $responseFactory,
             $orderPayment,
-            $readerWriter,
+            $readerWriter
         );
 
         $this->request      = $request;
