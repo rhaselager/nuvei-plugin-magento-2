@@ -20,7 +20,7 @@ class PaymentPlansOptions extends \Magento\Eav\Model\Entity\Attribute\Source\Abs
         $this->readerWriter->createLog('getAllOptions()');
         
         if (!empty($this->_options)) {
-            $this->readerWriter->createLog('The _options are not empty');
+            $this->readerWriter->createLog($this->_options, 'The _options are not empty');
             return $this->_options;
         }
         
@@ -48,7 +48,7 @@ class PaymentPlansOptions extends \Magento\Eav\Model\Entity\Attribute\Source\Abs
         }
         # json version END
         
-        $this->readerWriter->createLog('getAllOptions', $this->_options);
+        $this->readerWriter->createLog($this->_options, 'getAllOptions');
 
         return $this->_options;
     }
