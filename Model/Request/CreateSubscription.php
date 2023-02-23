@@ -2,53 +2,20 @@
 
 namespace Nuvei\Checkout\Model\Request;
 
-use Nuvei\Checkout\Lib\Http\Client\Curl;
 use Nuvei\Checkout\Model\AbstractRequest;
-use Nuvei\Checkout\Model\AbstractResponse;
-use Nuvei\Checkout\Model\Config;
-use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
 use Nuvei\Checkout\Model\RequestInterface;
-use Nuvei\Checkout\Model\Response\Factory as ResponseFactory;
 
 /**
  * Nuvei Checkout Create Subscription request model.
  */
 class CreateSubscription extends AbstractRequest implements RequestInterface
 {
-    /**
-     * @var RequestFactory
-     */
-    protected $requestFactory;
-    
     protected $plan_id;
     protected $upo_id;
     
     private $order_id;
     private $request_data;
 
-    /**
-     * @param Config           $config
-     * @param Curl             $curl
-     * @param ResponseFactory  $responseFactory
-     * @param Factory          $requestFactory
-     */
-//    public function __construct(
-//        \Nuvei\Checkout\Model\Logger $logger,
-//        Config $config,
-//        Curl $curl,
-//        ResponseFactory $responseFactory,
-//        RequestFactory $requestFactory
-//    ) {
-//        parent::__construct(
-//            $logger,
-//            $config,
-//            $curl,
-//            $responseFactory
-//        );
-//
-//        $this->requestFactory = $requestFactory;
-//    }
-    
     /**
      * @return AbstractResponse
      *

@@ -45,7 +45,7 @@
 		</arguments>
 	</type>
     
-    <!-- Before convert an Order into Invoice, call Nuvei Settle. Allow conversation only if the Settle is approved. -->
+    <!-- Before convert an Order into Invoice, call Nuvei Settle. Allow conversation only if the Settle is approved. This plugin will be exexuted before toInvoice method. -->
     <type name="Magento\Sales\Model\Convert\Order">
 		<plugin name="nuvei_before_invoice" 
 				type="Nuvei\Checkout\Plugin\BeforeCreateInvoice" />

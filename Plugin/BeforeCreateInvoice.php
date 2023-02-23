@@ -26,36 +26,85 @@ class BeforeCreateInvoice
         $this->params           = $request->getParams();
     }
     
-    public function beforeToInvoice(\Magento\Sales\Model\Convert\Order $subject, \Magento\Sales\Model\Order $order)
-    {
-        $this->readerWriter->createLog($this->params, 'BeforeCreateInvoice->beforeToInvoice()');
+    public function beforeToInvoice(
+        \Magento\Sales\Model\Convert\Order $subject,
+        \Magento\Sales\Model\Order $order
+    ) {
+        $this->readerWriter->createLog($this->params, 'beforeToInvoice');
         
         // the second condition is when the merchant click on "UpdateQty's" button
         if (empty($this->params['invoice']['items']) || isset($this->params['isAjax'])) {
+            $this->readerWriter->createLog('There are not any Invoice Items.');
             return;
         }
         
-        $items_for_invoice  = [];
-        $inv_amount         = 0;
-
-        foreach ($this->params['invoice']['items'] as $id => $available) {
-            if(1 == $available) {
-                $items_for_invoice[] = $id;
-            }
-        }
-
+        $this->readerWriter->createLog(
+            [
+                'getBaseGrandTotal' => $order->getBaseGrandTotal(),
+                'getBaseTotalInvoiced' => $order->getBaseTotalInvoiced(),
+                'getBaseDiscountAmount' => $order->getBaseDiscountAmount(),
+                'getBaseShippingInclTax' => $order->getBaseShippingInclTax(),
+                'getBaseShippingAmount' => $order->getBaseShippingAmount(),
+                'getBaseShippingInvoiced' => $order->getBaseShippingInvoiced(),
+                'getBaseShippingDiscountAmount' => $order->getBaseShippingDiscountAmount(),
+                'getBaseTaxAmount' => $order->getBaseTaxAmount(),
+            ],
+            'Order amounts',
+            'DEBUG'
+        );
+        
+        $order_shipping_inc_tax     = round($order->getBaseShippingInclTax(), 2);
+        $order_shipping_invoiced    = round((float) $order->getBaseShippingInvoiced(), 2);
+        $order_shipping_disc        = round($order->getBaseShippingDiscountAmount(), 2);
+        
+        $inv_amount                 = $order_shipping_inc_tax - $order_shipping_invoiced - $order_shipping_disc;
+        $items_amounts              = []; // for debug only
+        
         foreach ($order->getAllItems() as $item) {
-            if (in_array($item->getId(), $items_for_invoice)) {
-                $inv_amount += round($item->getBasePriceInclTax(), 2) 
-                    - round($item->getBaseDiscountAmount(), 2);
+            if (!array_key_exists($item->getId(), $this->params['invoice']['items'])
+                || 0 == $this->params['invoice']['items'][$item->getId()]
+            ) {
+                continue;
             }
+            
+            $items_cnt          = $this->params['invoice']['items'][$item->getId()];
+            $items_ordered      = round($item->getQtyOrdered(), 2);
+            $items_disc         = round($item->getBaseDiscountAmount(), 2);
+            $item_disc          = round($items_disc / $items_ordered, 2);
+            $item_price_no_tax  = round($item->getBasePrice(), 2);
+            $items_tax          = round($item->getBaseTaxAmount(), 2);
+            $item_tax           = round($items_tax / $items_ordered, 2);
+            
+            // debug log
+            $items_amounts[$item->getId()] = [
+                'getBasePrice'          => $item->getBasePrice(),
+                'getBasePriceInclTax'   => $item->getBasePriceInclTax(),
+                'getBaseDiscountAmount' => $item->getBaseDiscountAmount(),
+                'getBaseDiscountInvoiced' => $item->getBaseDiscountInvoiced(),
+                'getBaseTaxAmount' => $item->getBaseTaxAmount(),
+                'getBaseTaxInvoiced' => $item->getBaseTaxInvoiced(),
+                'getQtyOrdered' => $item->getQtyOrdered(),
+            ];
+
+            $inv_amount += ($item_price_no_tax * $items_cnt)
+                - ($item_disc * $items_cnt)
+                + ($item_tax * $items_cnt);
         }
         
-        // add the shipping also
-        $inv_amount += round($order->getBaseShippingInclTax(), 2);
+        $this->readerWriter->createLog(
+            [
+                '$inv_amount'       => $inv_amount,
+                '$items_amounts'    => $items_amounts,
+            ],
+            'amounts',
+            "DEBUG"
+        );
             
         if (0 == $inv_amount) {
-            $this->readerWriter->createLog('beforeToInvoice - Calculated Invoice amoutn is Zero.');
+            $this->readerWriter->createLog(
+                'Calculated Invoice amoutn is Zero.'
+            );
+            
             throw new \Magento\Framework\Exception\LocalizedException(__('Calculated Invoice amoutn is Zero.'));
         }
         
@@ -70,7 +119,6 @@ class BeforeCreateInvoice
         if ($payment->getMethod() !== Payment::METHOD_CODE) {
             $this->readerWriter->createLog($payment->getMethod(), 'The Payment does not belong to Nuvei, but to');
             return;
-//            throw new \Magento\Framework\Exception\LocalizedException(__('The Payment does not belong to Nuvei.'));
         }
 
         // Settle request
@@ -81,7 +129,10 @@ class BeforeCreateInvoice
         if (!is_array($ord_trans_addit_info)
             || empty($ord_trans_addit_info)
         ) {
-            throw new \Magento\Framework\Exception\LocalizedException(__('There is no Order Transaction data.'));
+            $msg = __('There is no Order Transaction data.');
+            
+            $this->readerWriter->createLog($msg);
+            throw new \Magento\Framework\Exception\LocalizedException($msg);
         }
         
         foreach ($ord_trans_addit_info as $trans) {
@@ -108,8 +159,10 @@ class BeforeCreateInvoice
             ->process();
         
         if(empty($resp['transactionStatus']) || 'APPROVED' != $resp['transactionStatus']) {
-            throw new \Magento\Framework\Exception\LocalizedException(
-                __('Settle request error, you can check Nuvei log for more information.'));
+            $msg = __('Settle request error, you can check Nuvei log for more information.');
+            
+            $this->readerWriter->createLog($msg);
+            throw new \Magento\Framework\Exception\LocalizedException($msg);
         }
         
         

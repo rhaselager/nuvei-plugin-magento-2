@@ -170,6 +170,13 @@ class Dmn extends Action implements CsrfAwareActionInterface
             
             $this->readerWriter->createLog($params, 'DMN params:');
             
+            ### DEBUG
+//            $msg = 'DMN manually stopped.';
+//            $this->readerWriter->createLog(http_build_query($params), $msg);
+//            $this->jsonOutput->setData($msg);
+//            return $this->jsonOutput;
+            ### DEBUG
+            
             if (!empty($params['type']) && 'CARD_TOKENIZATION' == $params['type']) {
                 $msg = 'DMN report - this is Card Tokenization DMN.';
             
@@ -179,27 +186,38 @@ class Dmn extends Action implements CsrfAwareActionInterface
                 return $this->jsonOutput;
             }
             
-            ### DEBUG
-//            $msg = 'DMN manually stopped.';
-//            $this->readerWriter->createLog(http_build_query($params), $msg);
-//            $this->jsonOutput->setData($msg);
-//            return $this->jsonOutput;
-            ### DEBUG
+            // try to validate the Cheksum
+            $success = $this->validateChecksum();
             
-            // modify it because of the PayPal Sandbox problem with duplicate Orders IDs
-            $merchant_unique_id = current(explode('_', $params["merchant_unique_id"]));
+            if (!$success) {
+                return $this->jsonOutput;
+            }
+            // /try to validate the Cheksum
             
             // try to find Order ID
+            $orderIncrementId = 0;
+            
             if (!empty($params["order"])) {
                 $orderIncrementId = $params["order"];
-            } elseif (!empty($merchant_unique_id) && (int) $merchant_unique_id != 0) {
-                $orderIncrementId = $merchant_unique_id;
-            } elseif (!empty($params["orderId"])) {
+            }
+            elseif (!empty($params["merchant_unique_id"])) {
+                // modified because of the PayPal Sandbox problem with duplicate Orders IDs
+                $orderIncrementId = current(explode('_', $params["merchant_unique_id"]));
+                
+//                if ((int) $merchant_unique_id != 0) {
+//                    $orderIncrementId = $merchant_unique_id;
+//                }
+            }
+            elseif (!empty($params["clientUniqueId"])) {
+                $orderIncrementId = current(explode('_', $params["clientUniqueId"]));
+            }
+            elseif (!empty($params["orderId"])) {
                 $orderIncrementId = $params["orderId"];
-            } elseif (!empty($params['dmnType'])
+            }
+            elseif (!empty($params['dmnType'])
                 && in_array($params['dmnType'], ['subscriptionPayment', 'subscription'])
                 && !empty($params['clientRequestId'])
-                && false!== strpos($params['clientRequestId'], '_')
+//                && false !== strpos($params['clientRequestId'], '_')
             ) {
                 $orderIncrementId       = 0;
                 $clientRequestId_arr    = explode('_', $params["clientRequestId"]);
@@ -208,7 +226,9 @@ class Dmn extends Action implements CsrfAwareActionInterface
                 if (!empty($last_elem) && is_numeric($last_elem)) {
                     $orderIncrementId = $last_elem;
                 }
-            } else {
+//                $orderIncrementId = end(explode('_', $params["clientRequestId"]));
+            }
+            else {
                 $msg = 'DMN error - no Order ID parameter.';
             
                 $this->readerWriter->createLog($msg);
@@ -220,15 +240,6 @@ class Dmn extends Action implements CsrfAwareActionInterface
             
             $this->orderIncrementId = $orderIncrementId;
             
-            // try to validate the Cheksum
-//            $success = $this->validateChecksum($params, $orderIncrementId);
-            $success = $this->validateChecksum();
-            
-            if (!$success) {
-                return $this->jsonOutput;
-            }
-            // /try to validate the Cheksum
-            
             /**
              * Try to create the Order.
              * With this call if there are no errors we set:
@@ -236,22 +247,12 @@ class Dmn extends Action implements CsrfAwareActionInterface
              * $this->order
              * $this->orderPayment
              */
-//            $success = $this->getOrCreateOrder($params, $orderIncrementId);
             $success = $this->getOrCreateOrder();
             
             if (!$success) {
                 return $this->jsonOutput;
             }
             // /Try to create the Order.
-            
-//            $parent_trans_id = isset($params['relatedTransactionId'])
-//                ? $params['relatedTransactionId'] : null;
-            
-            // set Order Payment global data
-//            $this->orderPayment
-//                ->setTransactionId($params['TransactionID'])
-//                ->setParentTransactionId($parent_trans_id)
-//                ->setAuthCode($params['AuthCode']);
             
             // set additional data
             if (!empty($params['payment_method'])) {
@@ -356,10 +357,10 @@ class Dmn extends Action implements CsrfAwareActionInterface
             ) {
                 $this->order->addStatusHistoryComment(
                     __('<b>Subscription Payment</b> with Status ') . $params['Status']
-                        . __(' was made. Plan ID: ') . $params['planId']
-                        . __(', Subscription ID: ') . $params['subscriptionId']
-                        . __(', Amount: ') . $params['totalAmount'] . ' '
-                        . $params['currency'] . __(', TransactionId: ') . $params['TransactionID']
+                        . __(' was made. <br/>Plan ID: ') . $params['planId']
+                        . __(', <br/>Subscription ID: ') . $params['subscriptionId']
+                        . __(', <br/>Amount: ') . $params['totalAmount'] . ' ' . $params['currency'] 
+                        . __(', <br/>TransactionId: ') . $params['TransactionID']
                 );
                 
                 $this->orderResourceModel->save($this->order);
@@ -942,8 +943,9 @@ class Dmn extends Action implements CsrfAwareActionInterface
         
         if ('active' == $subs_state) {
             $this->order->addStatusHistoryComment(
-                __("<b>Subscription</b> is Active. Subscription ID: ") . $params['subscriptionId']. ', '
-                    . __('Plan ID: ') . $params['planId']. ', '
+                __("<b>Subscription</b> is Active. ")
+                . __("<br/>Subscription ID: ") . $params['subscriptionId']. ', <br/>'
+                . __('Plan ID: ') . $params['planId']
             );
 
             // Save the Subscription ID
