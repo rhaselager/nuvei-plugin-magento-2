@@ -162,11 +162,14 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
             ? $this->orderData['clientRequestId'] : '';
         
         // for rebilling
-        if (!empty($items_data)) {
+//        if (!empty($items_data)) {
+        if (!empty($subs_data)) {
             $params['isRebilling'] = 0;
             $params['paymentOption']['card']['threeD']['rebillFrequency']   = 1;
             $params['paymentOption']['card']['threeD']['rebillExpiry']
                 = date('Ymd', strtotime("+10 years"));
+            
+            $params['userTokenId'] = $params['billingAddress']['email'];
         } else { // for normal transaction
             $params['isRebilling'] = 1;
             $params['paymentOption']['card']['threeD']['rebillExpiry']      = date('Ymd', time());

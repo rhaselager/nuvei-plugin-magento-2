@@ -81,16 +81,16 @@ class PaymentsPlans
                     if (empty($options['info_buyRequest'])
                         || !is_array($options['info_buyRequest'])
                     ) {
-                            continue;
+                        continue;
                     }
 
                     // 1.1 in case of configurable product
                     // 1.1.1. when we have selected_configurable_option paramter
                     if (!empty($options['info_buyRequest']['selected_configurable_option'])) {
-                        $product_id = $options['info_buyRequest']['selected_configurable_option'];
-                        $product    = $this->productObj->load($product_id);
-
-                        $nuvei_sub_enabled = $product->getCustomAttribute('nuvei_sub_enabled');
+                        $product_id         = $options['info_buyRequest']['selected_configurable_option'];
+                        $product            = $this->productObj->load($product_id);
+                        $nuvei_sub_enabled  = $product->getCustomAttribute('nuvei_sub_enabled');
+                        
                         $this->readerWriter->createLog(
                             $nuvei_sub_enabled,
                             'getProductPlanData get nuvei_sub_enabled on configurable product'
@@ -102,16 +102,17 @@ class PaymentsPlans
                     }
                     // 1.1.2. when we have super_attribute
                     elseif (!empty($options['info_buyRequest']['super_attribute'])
-                            && !empty($options['info_buyRequest']['product'])
-                        ) {
+                        && !empty($options['info_buyRequest']['product'])
+                    ) {
                         $parent     = $this->productRepository->getById($options['info_buyRequest']['product']);
                         $product    = $this->configurable->getProductByAttributes(
                             $options['info_buyRequest']['super_attribute'],
                             $parent
                         );
-                        $product_id = $product->getId();
-
-                        $nuvei_sub_enabled = $product->getCustomAttribute('nuvei_sub_enabled');
+                        
+                        $product_id         = $product->getId();
+                        $nuvei_sub_enabled  = $product->getCustomAttribute('nuvei_sub_enabled');
+                        
                         $this->readerWriter->createLog(
                             $nuvei_sub_enabled,
                             'getProductPlanData get nuvei_sub_enabled on configurable product'

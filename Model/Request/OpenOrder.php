@@ -150,9 +150,11 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         
         // iterate over Items and search for Subscriptions
         $items_data = $this->paymentsPlans->getProductPlanData();
-        $this->readerWriter->createLog($items_data, 'OpenOrder $items_data');
+        $subs_data  = isset($items_data['subs_data']) ? $items_data['subs_data'] : [];
         
-        $this->config->setNuveiUseCcOnly(!empty($items_data['subs_data']) ? true : false);
+        $this->readerWriter->createLog($subs_data, 'OpenOrder $subs_data');
+        
+        $this->config->setNuveiUseCcOnly(!empty($subs_data) ? true : false);
         
         $billing_address = $this->config->getQuoteBillingAddress();
         if (!empty($this->billingAddress)) {
@@ -192,8 +194,8 @@ class OpenOrder extends AbstractRequest implements RequestInterface
                 // pass amount
                 'customField1' => $amount,
                 // subscription data
-                'customField2' => isset($items_data['subs_data'])
-                    ? json_encode($items_data['subs_data']) : '',
+                'customField2' => isset($subs_data)
+                    ? json_encode($subs_data) : '',
                 // customField3 is passed in AbstractRequest
                 // time when we create the request
                 'customField4' => time(),
@@ -229,7 +231,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         );
         
         // for rebilling
-        if (!empty($items_data)) {
+        if (!empty($subs_data)) {
             $this->requestParams['isRebilling'] = 0;
             $this->requestParams['paymentOption']['card']['threeD']['rebillFrequency'] = 1;
             $this->requestParams['paymentOption']['card']['threeD']['rebillExpiry']
