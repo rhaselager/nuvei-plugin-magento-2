@@ -99,8 +99,8 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         $this->subs_data    = isset($this->items_data['subs_data']) ?: [];
         
         $this->readerWriter->createLog([
-            '$this->subs_data'      => $this->subs_data,
-            'getNuveiUserTokenId'   => $this->config->getCheckoutSession()->getNuveiUserTokenId(),
+            '$this->subs_data'  => $this->subs_data,
+            '$order_data'       => $order_data,
         ]);
         
         // will we call updateOrder?
@@ -110,9 +110,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             $callUpdateOrder = true;
         }
         
-        if (empty($this->config->getCheckoutSession()->getNuveiUserTokenId())
-            && !empty($this->subs_data)
-        ) {
+        if (empty($order_data['userTokenId']) && !empty($this->subs_data)) {
             $callUpdateOrder = false;
         }
         
@@ -135,13 +133,19 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         $this->ooAmount     = $req_resp['merchantDetails']['customField1'];
 
         // save the session token in the Quote
+        $add_info = [
+            'sessionToken'      => $req_resp['sessionToken'],
+            'clientRequestId'   => $req_resp['clientRequestId'],
+            'orderId'           => $req_resp['orderId'],
+        ];
+        
+        if (isset($req_resp['userTokenId'])) {
+            $add_info['userTokenId'] = $req_resp['userTokenId'];
+        }
+        
         $this->quote->getPayment()->setAdditionalInformation(
             Payment::CREATE_ORDER_DATA,
-            [
-                'sessionToken'      => $req_resp['sessionToken'],
-                'clientRequestId'   => $req_resp['clientRequestId'],
-                'orderId'           => $req_resp['orderId'],
-            ]
+            $add_info
         );
         $this->cart->getQuote()->save();
         
@@ -255,7 +259,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
 //                = date('Ymd', strtotime("+10 years"));
             
             $this->requestParams['userTokenId'] = $params['billingAddress']['email'];
-            $this->config->getCheckoutSession()->setNuveiUserTokenId($this->requestParams['userTokenId']);
+//            $this->config->getCheckoutSession()->setNuveiUserTokenId($this->requestParams['userTokenId']);
         }
             
         $this->requestParams['userDetails'] = $this->requestParams['billingAddress'];
