@@ -165,15 +165,15 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
 //        if (!empty($items_data)) {
         if (!empty($subs_data)) {
             $params['isRebilling'] = 0;
-            $params['paymentOption']['card']['threeD']['rebillFrequency']   = 1;
-            $params['paymentOption']['card']['threeD']['rebillExpiry']
-                = date('Ymd', strtotime("+10 years"));
+//            $params['paymentOption']['card']['threeD']['rebillFrequency']   = 1;
+//            $params['paymentOption']['card']['threeD']['rebillExpiry']
+//                = date('Ymd', strtotime("+10 years"));
             
-            $params['userTokenId'] = $params['billingAddress']['email'];
+//            $params['userTokenId'] = $params['billingAddress']['email'];
         } else { // for normal transaction
             $params['isRebilling'] = 1;
-            $params['paymentOption']['card']['threeD']['rebillExpiry']      = date('Ymd', time());
-            $params['paymentOption']['card']['threeD']['rebillFrequency']   = 0;
+//            $params['paymentOption']['card']['threeD']['rebillExpiry']      = date('Ymd', time());
+//            $params['paymentOption']['card']['threeD']['rebillFrequency']   = 0;
         }
         
         $params['checksum'] = hash(

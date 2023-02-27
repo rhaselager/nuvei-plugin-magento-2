@@ -34,6 +34,8 @@ class OpenOrder extends AbstractRequest implements RequestInterface
     private $cart;
     private $items; // the products in the cart
     private $paymentsPlans;
+    private $items_data     = [];
+    private $subs_data      = [];
     private $requestParams  = [];
     private $is_rebilling   = false;
 
@@ -88,19 +90,40 @@ class OpenOrder extends AbstractRequest implements RequestInterface
      */
     public function process()
     {
-        // first try to update order
         $this->quote    = $this->cart->getQuote();
         $this->items    = $this->quote->getItems();
         $order_data     = $this->quote->getPayment()->getAdditionalInformation(Payment::CREATE_ORDER_DATA);
         
-        // first try - update order
+        // iterate over Items and search for Subscriptions
+        $this->items_data   = $this->paymentsPlans->getProductPlanData();
+        $this->subs_data    = isset($this->items_data['subs_data']) ?: [];
+        
+        $this->readerWriter->createLog([
+            '$this->subs_data'      => $this->subs_data,
+            'getNuveiUserTokenId'   => $this->config->getCheckoutSession()->getNuveiUserTokenId(),
+        ]);
+        
+        // will we call updateOrder?
+        $callUpdateOrder = false;
+        
         if (!empty($order_data)) {
+            $callUpdateOrder = true;
+        }
+        
+        if (empty($this->config->getCheckoutSession()->getNuveiUserTokenId())
+            && !empty($this->subs_data)
+        ) {
+            $callUpdateOrder = false;
+        }
+        
+        if ($callUpdateOrder) {
             $update_order_request = $this->requestFactory->create(AbstractRequest::UPDATE_ORDER_METHOD);
 
             $req_resp = $update_order_request
                 ->setOrderData($order_data)
                 ->process();
         }
+        // /will we call updateOrder?
         
         // if UpdateOrder fails - continue with OpenOrder
         if (empty($req_resp['status']) || 'success' != strtolower($req_resp['status'])) {
@@ -148,13 +171,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             throw new PaymentException(__('There is no Cart data.'));
         }
         
-        // iterate over Items and search for Subscriptions
-        $items_data = $this->paymentsPlans->getProductPlanData();
-        $subs_data  = isset($items_data['subs_data']) ? $items_data['subs_data'] : [];
-        
-        $this->readerWriter->createLog($subs_data, 'OpenOrder $subs_data');
-        
-        $this->config->setNuveiUseCcOnly(!empty($subs_data) ? true : false);
+        $this->config->setNuveiUseCcOnly(!empty($this->subs_data) ? true : false);
         
         $billing_address = $this->config->getQuoteBillingAddress();
         if (!empty($this->billingAddress)) {
@@ -194,23 +211,23 @@ class OpenOrder extends AbstractRequest implements RequestInterface
                 // pass amount
                 'customField1' => $amount,
                 // subscription data
-                'customField2' => isset($subs_data)
-                    ? json_encode($subs_data) : '',
+                'customField2' => isset($this->subs_data)
+                    ? json_encode($this->subs_data) : '',
                 // customField3 is passed in AbstractRequest
                 // time when we create the request
                 'customField4' => time(),
                 // list of Order items
-                'customField5' => isset($items_data['items_data'])
-                    ? json_encode($items_data['items_data']) : '',
+                'customField5' => isset($this->items_data['items_data'])
+                    ? json_encode($this->items_data['items_data']) : '',
             ],
 
-            'paymentOption'      => [
-                'card' => [
-                    'threeD' => [
-                        'isDynamic3D' => 1
-                    ]
-                ]
-            ],
+//            'paymentOption'      => [
+//                'card' => [
+//                    'threeD' => [
+//                        'isDynamic3D' => 1
+//                    ]
+//                ]
+//            ],
         ];
         
         // show or not UPOs
@@ -231,13 +248,14 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         );
         
         // for rebilling
-        if (!empty($subs_data)) {
+        if (!empty($this->subs_data)) {
             $this->requestParams['isRebilling'] = 0;
-            $this->requestParams['paymentOption']['card']['threeD']['rebillFrequency'] = 1;
-            $this->requestParams['paymentOption']['card']['threeD']['rebillExpiry']
-                = date('Ymd', strtotime("+10 years"));
+//            $this->requestParams['paymentOption']['card']['threeD']['rebillFrequency'] = 1;
+//            $this->requestParams['paymentOption']['card']['threeD']['rebillExpiry']
+//                = date('Ymd', strtotime("+10 years"));
             
             $this->requestParams['userTokenId'] = $params['billingAddress']['email'];
+            $this->config->getCheckoutSession()->setNuveiUserTokenId($this->requestParams['userTokenId']);
         }
             
         $this->requestParams['userDetails'] = $this->requestParams['billingAddress'];

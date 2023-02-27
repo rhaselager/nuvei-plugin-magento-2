@@ -14,16 +14,6 @@ use Magento\Framework\App\RequestInterface;
 class Complete extends \Magento\Framework\App\Action\Action implements \Magento\Framework\App\CsrfAwareActionInterface
 {
     /**
-     * @var ModuleConfig
-     */
-//    private $moduleConfig;
-
-    /**
-     * @var PaymentRequestFactory
-     */
-//    private $paymentRequestFactory;
-
-    /**
      * @var DataObjectFactory
      */
     private $dataObjectFactory;
@@ -58,8 +48,6 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        //        \Nuvei\Checkout\Model\Request\Payment\Factory $paymentRequestFactory,
-        //        \Nuvei\Checkout\Model\Config $moduleConfig,
         \Magento\Framework\DataObjectFactory $dataObjectFactory,
         \Magento\Quote\Api\CartManagementInterface $cartManagement,
         \Magento\Checkout\Model\Session $checkoutSession,
@@ -68,8 +56,6 @@ class Complete extends \Magento\Framework\App\Action\Action implements \Magento\
     ) {
         parent::__construct($context);
 
-//        $this->moduleConfig             = $moduleConfig;
-//        $this->paymentRequestFactory    = $paymentRequestFactory;
         $this->dataObjectFactory        = $dataObjectFactory;
         $this->cartManagement           = $cartManagement;
         $this->checkoutSession          = $checkoutSession;
