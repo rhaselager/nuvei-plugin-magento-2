@@ -2,15 +2,18 @@
 
 namespace Nuvei\Checkout\Model\Request;
 
+use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\CatalogInventory\Api\Data\StockItemInterface;
+use Magento\Framework\Exception\PaymentException;
+use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
+use Nuvei\Checkout\Model\Payment;
 use Nuvei\Checkout\Lib\Http\Client\Curl;
 use Nuvei\Checkout\Model\AbstractRequest;
 use Nuvei\Checkout\Model\AbstractResponse;
 use Nuvei\Checkout\Model\Config;
 use Nuvei\Checkout\Model\RequestInterface;
 use Nuvei\Checkout\Model\Response\Factory as ResponseFactory;
-use Magento\Framework\Exception\PaymentException;
-use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
-use Nuvei\Checkout\Model\Payment;
+
 
 /**
  * Nuvei Checkout open order request model.
@@ -28,6 +31,11 @@ class OpenOrder extends AbstractRequest implements RequestInterface
     protected $orderData;
     
     protected $readerWriter;
+    
+    /**
+     * @var StockRegistryInterface|null
+     */
+    private $stockRegistry;
     
     private $countryCode; // string
     private $quote;
@@ -58,7 +66,8 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         RequestFactory $requestFactory,
         \Magento\Checkout\Model\Cart $cart,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
-        \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans
+        \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans,
+        StockRegistryInterface $stockRegistry
     ) {
         parent::__construct(
             $config,
@@ -71,6 +80,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         $this->cart             = $cart;
         $this->paymentsPlans    = $paymentsPlans;
         $this->readerWriter     = $readerWriter;
+        $this->stockRegistry    = $stockRegistry;
     }
 
     /**
@@ -85,6 +95,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
 
     /**
      * @return AbstractResponse
+     * 
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws PaymentException
      */
@@ -93,6 +104,23 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         $this->quote    = $this->cart->getQuote();
         $this->items    = $this->quote->getItems();
         $order_data     = $this->quote->getPayment()->getAdditionalInformation(Payment::CREATE_ORDER_DATA);
+        
+        // check of each item is in stock
+        foreach ($this->items as $item) {
+            $prodId     = $item->getProduct()->getId();
+            $stockItem  = $this->stockRegistry->getStockItem($prodId);
+            $isInStock  = $stockItem ? $stockItem->getIsInStock() : false;
+            
+            if (false === $isInStock) {
+                $this->readerWriter->createLog($prodId, 'A product is out of stock.');
+                
+                $this->error    = 1;
+                $this->reason   = __('Error! A product is out of stock.');
+                
+                return $this;
+            }
+        }
+        // /check of each item is in stock
         
         // iterate over Items and search for Subscriptions
         $this->items_data   = $this->paymentsPlans->getProductPlanData();

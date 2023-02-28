@@ -78,21 +78,31 @@ function nuveiUpdateOrder(resolve, reject, secondCall = false) {
 
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == XMLHttpRequest.DONE) {   // XMLHttpRequest.DONE == 4
-           if (xmlhttp.status == 200) {
-				console.log('status == 200', xmlhttp.response);
+            console.log('Request response', xmlhttp.response);
+            
+            if (xmlhttp.status == 200) {
+				var resp = JSON.parse(xmlhttp.response);
+                console.log('Request response', resp);
+                
+                // error
+                if (resp.hasOwnProperty('error') && 1 == resp.error) {
+                    reject();
+                    alert(resp.reason);
+                    return;
+                }
+                // success
 				resolve();
 				return;
-           }
+            }
            
 			if (xmlhttp.status == 400) {
-              console.log('There was an error 400');
-			  reject();
-			  Query('body').trigger('processStop');
-			  return;
-           }
+                console.log('There was an error.');
+                reject();
+                Query('body').trigger('processStop');
+                return;
+            }
 		   
-			console.log('something else other than 200 was returned');
-
+			console.log('Unexpected response code.');
 			reject();
 			Query('body').trigger('processStop');
 			return;
@@ -171,6 +181,8 @@ function nuveiAfterSdkResponse(resp) {
 	// on Success, Approved
     jQuery('#nuvei_default_pay_btn').trigger('click');
 	jQuery('body').trigger('processStop');
+    jQuery('#nuvei_checkout').html(jQuery.mage.__('<b>The transaction was approved.</b>'));
+    jQuery('#checkoutOverlay').remove();
 	return;
 };
 
@@ -262,13 +274,8 @@ define(
             },
 
             getCode: function() {
-//                return 'nuvei';
                 return nuveiGetCode();
             },
-
-//			getNuveiIconUrl: function() {
-//				return window.checkoutConfig.payment[self.getCode()].checkoutLogoUrl;
-//			},
 
             getPaymentApmUrl: function() {
                 return window.checkoutConfig.payment[self.getCode()].paymentApmUrl;
@@ -294,7 +301,9 @@ define(
                 
                 jQuery('body').trigger('processStart');
 
-                self.checkoutSdkParams = JSON.parse(JSON.stringify(window.checkoutConfig.payment[nuveiGetCode()].nuveiCheckoutParams));
+                self.checkoutSdkParams = JSON.parse(JSON.stringify(
+                    window.checkoutConfig.payment[nuveiGetCode()].nuveiCheckoutParams
+                ));
 
                 // call openOrder here and get the session token
                  jQuery.ajax({
@@ -305,8 +314,6 @@ define(
                     // TODO show unexpected error
                     console.log('nuveiLoadCheckout update order fail textStatus', textStatus);
                     console.log('nuveiLoadCheckout update order fail errorThrown', errorThrown);
-
-                    //window.location.reload();
 
                     jQuery('body').trigger('processStop');
                     return;
@@ -327,8 +334,6 @@ define(
                     }
                     
                     self.checkoutSdkParams.amount   = quote.totals().base_grand_total;
-//                    self.checkoutSdkParams.fullName = quote.billingAddress().firstname 
-//                        + ' ' + quote.billingAddress().lastname;
 
                     if(self.useCcOnly) {
                         self.checkoutSdkParams.pmBlacklist  = null;

@@ -75,13 +75,22 @@ class OpenOrder extends Action
         
         $request    = $this->requestFactory->create(AbstractRequest::OPEN_ORDER_METHOD);
         $resp       = $request->process();
-        $output     = [
+        
+        // some error
+        if (isset($resp->error, $resp->reason)
+            && 1 == $resp->error
+        ) {
+            return $result->setData([
+                "error"     => 1,
+                'reason'    => $resp->reason,
+            ]);
+        }
+        // success
+        return $result->setData([
             "error"         => 0,
             "sessionToken"  => $resp->sessionToken,
             "amount"        => $resp->ooAmount,
             "message"       => "Success"
-        ];
-        
-        return $result->setData($output);
+        ]);
     }
 }
