@@ -2,6 +2,11 @@
 
 ---
 
+# 2.0.1
+```
+    * Do not pass anymore user and billing details to the Checkout SDK.
+```
+
 # 2.0.0
 ```
     * Stop using Cc and TransparentInterface.
