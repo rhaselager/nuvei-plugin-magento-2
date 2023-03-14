@@ -27,7 +27,6 @@ class ShowLastDownloadTime implements \Magento\Config\Model\Config\CommentInterf
         if ($this->file->isExists($file)) {
             $fileData   = $this->file->stat($file);
             $text       = __('Last download: ') . date('Y-m-d H:i:s', $fileData['ctime']);
-//            $text = __('Last download: ') . date('Y-m-d H:i:s', filectime($file));
         }
         
         return $text;

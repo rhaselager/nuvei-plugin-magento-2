@@ -37,7 +37,6 @@ class ReadPlans extends \Magento\Backend\Block\Template
     {
         $prod_id        = $this->request->getParam('id');
         $product        = $this->product->load($prod_id);
-//        $enabled_subs   = $product->getData(Config::PAYMENT_SUBS_ENABLE);
         $subs_pan_id    = (int) $product->getData(Config::PAYMENT_PLANS_ATTR_NAME);
         
         $file_name = $this->config->getTempPath() . DIRECTORY_SEPARATOR

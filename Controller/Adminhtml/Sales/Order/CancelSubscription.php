@@ -11,7 +11,7 @@ use Magento\Framework\Controller\Result\Forward;
 use Magento\Framework\Controller\Result\ForwardFactory;
 
 /**
- * Can not be used because of problems with Magento admin sercurity key.
+ * TODO - Can not be used because of problems with Magento admin sercurity key.
  * 
  * @author Nuvei
  */

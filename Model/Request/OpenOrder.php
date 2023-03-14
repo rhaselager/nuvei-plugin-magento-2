@@ -3,7 +3,6 @@
 namespace Nuvei\Checkout\Model\Request;
 
 use Magento\CatalogInventory\Api\StockRegistryInterface;
-use Magento\CatalogInventory\Api\Data\StockItemInterface;
 use Magento\Framework\Exception\PaymentException;
 use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
 use Nuvei\Checkout\Model\Payment;
@@ -13,7 +12,6 @@ use Nuvei\Checkout\Model\AbstractResponse;
 use Nuvei\Checkout\Model\Config;
 use Nuvei\Checkout\Model\RequestInterface;
 use Nuvei\Checkout\Model\Response\Factory as ResponseFactory;
-
 
 /**
  * Nuvei Checkout open order request model.
@@ -50,14 +48,14 @@ class OpenOrder extends AbstractRequest implements RequestInterface
     /**
      * OpenOrder constructor.
      *
-     * @param Logger $logger
-     * @param Config            $config
-     * @param Curl              $curl
-     * @param ResponseFactory   $responseFactory
-     * @param Factory           $requestFactory
-     * @param Cart              $cart
-     * @param ReaderWriter      $readerWriter
-     * @param PaymentsPlans     $paymentsPlans
+     * @param Config                    $config
+     * @param Curl                      $curl
+     * @param ResponseFactory           $responseFactory
+     * @param Factory                   $requestFactory
+     * @param Cart                      $cart
+     * @param ReaderWriter              $readerWriter
+     * @param PaymentsPlans             $paymentsPlans
+     * @param StockRegistryInterface    $stockRegistry
      */
     public function __construct(
         Config $config,
@@ -252,14 +250,6 @@ class OpenOrder extends AbstractRequest implements RequestInterface
                 'customField5' => isset($this->items_data['items_data'])
                     ? json_encode($this->items_data['items_data']) : '',
             ],
-
-//            'paymentOption'      => [
-//                'card' => [
-//                    'threeD' => [
-//                        'isDynamic3D' => 1
-//                    ]
-//                ]
-//            ],
         ];
         
         // show or not UPOs
@@ -281,13 +271,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         
         // for rebilling
         if (!empty($this->subs_data)) {
-            $this->requestParams['isRebilling'] = 0;
-//            $this->requestParams['paymentOption']['card']['threeD']['rebillFrequency'] = 1;
-//            $this->requestParams['paymentOption']['card']['threeD']['rebillExpiry']
-//                = date('Ymd', strtotime("+10 years"));
-            
             $this->requestParams['userTokenId'] = $params['billingAddress']['email'];
-//            $this->config->getCheckoutSession()->setNuveiUserTokenId($this->requestParams['userTokenId']);
         }
             
         $this->requestParams['userDetails'] = $this->requestParams['billingAddress'];
