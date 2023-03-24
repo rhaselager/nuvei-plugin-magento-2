@@ -719,14 +719,6 @@ class Config
         $this->checkoutSession->setNuveiUseCcOnly($val);
     }
     
-    public function setQuotePaymentMethod($method)
-    {
-        $quote = $this->checkoutSession->getQuote();
-        $quote->setPaymentMethod($method);
-        $quote->getPayment()->importData(['method' => $method]);
-        $quote->save();
-    }
-    
     public function getUserEmail($empty_on_fail = false)
     {
         $quote    = $this->checkoutSession->getQuote();

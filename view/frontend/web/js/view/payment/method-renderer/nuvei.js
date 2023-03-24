@@ -181,7 +181,7 @@ function nuveiAfterSdkResponse(resp) {
 	// on Success, Approved
     jQuery('#nuvei_default_pay_btn').trigger('click');
 	jQuery('body').trigger('processStop');
-    jQuery('#nuvei_checkout').html(jQuery.mage.__('<b>The transaction was approved.</b>'));
+//    jQuery('#nuvei_checkout').html(jQuery.mage.__('<b>The transaction was approved.</b>'));
     jQuery('#checkoutOverlay').remove();
 	return;
 };
@@ -229,8 +229,6 @@ define(
             
             checkoutSdkParams: {},
 			
-			selectedProvider: '',
-			
             initObservable: function() {
                 self = this;
 				
@@ -241,15 +239,6 @@ define(
                     ]);
                    
 				try {
-                    if(typeof quote.paymentMethod != 'undefined') {
-                        quote.paymentMethod.subscribe(self.changePaymentProvider, this, 'change');
-                    }
-                    
-					if(quote.paymentMethod._latestValue != null) {
-						self.selectedProvider = quote.paymentMethod._latestValue.method;
-						self.scUpdateQuotePM();
-					}
-                    
                     if(typeof quote.totals != 'undefined') {
                         quote.totals.subscribe(self.scTotalsChange, this, 'change');
                     }
@@ -279,10 +268,6 @@ define(
 
             getPaymentApmUrl: function() {
                 return window.checkoutConfig.payment[self.getCode()].paymentApmUrl;
-            },
-			
-			getUpdateQuotePM: function() {
-                return window.checkoutConfig.payment[self.getCode()].updateQuotePM;
             },
 			
 			getSessionToken: function() {
@@ -411,40 +396,6 @@ define(
 				// reload the checkout
                 self.changedOrderAmout = currentTotal
                 self.getSessionToken();
-			},
-			
-			changePaymentProvider: function() {
-                self.writeLog('changePaymentProvider()', quote.paymentMethod._latestValue.method);
-				
-				if(quote.paymentMethod._latestValue != null
-					&& self.selectedProvider != quote.paymentMethod._latestValue.method
-				) {
-					self.selectedProvider = quote.paymentMethod._latestValue.method;
-					self.scUpdateQuotePM();
-				}
-			},
-			
-			scUpdateQuotePM: function() {
-				self.writeLog('scUpdateQuotePM()', self.selectedProvider);
-				
-				// update new payment method
-				if('' != self.selectedProvider) {
-					var scAjaxQuoteUpdateParams = {
-						dataType	: "json",
-						url			: self.getUpdateQuotePM(),
-						cache		: false,
-						showLoader	: true,
-						data		: { paymentMethod: self.selectedProvider }
-					};
-
-					$.ajax(scAjaxQuoteUpdateParams)
-						.success(function(resp) {
-//							nuveiGetSessionToken();
-						})
-						.error(function(e) {
-							self.writeLog(e.responseText, null, 'error');
-						});
-				}
 			},
 			
 			/**

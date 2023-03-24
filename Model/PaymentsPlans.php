@@ -110,6 +110,10 @@ class PaymentsPlans
                             $parent
                         );
                         
+                        if (null === $product) {
+                            continue;
+                        }
+                        
                         $product_id         = $product->getId();
                         $nuvei_sub_enabled  = $product->getCustomAttribute('nuvei_sub_enabled');
                         

@@ -35,6 +35,8 @@ class OpenOrder extends AbstractRequest implements RequestInterface
      */
     private $stockRegistry;
     
+    private $stockItemRepository;
+    private $stockState;
     private $countryCode; // string
     private $quote;
     private $cart;
@@ -65,7 +67,9 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         \Magento\Checkout\Model\Cart $cart,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans,
-        StockRegistryInterface $stockRegistry
+        StockRegistryInterface $stockRegistry,
+        \Magento\CatalogInventory\Model\Stock\StockItemRepository $stockItemRepository,
+            \Magento\CatalogInventory\Api\StockStateInterface $stockState
     ) {
         parent::__construct(
             $config,
@@ -79,6 +83,8 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         $this->paymentsPlans    = $paymentsPlans;
         $this->readerWriter     = $readerWriter;
         $this->stockRegistry    = $stockRegistry;
+        $this->stockItemRepository    = $stockItemRepository;
+        $this->stockState    = $stockState;
     }
 
     /**
@@ -99,25 +105,41 @@ class OpenOrder extends AbstractRequest implements RequestInterface
      */
     public function process()
     {
+        $this->readerWriter->createLog('openOrder');
+        
         $this->quote    = $this->cart->getQuote();
         $this->items    = $this->quote->getItems();
         $order_data     = $this->quote->getPayment()->getAdditionalInformation(Payment::CREATE_ORDER_DATA);
         
-        // check of each item is in stock
-        foreach ($this->items as $item) {
-            $prodId     = $item->getProduct()->getId();
-            $stockItem  = $this->stockRegistry->getStockItem($prodId);
-            $isInStock  = $stockItem ? $stockItem->getIsInStock() : false;
-            
-            if (false === $isInStock) {
-                $this->readerWriter->createLog($prodId, 'A product is out of stock.');
-                
-                $this->error    = 1;
-                $this->reason   = __('Error! A product is out of stock.');
-                
-                return $this;
-            }
-        }
+        // check if each item is in stock
+//        foreach ($this->items as $item) {
+//            $product    = $item->getProduct();
+//            $prodId     = $item->getProduct()->getId();
+//            $stockItem  = $this->stockRegistry->getStockItem($prodId);
+//            $isInStock  = $stockItem ? $stockItem->getIsInStock() : false;
+//            
+//            $stockItem = $this->stockRegistry->getStockItem($prodId, $product->getStore()->getWebsiteId());
+//            $minimumQty = $stockItem->getMinSaleQty();
+//            
+//            
+//            $this->readerWriter->createLog($isInStock, '$isInStock');
+//            $this->readerWriter->createLog($this->stockItemRepository->get($prodId), 'stockItem');
+//            $this->readerWriter->createLog($product->getExtensionAttributes()->getStockItem()->getQty(), 'getQty');
+//            $this->readerWriter->createLog($product->getExtensionAttributes()->getStockItem()->getIsInStock(), 'getIsInStock');
+//            $this->readerWriter->createLog($item->getQty(), '$item getQty');
+//            $this->readerWriter->createLog($minimumQty, '$minimumQty');
+//            $this->readerWriter->createLog($this->stockState->getStockQty($prodId), 'getStockQty');
+//            $this->readerWriter->createLog($product->getTypeInstance()->getUsedProducts($product), 'simple product');
+//            
+//            if (false === $isInStock) {
+//                $this->readerWriter->createLog($prodId, 'A product is out of stock.');
+//                
+//                $this->error    = 1;
+//                $this->reason   = __('Error! A product is out of stock.');
+//                
+//                return $this;
+//            }
+//        }
         // /check of each item is in stock
         
         // iterate over Items and search for Subscriptions

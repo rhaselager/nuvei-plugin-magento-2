@@ -5,6 +5,7 @@
 # 2.0.1
 ```
     * Do not pass anymore user and billing details to the Checkout SDK.
+    * Do not save selected payment provider into Quote when change it.
 ```
 
 # 2.0.0
