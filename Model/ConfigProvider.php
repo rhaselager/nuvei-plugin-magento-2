@@ -132,6 +132,8 @@ class ConfigProvider extends CcGenericConfigProvider
             $save_pm = 'always';
         }
         
+        $isPaymentPlan = !empty($payment_plan_data) ? true : false;
+        
         // TODO - there is a problem getting this setting
 //        $checkout_logo = $this->moduleConfig->showCheckoutLogo()
 //            ? $this->assetRepo->getUrl("Nuvei_Checkout::images/nuvei.png") : '';
@@ -150,18 +152,17 @@ class ConfigProvider extends CcGenericConfigProvider
 //                    'checkoutLogoUrl'           => $checkout_logo,
                     'isTestMode'                => $this->moduleConfig->isTestModeEnabled(),
                     'countryId'                 => $this->moduleConfig->getQuoteCountryCode(),
-                    'isPaymentPlan'             => !empty($payment_plan_data) ? 1 : 0,
+                    'isPaymentPlan'             => $isPaymentPlan,
                     'useDevSdk'                 => $this->moduleConfig->getConfigValue('use_dev_sdk'),
                     
                     // we will set some of the parameters in the JS file
                     'nuveiCheckoutParams' => [
-//                        'sessionToken'              => '',
                         'env'                       => $this->moduleConfig->isTestModeEnabled() ? 'test' : 'prod',
                         'merchantId'                => $this->moduleConfig->getMerchantId(),
                         'merchantSiteId'            => $this->moduleConfig->getMerchantSiteId(),
                         'country'                   => $billing_address['country'],
                         'currency'                  => $this->moduleConfig->getQuoteBaseCurrency(),
-//                        'amount'                    => $this->moduleConfig->getQuoteBaseTotal(),
+                        'amount'                    => $this->moduleConfig->getQuoteBaseTotal(),
                         'renderTo'                  => '#nuvei_checkout',
                         'useDCC'                    =>  $this->moduleConfig->getConfigValue('use_dcc'),
                         'strict'                    => false,
@@ -191,6 +192,16 @@ class ConfigProvider extends CcGenericConfigProvider
         
         if (1 == $config['payment'][Payment::METHOD_CODE]['useDevSdk']) {
             $config['payment'][Payment::METHOD_CODE]['nuveiCheckoutParams']['webSdkEnv'] = 'dev';
+        }
+        
+        if ($isPaymentPlan) {
+            $config['payment'][Payment::METHOD_CODE]['nuveiCheckoutParams']['pmBlacklist'] = null;
+            $config['payment'][Payment::METHOD_CODE]['nuveiCheckoutParams']['pmWhitelist'] = ['cc_card'];
+        }
+        
+        if (in_array($save_pm, [true, 'always'])) {
+            $config['payment'][Payment::METHOD_CODE]['nuveiCheckoutParams']['userTokenId']
+                = $config['payment'][Payment::METHOD_CODE]['nuveiCheckoutParams']['email'];
         }
         
         $this->readerWriter->createLog($config, 'config for the checkout');

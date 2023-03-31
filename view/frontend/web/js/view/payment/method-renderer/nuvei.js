@@ -223,8 +223,6 @@ define(
             
             changedOrderCountry: '',
             
-            useCcOnly: false, // set it true when have product with a Payment plan
-            
             orderFullName: '',
             
             checkoutSdkParams: {},
@@ -271,24 +269,18 @@ define(
             },
 			
 			getSessionToken: function() {
-                console.log('getSessionToken');
+                console.log('getSessionToken', quote.paymentMethod._latestValue.method);
                 
-                if(window.checkoutConfig.payment[self.getCode()].isPaymentPlan) {
-                    self.useCcOnly = true;
-                    
-                    if(quote.getItems().length > 1) {
-                        self.showGeneralError('You can not combine a Product with Nuvei Payment with another product. To continue, please remove some of the Product in your Cart!');
-                        return;
-                    }
+                if(window.checkoutConfig.payment[self.getCode()].isPaymentPlan
+                    && quote.getItems().length > 1
+                ) {
+                    self.showGeneralError('You can not combine a Product with Nuvei Payment with another product. To continue, please remove some of the Product in your Cart!');
+                    return;
                 }
                 
                 ///////////////////////////////////
                 
                 jQuery('body').trigger('processStart');
-
-                self.checkoutSdkParams = JSON.parse(JSON.stringify(
-                    window.checkoutConfig.payment[nuveiGetCode()].nuveiCheckoutParams
-                ));
 
                 // call openOrder here and get the session token
                  jQuery.ajax({
@@ -304,12 +296,7 @@ define(
                     return;
                 })
                 .success(function(resp) {
-                    self.checkoutSdkParams.sessionToken = resp.sessionToken;
-
-                    if(!self.checkoutSdkParams.hasOwnProperty('sessionToken')
-                        || typeof self.checkoutSdkParams.sessionToken == 'undefined'
-                        || '' == self.checkoutSdkParams.sessionToken
-                    ) {
+                    if(!resp.hasOwnProperty('sessionToken') || '' == resp.sessionToken) {
                         console.log('nuveiLoadCheckout update order sessionToken problem, reload the page');
 
                         alert(jQuery.mage.__('Missing mandatory payment details. Please reload the page and try again!'));
@@ -318,31 +305,10 @@ define(
                         return;
                     }
                     
-                    self.checkoutSdkParams.amount   = quote.totals().base_grand_total;
-
-                    if(self.useCcOnly) {
-                        self.checkoutSdkParams.pmBlacklist  = null;
-                        self.checkoutSdkParams.pmWhitelist  = ['cc_card'];
-                    }
-
-                    if(self.checkoutSdkParams.savePM) {
-                        self.checkoutSdkParams.userTokenId = self.checkoutSdkParams.email;
-                    }
-
-                    // check for changed amout
-                    if(self.changedOrderAmout > 0 && self.changedOrderAmout != self.checkoutSdkParams.amount) {
-                        self.checkoutSdkParams.amount = self.changedOrderAmout;
-                    }
+                    console.log('sessionToken', resp.sessionToken);
                     
-                    // check for changed country
-                    if(self.changedOrderCountry != '' && self.changedOrderCountry != self.checkoutSdkParams.country) {
-                        self.checkoutSdkParams.country = self.changedOrderCountry;
-                    }
-
-                    console.log('nuveiLoadCheckout', self.checkoutSdkParams);
-
-                    self.checkoutSdkParams.prePayment	= nuveiPrePayment;
-                    self.checkoutSdkParams.onResult		= nuveiAfterSdkResponse;
+                    self.nuveiCollectSdkParams();
+                    self.checkoutSdkParams.sessionToken = resp.sessionToken;
 
                     nuveiCheckoutSdk(self.checkoutSdkParams);
 
@@ -350,6 +316,32 @@ define(
                     return;
                 });
 			},
+            
+            nuveiCollectSdkParams: function() {
+                self.checkoutSdkParams = JSON.parse(JSON.stringify(
+                    window.checkoutConfig.payment[nuveiGetCode()].nuveiCheckoutParams
+                ));
+                
+                self.checkoutSdkParams.amount = quote.totals().base_grand_total;
+
+                // check for changed amout
+                if(self.changedOrderAmout > 0 && self.changedOrderAmout != self.checkoutSdkParams.amount) {
+                    self.checkoutSdkParams.amount = self.changedOrderAmout;
+                }
+
+                if(quote.billingAddress()
+                    && quote.billingAddress().hasOwnProperty('countryId')
+                    && quote.billingAddress().countryId
+                    && quote.billingAddress().countryId != self.checkoutSdkParams.country
+                ) {
+                    self.checkoutSdkParams.country = quote.billingAddress().countryId;
+                }
+
+                console.log('nuveiLoadCheckout', self.checkoutSdkParams);
+
+                self.checkoutSdkParams.prePayment	= nuveiPrePayment;
+                self.checkoutSdkParams.onResult		= nuveiAfterSdkResponse;
+            },
 			
 			showGeneralError: function(msg) {
 				jQuery('#nuvei_general_error .message div').html(jQuery.mage.__(msg));
@@ -358,25 +350,33 @@ define(
 			},
 			
 			scBillingAddrChange: function() {
-				self.writeLog('scBillingAddrChange()');
+				self.writeLog('scBillingAddrChange');
 				
 				if(quote.billingAddress() == null) {
-					self.writeLog('scBillingAddrChange() - the BillingAddr is null. Stop here.');
+					self.writeLog('scBillingAddrChange - the BillingAddr is null. Stop here.');
 					return;
 				}
 				
 				if(typeof self.checkoutSdkParams.sessionToken == 'undefined' 
                     || quote.billingAddress().countryId == self.checkoutSdkParams.country
                 ) {
-					self.writeLog('scBillingAddrChange() - the country is same. Stop here.');
+					self.writeLog('scBillingAddrChange - the country is same. Stop here.');
 					return;
 				}
 				
-				self.writeLog('scBillingAddrChange() - the country was changed to', quote.billingAddress().countryId);
+				self.writeLog('scBillingAddrChange - the country was changed to', quote.billingAddress().countryId);
 				
-				// reload the checkout
-                self.changedOrderCountry = quote.billingAddress().countryId;
-                self.getSessionToken();
+//				// reload the checkout
+//                self.changedOrderCountry = quote.billingAddress().countryId;
+//                self.getSessionToken();
+
+                let sessionToken = self.checkoutSdkParams.sessionToken;
+                
+                self.nuveiCollectSdkParams();
+                self.checkoutSdkParams.sessionToken = sessionToken;
+                self.checkoutSdkParams.country      = quote.billingAddress().countryId;
+                
+                nuveiCheckoutSdk(self.checkoutSdkParams);
 			},
 			
 			scTotalsChange: function() {

@@ -34,7 +34,7 @@
 						   sortOrder="10"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" >
+						   showInStore="1" >
 						<label>Enabled</label>
 						<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
 						<config_path>payment/nuvei/active</config_path>
@@ -46,7 +46,7 @@
 						   sortOrder="20"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0"
+						   showInStore="1"
 						   canRestore="1" >
 						<label>Title</label>
 						<config_path>payment/nuvei/title</config_path>
@@ -58,7 +58,7 @@
 						   sortOrder="30"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" >
+						   showInStore="1" >
 						<label>Payment Action</label>
 						<source_model>Nuvei\Checkout\Model\Adminhtml\Source\PaymentAction</source_model>
 						<config_path>payment/nuvei/payment_action</config_path>
@@ -71,7 +71,7 @@
 						   sortOrder="40"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" >
+						   showInStore="1" >
 						<label>Mode</label>
 						<source_model>Nuvei\Checkout\Model\Adminhtml\Source\Mode</source_model>
 						<config_path>payment/nuvei/mode</config_path>
@@ -84,7 +84,7 @@
 						   sortOrder="50"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" >
+						   showInStore="1" >
 						<label>Merchant Hash</label>
 						<source_model>Nuvei\Checkout\Model\Adminhtml\Source\Hash</source_model>
 						<config_path>payment/nuvei/hash</config_path>
@@ -97,7 +97,7 @@
 						   sortOrder="60"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0">
+						   showInStore="1">
 						<label>Merchant ID</label>
 						<backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
 						<comment>Value provided by Nuvei.</comment>
@@ -110,7 +110,7 @@
 						   sortOrder="70"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0">
+						   showInStore="1">
 						<label>Merchant Site Id</label>
 						<comment>Value provided by Nuvei.</comment>
 						<config_path>payment/nuvei/merchant_site_id</config_path>
@@ -122,7 +122,7 @@
 						   sortOrder="80"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0">
+						   showInStore="1">
 						<label>Merchant Secret Key</label>
 						<backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
 						<comment>Value provided by Nuvei.</comment>
@@ -135,7 +135,7 @@
 						   sortOrder="90"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0">
+						   showInStore="1">
 						<label>Sandbox Merchant ID</label>
 						<backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
 						<comment>Value provided by Nuvei.</comment>
@@ -148,7 +148,7 @@
 						   sortOrder="100"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0">
+						   showInStore="1">
 						<label>Sandbox Merchant Site Id</label>
 						<comment>Value provided by Nuvei.</comment>
 						<config_path>payment/nuvei/sandbox_merchant_site_id</config_path>
@@ -160,22 +160,12 @@
 						   sortOrder="110"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0">
+						   showInStore="1">
 						<label>Sandbox Merchant Secret Key</label>
 						<backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
 						<comment>Value provided by Nuvei.</comment>
 						<config_path>payment/nuvei/sandbox_merchant_secret_key</config_path>
 					</field>
-					
-<!--					<field id="apple_pay_label"
-						   translate="label"
-						   type="text"
-						   sortOrder="120"
-						   showInDefault="1"
-						   showInWebsite="1"
-						   showInStore="0">
-						<label>Apple Pay Label</label>
-					</field>-->
 					
 					<field id="debug"
 						   translate="label"
@@ -183,7 +173,7 @@
 						   sortOrder="130"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" >
+						   showInStore="1" >
 						<label>Save Debug log</label>
 						<source_model>Nuvei\Checkout\Model\Adminhtml\Source\Debug</source_model>
 						<config_path>payment/nuvei/debug</config_path>
@@ -195,7 +185,7 @@
 						   sortOrder="140"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" >
+						   showInStore="1" >
 						<label>Minimum Order Total</label>
 						<config_path>payment/nuvei/min_order_total</config_path>
 					</field>
@@ -206,7 +196,7 @@
 						   sortOrder="150"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" >
+						   showInStore="1" >
 						<label>Maximum Order Total</label>
 						<config_path>payment/nuvei/max_order_total</config_path>
 					</field>
@@ -217,7 +207,7 @@
 						   sortOrder="160"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" >
+						   showInStore="1" >
 						<label>Sort Order</label>
 						<frontend_class>validate-number</frontend_class>
 						<config_path>payment/nuvei/sort_order</config_path>
@@ -238,7 +228,7 @@
 						   sortOrder="10"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0"
+						   showInStore="1"
 						   canRestore="1">
 						<label>Payment from Applicable Countries</label>
 						<source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
@@ -251,7 +241,7 @@
 						   sortOrder="20"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" >
+						   showInStore="1" >
 						<label>Payment from Specific Countries</label>
 						<source_model>Magento\Directory\Model\Config\Source\Country</source_model>
 						<config_path>payment/nuvei/specificcountry</config_path>
@@ -263,7 +253,7 @@
 						   sortOrder="25"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" 
+						   showInStore="1" 
 						   canRestore="1">
 						<label>Use Dev SDK version</label>
 						<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -276,7 +266,7 @@
 						   sortOrder="30"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0">
+						   showInStore="1">
 						<label>Use currency conversion</label>
 						<source_model>Nuvei\Checkout\Model\Adminhtml\Source\UseDcc</source_model>
 						<config_path>payment/nuvei/use_dcc</config_path>
@@ -288,7 +278,7 @@
 						   sortOrder="40"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0">
+						   showInStore="1">
 						<label>Block Cards</label>
 						<comment model="Nuvei\Checkout\Block\System\Config\BlockCardsComment" />
 					</field>
@@ -299,7 +289,7 @@
 						   sortOrder="50"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" >
+						   showInStore="1" >
 						<label>Block Payment methods</label>
 						<source_model>Nuvei\Checkout\Model\Adminhtml\Source\GetMerchantPaymentMethods</source_model>
 					</field>
@@ -310,7 +300,7 @@
 						   sortOrder="60"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" 
+						   showInStore="1" 
 						   canRestore="1">
 						<label>Use UPOs</label>
 						<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -323,7 +313,7 @@
 						   sortOrder="70"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" 
+						   showInStore="1" 
 						   canRestore="1">
 						<label>Choose the Text on the Pay button</label>
 						<source_model>Nuvei\Checkout\Model\Adminhtml\Source\PayButtonText</source_model>
@@ -336,7 +326,7 @@
 						   sortOrder="80"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" 
+						   showInStore="1" 
 						   canRestore="1">
 						<label>Auto expand PMs</label>
 						<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -349,7 +339,7 @@
 						   sortOrder="85"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" 
+						   showInStore="1" 
 						   canRestore="1">
 						<label>Auto close APM popup</label>
 						<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -362,7 +352,7 @@
 						   sortOrder="90"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" 
+						   showInStore="1" 
 						   canRestore="1">
 						<label>Checkout Log level</label>
 						<source_model>Nuvei\Checkout\Model\Adminhtml\Source\CheckoutLogLevel</source_model>
@@ -376,7 +366,7 @@
 						   sortOrder="100"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0">
+						   showInStore="1">
 						<label>Checkout translations</label>
 						<comment model="Nuvei\Checkout\Block\System\Config\CheckoutTranslateComment" />
 					</field>
@@ -398,7 +388,7 @@
 						   sortOrder="120"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" >
+						   showInStore="1" >
 						<label>Site Notify URL</label>
 						<comment model="Nuvei\Checkout\Block\System\Config\GetNotifyUrl" />
 					</field>
@@ -409,7 +399,7 @@
 						   sortOrder="130"
 						   showInDefault="1"
 						   showInWebsite="1"
-						   showInStore="0" >
+						   showInStore="1" >
 						<label>Get Payment Plans</label>
 						<frontend_model>Nuvei\Checkout\Block\System\Config\Button</frontend_model>
 						<comment model="Nuvei\Checkout\Block\System\Config\ShowLastDownloadTime" />
@@ -422,7 +412,7 @@
 					   sortOrder="105"
 					   showInDefault="1"
 					   showInWebsite="1"
-					   showInStore="0"
+					   showInStore="1"
 					   canRestore="1">
 					<label>Save Order before Success page</label>
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

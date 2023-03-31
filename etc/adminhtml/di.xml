@@ -9,11 +9,6 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-<!--    <type name="Magento\Sales\Model\Service\CreditmemoService">
-        <plugin name="persistRequestLog"
-                type="\Nuvei\Checkout\Model\Plugin\Service\CreditmemoService\Plugin"
-                sortOrder="10"/>
-    </type>-->
     
     <type name="Nuvei\Checkout\Model\Payment">
         <arguments>
