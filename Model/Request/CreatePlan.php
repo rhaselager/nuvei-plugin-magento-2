@@ -7,29 +7,23 @@ use Nuvei\Checkout\Model\RequestInterface;
 
 class CreatePlan extends AbstractRequest implements RequestInterface
 {
-//    protected $requestFactory;
-//    protected $config;
     protected $storeManager;
     
     public function __construct(
-        //        \Nuvei\Checkout\Model\Logger $logger,
         \Nuvei\Checkout\Model\Config $config,
         \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
         \Nuvei\Checkout\Model\Response\Factory $responseFactory,
-        //        \Nuvei\Checkout\Model\Request\Factory $requestFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         parent::__construct(
-//            $logger,
             $config,
             $curl,
             $responseFactory,
             $readerWriter
         );
 
-//        $this->requestFactory   = $requestFactory;
-        $this->storeManager     = $storeManager;
+        $this->storeManager = $storeManager;
     }
     
     public function process()

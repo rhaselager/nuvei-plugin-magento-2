@@ -219,9 +219,9 @@ define(
                 countryId: ''
             },
             
-            changedOrderAmout: 0,
+//            changedOrderAmout: 0,
             
-            changedOrderCountry: '',
+//            changedOrderCountry: '',
             
             orderFullName: '',
             
@@ -325,16 +325,26 @@ define(
                 self.checkoutSdkParams.amount = quote.totals().base_grand_total;
 
                 // check for changed amout
-                if(self.changedOrderAmout > 0 && self.changedOrderAmout != self.checkoutSdkParams.amount) {
-                    self.checkoutSdkParams.amount = self.changedOrderAmout;
-                }
-
+//                if(self.changedOrderAmout > 0 && self.changedOrderAmout != self.checkoutSdkParams.amount) {
+//                    self.checkoutSdkParams.amount = self.changedOrderAmout;
+//                }
+                
+                // check the billing country
                 if(quote.billingAddress()
                     && quote.billingAddress().hasOwnProperty('countryId')
                     && quote.billingAddress().countryId
                     && quote.billingAddress().countryId != self.checkoutSdkParams.country
                 ) {
                     self.checkoutSdkParams.country = quote.billingAddress().countryId;
+                }
+                
+                // check the total amount
+                if (quote.totals()
+                    && quote.totals().hasOwnProperty('base_grand_total')
+                    && parseFloat(quote.totals().base_grand_total).toFixed(2) != self.checkoutSdkParams.amount
+                ) {
+                    self.checkoutSdkParams.amount
+                        = parseFloat(quote.totals().base_grand_total).toFixed(2);
                 }
 
                 console.log('nuveiLoadCheckout', self.checkoutSdkParams);
@@ -357,12 +367,18 @@ define(
 					return;
 				}
 				
-				if(typeof self.checkoutSdkParams.sessionToken == 'undefined' 
-                    || quote.billingAddress().countryId == self.checkoutSdkParams.country
-                ) {
+//				if(typeof self.checkoutSdkParams.sessionToken == 'undefined' 
+//                    || quote.billingAddress().countryId == self.checkoutSdkParams.country
+//                ) {
+				if(quote.billingAddress().countryId == self.checkoutSdkParams.country) {
 					self.writeLog('scBillingAddrChange - the country is same. Stop here.');
 					return;
 				}
+                
+                if (typeof self.checkoutSdkParams.sessionToken == 'undefined') {
+                    self.getSessionToken();
+                    return;
+                }
 				
 				self.writeLog('scBillingAddrChange - the country was changed to', quote.billingAddress().countryId);
 				
@@ -384,17 +400,23 @@ define(
 				
 				var currentTotal = parseFloat(quote.totals().base_grand_total).toFixed(2);
 				
-				if(typeof self.checkoutSdkParams.sessionToken == 'undefined'
-                    || currentTotal == self.checkoutSdkParams.amount
-                ) {
+//				if(typeof self.checkoutSdkParams.sessionToken == 'undefined'
+//                    || currentTotal == self.checkoutSdkParams.amount
+//                ) {
+				if(currentTotal == self.checkoutSdkParams.amount) {
 					self.writeLog('scTotalsChange() - the total is same. Stop here.');
 					return;
 				}
+                
+                if (typeof self.checkoutSdkParams.sessionToken == 'undefined') {
+                    self.getSessionToken();
+                    return;
+                }
 				
 				self.writeLog('scTotalsChange() - the total was changed to', currentTotal);
 				
 				// reload the checkout
-                self.changedOrderAmout = currentTotal
+//                self.changedOrderAmout = currentTotal;
                 self.getSessionToken();
 			},
 			

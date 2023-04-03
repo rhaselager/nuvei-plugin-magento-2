@@ -5,7 +5,7 @@
 # 2.0.2
 ```
     * Changes on checkout page logic - when client change the billing address just reload the SDK with the new country, but do not update the Order. The Order will be updated later.
-    * Allow plugin settings to be set per site view.
+    * Allow plugin Title settings to be set per site view.
 ```
 
 # 2.0.1

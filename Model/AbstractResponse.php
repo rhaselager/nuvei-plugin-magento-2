@@ -30,7 +30,6 @@ abstract class AbstractResponse
     const STATUS_SUCCESS    = 1;
     const STATUS_FAILED     = 2;
 
-//    protected $config;
     protected $readerWriter;
 
 
@@ -62,18 +61,15 @@ abstract class AbstractResponse
     /**
      * AbstractResponse constructor.
      *
-     * @param Config        $config
      * @param int           $requestId
      * @param Curl          $curl
      * @param readerWriter  $readerWriter
      */
     public function __construct(
-        //        Config $config,
         $requestId,
         Curl $curl,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
-//        $this->config       = $config;
         $this->requestId    = $requestId;
         $this->curl         = $curl;
         $this->readerWriter = $readerWriter;
@@ -148,12 +144,10 @@ abstract class AbstractResponse
         $responseTransactionType    = strtolower(!empty($body['transactionType']) ? $body['transactionType'] : '');
 
         if (!(
-                (
-                    !in_array($responseTransactionType, ['auth', 'sale'])
+                (!in_array($responseTransactionType, ['auth', 'sale'])
                     && $responseStatus === 'success' && $responseTransactionType !== 'error'
                 )
-                || (
-                    in_array($responseTransactionType, ['auth', 'sale'])
+                || (in_array($responseTransactionType, ['auth', 'sale'])
                     && $responseTransactionStatus === 'approved'
                 )
             )
@@ -235,10 +229,7 @@ abstract class AbstractResponse
             $this->readerWriter->createLog($diff, 'Mising response parameters:');
             
             throw new PaymentException(
-                __(
-                    'Required response data fields are missing: %1.',
-                    implode(', ', $diff)
-                )
+                __('Required response data fields are missing: %1.', implode(', ', $diff))
             );
         }
 
