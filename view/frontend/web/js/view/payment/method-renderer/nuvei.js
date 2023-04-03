@@ -269,7 +269,7 @@ define(
             },
 			
 			getSessionToken: function() {
-                console.log('getSessionToken', quote.paymentMethod._latestValue.method);
+                console.log('getSessionToken', quote.paymentMethod);
                 
                 if(window.checkoutConfig.payment[self.getCode()].isPaymentPlan
                     && quote.getItems().length > 1
