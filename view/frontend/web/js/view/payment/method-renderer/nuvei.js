@@ -367,19 +367,13 @@ define(
 					return;
 				}
 				
-//				if(typeof self.checkoutSdkParams.sessionToken == 'undefined' 
-//                    || quote.billingAddress().countryId == self.checkoutSdkParams.country
-//                ) {
-				if(quote.billingAddress().countryId == self.checkoutSdkParams.country) {
+				if(typeof self.checkoutSdkParams.sessionToken == 'undefined' 
+                    || quote.billingAddress().countryId == self.checkoutSdkParams.country
+                ) {
 					self.writeLog('scBillingAddrChange - the country is same. Stop here.');
 					return;
 				}
                 
-                if (typeof self.checkoutSdkParams.sessionToken == 'undefined') {
-                    self.getSessionToken();
-                    return;
-                }
-				
 				self.writeLog('scBillingAddrChange - the country was changed to', quote.billingAddress().countryId);
 				
 //				// reload the checkout
@@ -400,19 +394,13 @@ define(
 				
 				var currentTotal = parseFloat(quote.totals().base_grand_total).toFixed(2);
 				
-//				if(typeof self.checkoutSdkParams.sessionToken == 'undefined'
-//                    || currentTotal == self.checkoutSdkParams.amount
-//                ) {
-				if(currentTotal == self.checkoutSdkParams.amount) {
+				if(typeof self.checkoutSdkParams.sessionToken == 'undefined'
+                    || currentTotal == self.checkoutSdkParams.amount
+                ) {
 					self.writeLog('scTotalsChange() - the total is same. Stop here.');
 					return;
 				}
                 
-                if (typeof self.checkoutSdkParams.sessionToken == 'undefined') {
-                    self.getSessionToken();
-                    return;
-                }
-				
 				self.writeLog('scTotalsChange() - the total was changed to', currentTotal);
 				
 				// reload the checkout
