@@ -58,14 +58,14 @@ function nuveiPrePayment(paymentDetails) {
 		// validate user agreement
 		if (!nuveiValidateAgreement()) {
 			reject(jQuery.mage.__('Please, accept required agreement!'));
-			jQuery('body').trigger('processStop');
+			nuveiHideLoader()
 			return;
 		}
         
         // check if the hidden submit button is enabled
         if(jQuery('#nuvei_default_pay_btn').hasClass('disabled')) {
             reject(jQuery.mage.__('Please, check all required fields are filled!'));
-			jQuery('body').trigger('processStop');
+			nuveiHideLoader()
 			return;
         }
 		
@@ -128,7 +128,7 @@ function nuveiAfterSdkResponse(resp) {
         && resp.reason.toLowerCase().search('the currency is not supported') >= 0
     ) {
         if(!alert(resp.reason)) {
-            jQuery('body').trigger('processStop');
+            nuveiHideLoader()
             return;
         }
     }
@@ -150,13 +150,13 @@ function nuveiAfterSdkResponse(resp) {
         ) {
             if(!alert(jQuery.mage.__('You have Insufficient funds, please go back and remove some of the items in your shopping cart, or use another card.'))
             ) {
-                jQuery('body').trigger('processStop');
+                nuveiHideLoader()
                 return;
             }
         }
         
 		if(!alert(jQuery.mage.__('Your Payment was DECLINED. Please try another payment method!'))) {
-			jQuery('body').trigger('processStop');
+			nuveiHideLoader()
 			return;
 		}
 	}
@@ -173,18 +173,40 @@ function nuveiAfterSdkResponse(resp) {
 		}
 
 		if(!alert(jQuery.mage.__(respError))) {
-			jQuery('body').trigger('processStop');
+			nuveiHideLoader()
 			return;
 		}
 	}
 
 	// on Success, Approved
     jQuery('#nuvei_default_pay_btn').trigger('click');
-	jQuery('body').trigger('processStop');
+	nuveiHideLoader()
 //    jQuery('#nuvei_checkout').html(jQuery.mage.__('<b>The transaction was approved.</b>'));
     jQuery('#checkoutOverlay').remove();
 	return;
 };
+
+function nuveiShowLoader() {
+    console.log('nuveiShowLoader');
+    
+    if (jQuery('body').find('.loading-mask').length > 0) {
+        jQuery('body').trigger('processStart');
+        return;
+    }
+    
+    jQuery('.nuvei-loading-mask').css('display', 'block');
+}
+
+function nuveiHideLoader() {
+    console.log('nuveiHideLoader');
+    
+    if (jQuery('body').find('.loading-mask').length > 0) {
+        jQuery('body').trigger('processStop');
+        return;
+    }
+    
+    jQuery('.nuvei-loading-mask').css('display', 'none');
+}
 
 define(
     [
@@ -219,10 +241,6 @@ define(
                 countryId: ''
             },
             
-//            changedOrderAmout: 0,
-            
-//            changedOrderCountry: '',
-            
             orderFullName: '',
             
             checkoutSdkParams: {},
@@ -248,6 +266,11 @@ define(
 				catch(_error) {
 					console.error(_error);
 				}
+                
+                // if loading mask does not exists add it
+                if (jQuery('body').find('.loading-mask').length < 1) {
+                    jQuery('body').append('<div class="nuvei-loading-mask" data-role="loader" style="display: none; z-index: 9999; bottom: 0; left: 0; margin: auto; position: fixed; right: 0; top: 0; background: rgba(255,255,255,0.5);"><div class="loader"><img alt="Loading..." src="' + window.checkoutConfig.payment[nuveiGetCode()].loadingImg + '" style="bottom: 0; left: 0; margin: auto; position: fixed; right: 0; top: 0; z-index: 100; max-width: 100%; height: auto; border: 0;"></div></div>');
+                }
 				
                 return self;
             },
@@ -280,7 +303,7 @@ define(
                 
                 ///////////////////////////////////
                 
-                jQuery('body').trigger('processStart');
+                nuveiShowLoader()
 
                 // call openOrder here and get the session token
                  jQuery.ajax({
@@ -292,7 +315,7 @@ define(
                     console.log('nuveiLoadCheckout update order fail textStatus', textStatus);
                     console.log('nuveiLoadCheckout update order fail errorThrown', errorThrown);
 
-                    jQuery('body').trigger('processStop');
+                    nuveiHideLoader()
                     return;
                 })
                 .success(function(resp) {
@@ -301,7 +324,7 @@ define(
 
                         alert(jQuery.mage.__('Missing mandatory payment details. Please reload the page and try again!'));
 
-                        jQuery('body').trigger('processStop');
+                        nuveiHideLoader()
                         return;
                     }
                     
@@ -312,7 +335,7 @@ define(
 
                     nuveiCheckoutSdk(self.checkoutSdkParams);
 
-                    jQuery('body').trigger('processStop');
+                    nuveiHideLoader()
                     return;
                 });
 			},

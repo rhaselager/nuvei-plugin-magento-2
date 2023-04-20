@@ -150,6 +150,7 @@ class ConfigProvider extends CcGenericConfigProvider
                     'getUpdateOrderUrl'         => $this->urlBuilder->getUrl('nuvei_checkout/payment/OpenOrder'),
                     'successUrl'                => $this->moduleConfig->getCallbackSuccessUrl(),
 //                    'checkoutLogoUrl'           => $checkout_logo,
+                    'loadingImg'                => $this->assetRepo->getUrl("Nuvei_Checkout::images/loader-2.gif"),
                     'isTestMode'                => $this->moduleConfig->isTestModeEnabled(),
                     'countryId'                 => $this->moduleConfig->getQuoteCountryCode(),
                     'isPaymentPlan'             => $isPaymentPlan,

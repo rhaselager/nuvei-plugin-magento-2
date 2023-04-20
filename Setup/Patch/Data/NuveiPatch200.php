@@ -33,9 +33,9 @@ class NuveiPatch200 implements DataPatchInterface
      * @param EavSetupFactory           $eavSetupFactory
      */
     public function __construct(
-        OrderStatusFactory                  $orderStatusFactory,
-        ModuleDataSetupInterface            $moduleDataSetup,
-        EavSetupFactory                     $eavSetupFactory
+        OrderStatusFactory          $orderStatusFactory,
+        ModuleDataSetupInterface    $moduleDataSetup,
+        EavSetupFactory             $eavSetupFactory
     ) {
         $this->moduleDataSetup      = $moduleDataSetup;
         $this->eavSetupFactory      = $eavSetupFactory;
