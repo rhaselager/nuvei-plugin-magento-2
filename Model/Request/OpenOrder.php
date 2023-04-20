@@ -249,7 +249,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             'deviceDetails'     => $this->config->getDeviceDetails(),
             'shippingAddress'   => $this->config->getQuoteShippingAddress(),
             'billingAddress'    => $billing_address,
-            'transactionType'   => $this->config->getConfigValue('payment_action'),
+            'transactionType'   => (float) $amount == 0 ? 'Auth' : $this->config->getConfigValue('payment_action'),
 
             'urlDetails'        => [
                 'successUrl'        => $this->config->getCallbackSuccessUrl(),

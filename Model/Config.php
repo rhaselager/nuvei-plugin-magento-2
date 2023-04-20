@@ -640,7 +640,7 @@ class Config
      */
     public function getQuoteBaseTotal()
     {
-        return (string) number_format($this->checkoutSession->getQuote()->getBaseGrandTotal(), 2, '.', '');
+        return (string) number_format((float) $this->checkoutSession->getQuote()->getBaseGrandTotal(), 2, '.', '');
     }
     
     /**

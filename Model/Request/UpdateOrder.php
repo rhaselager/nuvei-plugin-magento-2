@@ -155,6 +155,11 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
             ]
         );
         
+        // this is for the case when in the openOrder we passed amount = 0 and force the transactionType = Auth
+        if ((float) $amount > 0) {
+            $params['transactionType'] = $this->config->getConfigValue('payment_action');
+        }
+        
         $params['userDetails']      = $params['billingAddress'];
         $params['sessionToken']     = $this->orderData['sessionToken'];
         $params['orderId']          = isset($this->orderData['orderId']) ? $this->orderData['orderId'] : '';
