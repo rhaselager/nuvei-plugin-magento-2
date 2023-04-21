@@ -132,7 +132,6 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
             [
                 'currency'          => $this->config->getQuoteBaseCurrency(),
                 'amount'            => $amount,
-                'transactionType'   => (float) $amount == 0 ? 'Auth' : $this->config->getConfigValue('payment_action'),
                 'billingAddress'    => $billing_address,
                 'shippingAddress'   => $this->config->getQuoteShippingAddress(),
                 

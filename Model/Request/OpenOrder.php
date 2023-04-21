@@ -162,6 +162,16 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             $callUpdateOrder = false;
         }
         
+        // when the total is 0 transaction type must be Auth!
+        if ((float) $this->config->getQuoteBaseTotal() == 0
+            && (empty($order_data['transactionType'])
+                || 'Auth' != $order_data['transactionType']
+            )
+        ) {
+            $callUpdateOrder = false;
+        }
+        // /will we call updateOrder?
+        
         if ($callUpdateOrder) {
             $update_order_request = $this->requestFactory->create(AbstractRequest::UPDATE_ORDER_METHOD);
 
@@ -185,6 +195,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             'sessionToken'      => $req_resp['sessionToken'],
             'clientRequestId'   => $req_resp['clientRequestId'],
             'orderId'           => $req_resp['orderId'],
+            'transactionType'   => $req_resp['transactionType'],
         ];
         
         if (isset($req_resp['userTokenId'])) {
