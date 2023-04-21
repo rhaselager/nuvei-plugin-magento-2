@@ -152,7 +152,8 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         ]);
         
         // will we call updateOrder?
-        $callUpdateOrder = false;
+        $callUpdateOrder    = false;
+        $order_total        = (float) $this->config->getQuoteBaseTotal();
         
         if (!empty($order_data)) {
             $callUpdateOrder = true;
@@ -163,10 +164,18 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         }
         
         // when the total is 0 transaction type must be Auth!
-        if ((float) $this->config->getQuoteBaseTotal() == 0
+        if ($order_total == 0
             && (empty($order_data['transactionType'])
                 || 'Auth' != $order_data['transactionType']
             )
+        ) {
+            $callUpdateOrder = false;
+        }
+        
+        if ($order_total > 0
+            && !empty($order_data['transactionType'])
+            && 'Auth' == $order_data['transactionType']
+            && $order_data['transactionType'] != $this->config->getConfigValue('payment_action')
         ) {
             $callUpdateOrder = false;
         }
@@ -190,22 +199,27 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         $this->sessionToken = $req_resp['sessionToken'];
         $this->ooAmount     = $req_resp['merchantDetails']['customField1'];
 
-        // save the session token in the Quote
+        # save the session token in the Quote
         $add_info = [
             'sessionToken'      => $req_resp['sessionToken'],
             'clientRequestId'   => $req_resp['clientRequestId'],
             'orderId'           => $req_resp['orderId'],
-            'transactionType'   => $req_resp['transactionType'],
         ];
         
         if (isset($req_resp['userTokenId'])) {
             $add_info['userTokenId'] = $req_resp['userTokenId'];
         }
         
+        if (isset($this->requestParams['transactionType'])) {
+            $add_info['transactionType'] = $this->requestParams['transactionType'];
+        }
+        
         $this->quote->getPayment()->setAdditionalInformation(
             Payment::CREATE_ORDER_DATA,
             $add_info
         );
+        # /save the session token in the Quote
+        
         $this->cart->getQuote()->save();
         
         return $this;
