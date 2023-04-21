@@ -163,6 +163,10 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             $callUpdateOrder = false;
         }
         
+        if (empty($order_data['transactionType'])) {
+            $callUpdateOrder = false;
+        }
+        
         // when the total is 0 transaction type must be Auth!
         if ($order_total == 0
             && (empty($order_data['transactionType'])

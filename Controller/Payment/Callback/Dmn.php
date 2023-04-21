@@ -186,6 +186,18 @@ class Dmn extends Action implements CsrfAwareActionInterface
                 return $this->jsonOutput;
             }
             
+            // try to find Status
+            $status = !empty($params['Status']) ? strtolower($params['Status']) : null;
+            
+            if ('pending' == $status) {
+                $msg = 'DMN report - Pending DMN, wait for the next one.';
+            
+                $this->readerWriter->createLog($msg);
+                $this->jsonOutput->setData($msg);
+
+                return $this->jsonOutput;
+            }
+            
             // try to validate the Cheksum
             $success = $this->validateChecksum();
             
@@ -203,10 +215,6 @@ class Dmn extends Action implements CsrfAwareActionInterface
             elseif (!empty($params["merchant_unique_id"])) {
                 // modified because of the PayPal Sandbox problem with duplicate Orders IDs
                 $orderIncrementId = current(explode('_', $params["merchant_unique_id"]));
-                
-//                if ((int) $merchant_unique_id != 0) {
-//                    $orderIncrementId = $merchant_unique_id;
-//                }
             }
             elseif (!empty($params["clientUniqueId"])) {
                 $orderIncrementId = current(explode('_', $params["clientUniqueId"]));
@@ -217,7 +225,6 @@ class Dmn extends Action implements CsrfAwareActionInterface
             elseif (!empty($params['dmnType'])
                 && in_array($params['dmnType'], ['subscriptionPayment', 'subscription'])
                 && !empty($params['clientRequestId'])
-//                && false !== strpos($params['clientRequestId'], '_')
             ) {
                 $orderIncrementId       = 0;
                 $clientRequestId_arr    = explode('_', $params["clientRequestId"]);
@@ -226,7 +233,6 @@ class Dmn extends Action implements CsrfAwareActionInterface
                 if (!empty($last_elem) && is_numeric($last_elem)) {
                     $orderIncrementId = $last_elem;
                 }
-//                $orderIncrementId = end(explode('_', $params["clientRequestId"]));
             }
             else {
                 $msg = 'DMN error - no Order ID parameter.';
@@ -316,9 +322,6 @@ class Dmn extends Action implements CsrfAwareActionInterface
                 return $this->jsonOutput;
             }
             // /check for Subscription State DMN
-            
-            // try to find Status
-            $status = !empty($params['Status']) ? strtolower($params['Status']) : null;
             
             if (!in_array($status, ['declined', 'error', 'approved', 'success'])) { // UNKNOWN DMN
                 $msg = 'DMN for Order #' . $orderIncrementId . ' was not recognized.';
