@@ -132,6 +132,7 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
             [
                 'currency'          => $this->config->getQuoteBaseCurrency(),
                 'amount'            => $amount,
+                'transactionType'   => (float) $amount == 0 ? 'Auth' : $this->config->getConfigValue('payment_action'),
                 'billingAddress'    => $billing_address,
                 'shippingAddress'   => $this->config->getQuoteShippingAddress(),
                 
@@ -154,11 +155,6 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
                 ],
             ]
         );
-        
-        // this is for the case when in the openOrder we passed amount = 0 and force the transactionType = Auth
-        if ((float) $amount > 0) {
-            $params['transactionType'] = $this->config->getConfigValue('payment_action');
-        }
         
         $params['userDetails']      = $params['billingAddress'];
         $params['sessionToken']     = $this->orderData['sessionToken'];
