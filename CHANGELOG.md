@@ -2,6 +2,11 @@
 
 ---
 
+# 2.0.3
+```
+    * In the last updateOrder request check if all products into the Cart are still available.
+```
+
 # 2.0.2
 ```
     * Changes on checkout page logic - when client change the billing address just reload the SDK with the new country, but do not update the Order. The Order will be updated later.

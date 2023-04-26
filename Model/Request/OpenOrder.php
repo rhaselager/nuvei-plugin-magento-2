@@ -30,12 +30,6 @@ class OpenOrder extends AbstractRequest implements RequestInterface
     
     protected $readerWriter;
     
-    /**
-     * @var StockRegistryInterface|null
-     */
-    private $stockRegistry;
-    
-    private $stockItemRepository;
     private $stockState;
     private $countryCode; // string
     private $quote;
@@ -50,14 +44,14 @@ class OpenOrder extends AbstractRequest implements RequestInterface
     /**
      * OpenOrder constructor.
      *
-     * @param Config                    $config
-     * @param Curl                      $curl
-     * @param ResponseFactory           $responseFactory
-     * @param Factory                   $requestFactory
-     * @param Cart                      $cart
-     * @param ReaderWriter              $readerWriter
-     * @param PaymentsPlans             $paymentsPlans
-     * @param StockRegistryInterface    $stockRegistry
+     * @param Config            $config
+     * @param Curl              $curl
+     * @param ResponseFactory   $responseFactory
+     * @param Factory           $requestFactory
+     * @param Cart              $cart
+     * @param ReaderWriter      $readerWriter
+     * @param PaymentsPlans     $paymentsPlans
+     * @param StockState        $stockState
      */
     public function __construct(
         Config $config,
@@ -67,9 +61,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         \Magento\Checkout\Model\Cart $cart,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans,
-        StockRegistryInterface $stockRegistry,
-        \Magento\CatalogInventory\Model\Stock\StockItemRepository $stockItemRepository,
-            \Magento\CatalogInventory\Api\StockStateInterface $stockState
+        \Magento\CatalogInventory\Model\StockState $stockState
     ) {
         parent::__construct(
             $config,
@@ -81,10 +73,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         $this->requestFactory   = $requestFactory;
         $this->cart             = $cart;
         $this->paymentsPlans    = $paymentsPlans;
-        $this->readerWriter     = $readerWriter;
-        $this->stockRegistry    = $stockRegistry;
-        $this->stockItemRepository    = $stockItemRepository;
-        $this->stockState    = $stockState;
+        $this->stockState       = $stockState;
     }
 
     /**
@@ -111,36 +100,32 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         $this->items    = $this->quote->getItems();
         $order_data     = $this->quote->getPayment()->getAdditionalInformation(Payment::CREATE_ORDER_DATA);
         
-        // check if each item is in stock
-//        foreach ($this->items as $item) {
-//            $product    = $item->getProduct();
-//            $prodId     = $item->getProduct()->getId();
-//            $stockItem  = $this->stockRegistry->getStockItem($prodId);
-//            $isInStock  = $stockItem ? $stockItem->getIsInStock() : false;
-//            
-//            $stockItem = $this->stockRegistry->getStockItem($prodId, $product->getStore()->getWebsiteId());
-//            $minimumQty = $stockItem->getMinSaleQty();
-//            
-//            
-//            $this->readerWriter->createLog($isInStock, '$isInStock');
-//            $this->readerWriter->createLog($this->stockItemRepository->get($prodId), 'stockItem');
-//            $this->readerWriter->createLog($product->getExtensionAttributes()->getStockItem()->getQty(), 'getQty');
-//            $this->readerWriter->createLog($product->getExtensionAttributes()->getStockItem()->getIsInStock(), 'getIsInStock');
-//            $this->readerWriter->createLog($item->getQty(), '$item getQty');
-//            $this->readerWriter->createLog($minimumQty, '$minimumQty');
-//            $this->readerWriter->createLog($this->stockState->getStockQty($prodId), 'getStockQty');
-//            $this->readerWriter->createLog($product->getTypeInstance()->getUsedProducts($product), 'simple product');
-//            
-//            if (false === $isInStock) {
-//                $this->readerWriter->createLog($prodId, 'A product is out of stock.');
-//                
-//                $this->error    = 1;
-//                $this->reason   = __('Error! A product is out of stock.');
-//                
-//                return $this;
-//            }
-//        }
-        // /check of each item is in stock
+        # check if each item is in stock
+        foreach ($this->items as $item) {
+            $childItems = $item->getChildren();
+            
+            if (count($childItems)) {
+                foreach ($childItems as $childItem) {
+                    $stockItemToCheck[] = $childItem->getProduct()->getId();
+                }
+            } else {
+                $stockItemToCheck[] = $item->getProduct()->getId();
+            }
+
+            foreach ($stockItemToCheck as $productId) {
+                $available = $this->stockState->checkQty($productId, $item->getQty());
+                
+                if (!$available) {
+                    $this->error    = 1;
+                    $this->reason   = __('Error! Some of the products are out of stock.');
+                
+                    $this->readerWriter->createLog($productId, 'A product is not availavle, product id ');
+                    
+                    return $this;
+                }
+            }
+        }
+        # /check of each item is in stock
         
         // iterate over Items and search for Subscriptions
         $this->items_data   = $this->paymentsPlans->getProductPlanData();
