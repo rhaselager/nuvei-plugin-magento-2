@@ -5,6 +5,7 @@
 # 2.0.3
 ```
     * In the last updateOrder request check if all products into the Cart are still available.
+    * On the checkout call openOrder with pure JS.
 ```
 
 # 2.0.2
