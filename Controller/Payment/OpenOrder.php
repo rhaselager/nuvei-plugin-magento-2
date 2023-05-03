@@ -80,10 +80,16 @@ class OpenOrder extends Action
         if (isset($resp->error, $resp->reason)
             && 1 == $resp->error
         ) {
-            return $result->setData([
+            $resp_array = [
                 "error"     => 1,
                 'reason'    => $resp->reason,
-            ]);
+            ];
+            
+            if (isset($resp->outOfStock)) {
+                $resp_array['outOfStock'] = 1;
+            }
+            
+            return $result->setData($resp_array);
         }
         // success
         return $result->setData([

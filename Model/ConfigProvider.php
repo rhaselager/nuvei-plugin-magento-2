@@ -145,6 +145,7 @@ class ConfigProvider extends CcGenericConfigProvider
                     'getMerchantPaymentMethodsUrl' => $this->urlBuilder
                         ->getUrl('nuvei_checkout/payment/GetMerchantPaymentMethods'),
                     
+                    'cartUrl'                   => $this->urlBuilder->getUrl('checkout/cart/'),
                     'redirectUrl'               => $this->urlBuilder->getUrl('nuvei_checkout/payment/redirect'),
                     'paymentApmUrl'             => $this->urlBuilder->getUrl('nuvei_checkout/payment/apm'),
                     'getUpdateOrderUrl'         => $this->urlBuilder->getUrl('nuvei_checkout/payment/OpenOrder'),

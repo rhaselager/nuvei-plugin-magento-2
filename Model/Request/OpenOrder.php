@@ -116,9 +116,10 @@ class OpenOrder extends AbstractRequest implements RequestInterface
                 $available = $this->stockState->checkQty($productId, $item->getQty());
                 
                 if (!$available) {
-                    $this->error    = 1;
-                    $this->reason   = __('Error! Some of the products are out of stock.');
-                
+                    $this->error        = 1;
+                    $this->outOfStock   = 1;
+                    $this->reason       = __('Error! Some of the products are out of stock.');
+                    
                     $this->readerWriter->createLog($productId, 'A product is not availavle, product id ');
                     
                     return $this;

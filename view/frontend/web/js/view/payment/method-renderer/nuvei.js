@@ -297,14 +297,13 @@ define(
                 if(window.checkoutConfig.payment[self.getCode()].isPaymentPlan
                     && quote.getItems().length > 1
                 ) {
-                    self.showGeneralError('You can not combine a Product with Nuvei Payment with another product. To continue, please remove some of the Product in your Cart!');
+                    self.showGeneralError(jQuery.mage.__('You can not combine a Product with Nuvei Payment with another product. To continue, please remove some of the Product in your Cart!'));
                     return;
                 }
                 
                 ///////////////////////////////////
                 
                 nuveiShowLoader();
-debugger;
 
                 var xmlhttp = new XMLHttpRequest();
                 
@@ -318,6 +317,11 @@ debugger;
                             
                             // error, show message
                             if(!resp.hasOwnProperty('sessionToken') || '' == resp.sessionToken) {
+                                if (resp.hasOwnProperty('outOfStock') && 1 == resp.outOfStock) {
+                                    window.location = window.checkoutConfig.payment[nuveiGetCode()].cartUrl;
+                                    return;
+                                }
+                                
                                 console.log('nuveiLoadCheckout update order sessionToken problem, reload the page');
 
                                 alert(jQuery.mage.__('Missing mandatory payment details. Please reload the page and try again!'));
@@ -346,7 +350,7 @@ debugger;
                     }
                 };
 
-                xmlhttp.open("GET",window.checkoutConfig.payment[nuveiGetCode()].getUpdateOrderUrl, true);
+                xmlhttp.open("GET", window.checkoutConfig.payment[nuveiGetCode()].getUpdateOrderUrl, true);
                 xmlhttp.send();
 			},
             
