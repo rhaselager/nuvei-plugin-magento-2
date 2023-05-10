@@ -65,8 +65,7 @@ class LatestPluginVersionMessage implements \Magento\Framework\Notification\Mess
         try {
             $file = $this->directory->getPath('log') . DIRECTORY_SEPARATOR . 'nuvei-plugin-latest-version.txt';
             
-            $this->curl->get('https://raw.githubusercontent.com/SafeChargeInternational/'
-                . 'nuvei_checkout_magento/master/composer.json');
+            $this->curl->get('https://raw.githubusercontent.com/Nuvei/nuvei-plugin-magento-2/master/composer.json');
             $this->curl->setOption(CURLOPT_RETURNTRANSFER, true);
             $this->curl->setOption(CURLOPT_SSL_VERIFYPEER, false);
 

@@ -26,5 +26,3 @@ https://www.nuvei.com/
 
 © 2007 - 2023 Nuvei
 All rights reserved.
-
-![Nuvei Logo](https://github.com/SafeChargeInternational/nuvei_checkout_magento/blob/master/view/frontend/web/images/logo-dark.svg)

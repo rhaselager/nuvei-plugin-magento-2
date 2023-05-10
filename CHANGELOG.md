@@ -2,6 +2,12 @@
 
 ---
 
+# 2.0.4
+```
+    * Changed the link to the plugin repo in the model who check for new plugin version.
+    * Removed the Nuvei logo from the readme file.
+```
+
 # 2.0.3
 ```
     * In the last updateOrder request check if all products into the Cart are still available.
