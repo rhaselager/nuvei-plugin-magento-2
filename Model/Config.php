@@ -52,6 +52,15 @@ class Config
     
     const NUVEI_SDK_AUTOCLOSE_URL               = 'https://cdn.safecharge.com/safecharge_resources/v1/websdk/autoclose.html';
     
+    // the allowed methods when call the plugin REST API
+    const NUVEI_REST_API_PLUGIN_METHODS         = [
+        'get-web-sdk-data',
+        'get-simply-connect-data',
+        'cashier',
+        'apm-redirect-url',
+        'update-order'
+    ];
+    
     private $traceId;
     
     /**
@@ -121,7 +130,7 @@ class Config
     private $remoteIp;
     private $customerSession;
     private $cookie;
-    private $clientUniqueIdPostfix = '_sandbox_apm'; // postfix for Sandbox APM payments
+    private $quoteFactory;
 
     /**
      * Object initialization.
@@ -138,6 +147,7 @@ class Config
      * @param RemoteAddress             $remoteIp
      * @param Session                   $customerSession
      * @param CookieManagerInterface    $cookie
+     * @param QuoteFactory              $quoteFactory
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
@@ -151,7 +161,8 @@ class Config
         \Magento\Framework\HTTP\Header $httpHeader,
         \Magento\Framework\HTTP\PhpEnvironment\RemoteAddress $remoteIp,
         \Magento\Customer\Model\Session $customerSession,
-        \Magento\Framework\Stdlib\CookieManagerInterface $cookie
+        \Magento\Framework\Stdlib\CookieManagerInterface $cookie,
+        \Magento\Quote\Model\QuoteFactory $quoteFactory
     ) {
         $this->scopeConfig      = $scopeConfig;
         $this->storeManager     = $storeManager;
@@ -164,10 +175,10 @@ class Config
         $this->customerSession  = $customerSession;
 
         $this->storeId              = $this->getStoreId();
-        $this->storeId              = $this->getStoreId();
         $this->formKey              = $formKey;
         $this->directory            = $directory;
         $this->cookie               = $cookie;
+        $this->quoteFactory         = $quoteFactory;
         
         $git_version = $this->productMetadata->getVersion();
         
@@ -387,10 +398,18 @@ class Config
         return false;
     }
     
-    public function canUseUpos()
+    /**
+     * @param bool $isRestApiCall
+     * @return boolean
+     */
+    public function canUseUpos($isRestApiCall = false)
     {
-        if ($this->customerSession->isLoggedIn() && 1 == $this->getConfigValue('use_upos')) {
-            return true;
+        if (1 == $this->getConfigValue('use_upos')) {
+            if ($this->customerSession->isLoggedIn() || $isRestApiCall) {
+                return true;
+            }
+            
+            return false;
         }
         
         return false;
@@ -458,12 +477,13 @@ class Config
     }
 
     /**
+     * @params int $quoteId Passed from plugin REST API call.
      * @return string
      */
-    public function getCallbackSuccessUrl()
+    public function getCallbackSuccessUrl($quoteId = '')
     {
         $params = [
-            'quote'     => $this->checkoutSession->getQuoteId(),
+            'quote'     => !empty($quoteId) ? $quoteId : $this->checkoutSession->getQuoteId(),
             'form_key'  => $this->formKey->getFormKey(),
         ];
         
@@ -474,21 +494,15 @@ class Config
     }
 
     /**
+     * @params int $quoteId Passed from plugin REST API call.
      * @return string
      */
-    public function getCallbackPendingUrl()
+    public function getCallbackPendingUrl($quoteId = '')
     {
         $params = [
-            'quote'        => $this->checkoutSession->getQuoteId(),
-            'form_key'    => $this->formKey->getFormKey(),
+            'quote'     => !empty($quoteId) ? $quoteId : $this->checkoutSession->getQuoteId(),
+            'form_key'  => $this->formKey->getFormKey(),
         ];
-        
-        if ($this->versionNum != 0 && $this->versionNum < 220) {
-            return $this->urlBuilder->getUrl(
-                'nuvei_checkout/payment/callback_completeold',
-                $params
-            );
-        }
         
         return $this->urlBuilder->getUrl(
             'nuvei_checkout/payment/callback_complete',
@@ -497,12 +511,13 @@ class Config
     }
 
     /**
+     * @params int $quoteId Passed from plugin REST API call.
      * @return string
      */
-    public function getCallbackErrorUrl()
+    public function getCallbackErrorUrl($quoteId = '')
     {
         $params = [
-            'quote'     => $this->checkoutSession->getQuoteId(),
+            'quote'     => !empty($quoteId) ? $quoteId : $this->checkoutSession->getQuoteId(),
             'form_key'  => $this->formKey->getFormKey(),
         ];
 
@@ -513,22 +528,23 @@ class Config
     }
 
     /**
-     * @param int    $incrementId
-     * @param int    $storeId
-     * @param array    $url_params
+     * @param int   $incrementId
+     * @param int   $storeId
+     * @param array $url_params
+     * @params int  $quoteId Passed from plugin REST API call.
      *
      * @return string
      */
-    public function getCallbackDmnUrl($incrementId = null, $storeId = null, $url_params = [])
+    public function getCallbackDmnUrl($incrementId = null, $storeId = null, $url_params = [], $quoteId = '')
     {
-        $url =  $this->getStoreManager()
+        $url = $this->getStoreManager()
             ->getStore(null === $incrementId ? $this->storeId : $storeId)
             ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_WEB);
         
         $params = [
-            'order'     => null === $incrementId ? $this->getReservedOrderId() : $incrementId,
-            'form_key'    => $this->formKey->getFormKey(),
-            'quote'     => $this->checkoutSession->getQuoteId(),
+            'order'     => null === $incrementId ? $this->getReservedOrderId($quoteId) : $incrementId,
+            'form_key'  => $this->formKey->getFormKey(),
+            'quote'     => !empty($quoteId) ? $quoteId : $this->checkoutSession->getQuoteId(),
         ];
         
         $params_str = '';
@@ -563,16 +579,25 @@ class Config
     
     public function getQuoteId()
     {
-        return (($quote = $this->checkoutSession->getQuote())) ? $quote->getId() : null;
+        return ($quote = $this->checkoutSession->getQuote()) ? $quote->getId() : null;
     }
     
-    public function getReservedOrderId()
+    /**
+     * @param int $quoteId Optional.
+     * @return string
+     */
+    public function getReservedOrderId($quoteId = '')
     {
-        $reservedOrderId = $this->checkoutSession->getQuote()->getReservedOrderId();
+        $quote = empty($quoteId) ? $this->checkoutSession->getQuote() 
+            : $this->quoteFactory->create()->load($quoteId);
+        
+        $reservedOrderId = $quote->getReservedOrderId();
+        
         if (!$reservedOrderId) {
-            $this->checkoutSession->getQuote()->reserveOrderId()->save();
-            $reservedOrderId = $this->checkoutSession->getQuote()->getReservedOrderId();
+            $quote->reserveOrderId()->save();
+            $reservedOrderId = $quote->getReservedOrderId();
         }
+        
         return $reservedOrderId;
     }
 
@@ -585,9 +610,15 @@ class Config
         return $this->scopeConfig->getValue('general/country/default', ScopeInterface::SCOPE_STORE, $this->storeId);
     }
     
-    public function getQuoteCountryCode()
+    /**
+     * @param int $quoteId Eventually passed form REST API call
+     * @return string
+     */
+    public function getQuoteCountryCode($quoteId = 0)
     {
-        $quote          = $this->checkoutSession->getQuote();
+        $quote = empty($quoteId) ? $this->checkoutSession->getQuote() 
+            : $this->quoteFactory->create()->load($quoteId);
+        
         $billing        = ($quote) ? $quote->getBillingAddress() : null;
         $countryCode    = ($billing) ? $billing->getCountryId() : null;
         
@@ -606,11 +637,15 @@ class Config
     /**
      * Get base currency code from the Quote. This must be same as the Magento Base currency.
      *
+     * @param int $quoteId Eventually passed from REST API call.
      * @return string
      */
-    public function getQuoteBaseCurrency()
+    public function getQuoteBaseCurrency($quoteId = 0)
     {
-        return $this->checkoutSession->getQuote()->getBaseCurrencyCode();
+        $quote = empty($quoteId) ? $this->checkoutSession->getQuote() 
+            : $this->quoteFactory->create()->load($quoteId);
+        
+        return $quote->getBaseCurrencyCode();
     }
     
     /**
@@ -636,11 +671,15 @@ class Config
     /**
      * Get the Quote Base Grand Total, based on Display currency.
      *
+     * @param int $quoteId Eventually passed from REST API call.
      * @return string
      */
-    public function getQuoteBaseTotal()
+    public function getQuoteBaseTotal($quoteId = 0)
     {
-        return (string) number_format((float) $this->checkoutSession->getQuote()->getBaseGrandTotal(), 2, '.', '');
+        $quote = empty($quoteId) ? $this->checkoutSession->getQuote() 
+            : $this->quoteFactory->create()->load($quoteId);
+        
+        return (string) number_format((float) $quote->getBaseGrandTotal(), 2, '.', '');
     }
     
     /**
@@ -653,11 +692,22 @@ class Config
         return (string) number_format($this->checkoutSession->getQuote()->getGrandTotal(), 2, '.', '');
     }
     
-    public function getQuoteBillingAddress()
+    /**
+     * @param string $quoteId Eventually passed form REST API call
+     * @return array
+     * @throws Exception
+     */
+    public function getQuoteBillingAddress($quoteId = '')
     {
-        $quote          = $this->checkoutSession->getQuote();
+        $quote = empty($quoteId) ? $this->checkoutSession->getQuote() 
+            : $this->quoteFactory->create()->load($quoteId);
+        
+        if (!is_object($quote) || empty($quote)) {
+            throw new Exception('There is no Quote by quote ID' . $quoteId);
+        }
+        
         $billingAddress = $quote->getBillingAddress();
-            
+        
         $b_f_name = $billingAddress->getFirstname();
         if (empty($b_f_name)) {
             $b_f_name = $quote->getCustomerFirstname();
@@ -684,25 +734,32 @@ class Config
             "zip"       => $billingAddress->getPostcode(),
             "city"      => $billingAddress->getCity(),
             'country'   => $billing_country,
-            'email'     => $this->getUserEmail(),
+            'email'     => $this->getUserEmail(false, $quoteId),
         ];
     }
     
-    public function getQuoteShippingAddress()
+    /**
+     * @param string $quoteId Eventually passed form REST API call
+     * @return array
+     */
+    public function getQuoteShippingAddress($quoteId = '')
     {
-        $shipping_address    = $this->checkoutSession->getQuote()->getShippingAddress();
-        $shipping_email        = $shipping_address->getEmail();
+        $quote = empty($quoteId) ? $this->checkoutSession->getQuote() 
+            : $this->quoteFactory->create()->load($quoteId);
+        
+        $shipping_address   = $quote->getShippingAddress();
+        $shipping_email     = $shipping_address->getEmail();
         
         if (empty($shipping_email)) {
             $shipping_email = $this->getUserEmail();
         }
         
         return [
-            "firstName"    => $shipping_address->getFirstname(),
+            "firstName" => $shipping_address->getFirstname(),
             "lastName"  => $shipping_address->getLastname(),
             "address"   => $shipping_address->getStreetFull(),
             "phone"     => $shipping_address->getTelephone(),
-            "zip"        => $shipping_address->getPostcode(),
+            "zip"       => $shipping_address->getPostcode(),
             "city"      => $shipping_address->getCity(),
             'country'   => $shipping_address->getCountry(),
             'email'     => $shipping_email,
@@ -719,10 +776,17 @@ class Config
         $this->checkoutSession->setNuveiUseCcOnly($val);
     }
     
-    public function getUserEmail($empty_on_fail = false)
+    /**
+     * @param bool $empty_on_fail
+     * @param string $quoteId Eventually passed form REST API call.
+     * 
+     * @return string
+     */
+    public function getUserEmail($empty_on_fail = false, $quoteId = '')
     {
-        $quote    = $this->checkoutSession->getQuote();
-        $email    = $quote->getBillingAddress()->getEmail();
+        $quote  = empty($quoteId) ? $this->checkoutSession->getQuote() 
+            : $this->quoteFactory->create()->load($quoteId);
+        $email  = $quote->getBillingAddress()->getEmail();
         
         if (empty($email)) {
             $email = $quote->getCustomerEmail();

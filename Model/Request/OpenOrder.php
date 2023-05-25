@@ -2,7 +2,6 @@
 
 namespace Nuvei\Checkout\Model\Request;
 
-use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Framework\Exception\PaymentException;
 use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
 use Nuvei\Checkout\Model\Payment;
@@ -36,10 +35,12 @@ class OpenOrder extends AbstractRequest implements RequestInterface
     private $cart;
     private $items; // the products in the cart
     private $paymentsPlans;
+    private $quoteFactory;
     private $items_data     = [];
     private $subs_data      = [];
     private $requestParams  = [];
     private $is_rebilling   = false;
+    private $quoteId        = '';
 
     /**
      * OpenOrder constructor.
@@ -61,7 +62,8 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         \Magento\Checkout\Model\Cart $cart,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans,
-        \Magento\CatalogInventory\Model\StockState $stockState
+        \Magento\CatalogInventory\Model\StockState $stockState,
+        \Magento\Quote\Model\QuoteFactory $quoteFactory
     ) {
         parent::__construct(
             $config,
@@ -74,6 +76,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         $this->cart             = $cart;
         $this->paymentsPlans    = $paymentsPlans;
         $this->stockState       = $stockState;
+        $this->quoteFactory     = $quoteFactory;
     }
 
     /**
@@ -96,33 +99,36 @@ class OpenOrder extends AbstractRequest implements RequestInterface
     {
         $this->readerWriter->createLog('openOrder');
         
-        $this->quote    = $this->cart->getQuote();
-        $this->items    = $this->quote->getItems();
-        $order_data     = $this->quote->getPayment()->getAdditionalInformation(Payment::CREATE_ORDER_DATA);
+        $this->quote = empty($this->quoteId) ? $this->cart->getQuote() 
+            : $this->quoteFactory->create()->load($this->quoteId);
+        
+        $this->items = $this->quote->getItems();
         
         # check if each item is in stock
-        foreach ($this->items as $item) {
-            $childItems = $item->getChildren();
-            
-            if (count($childItems)) {
-                foreach ($childItems as $childItem) {
-                    $stockItemToCheck[] = $childItem->getProduct()->getId();
-                }
-            } else {
-                $stockItemToCheck[] = $item->getProduct()->getId();
-            }
+        if (!empty($this->items)) {
+            foreach ($this->items as $item) {
+                $childItems = $item->getChildren();
 
-            foreach ($stockItemToCheck as $productId) {
-                $available = $this->stockState->checkQty($productId, $item->getQty());
-                
-                if (!$available) {
-                    $this->error        = 1;
-                    $this->outOfStock   = 1;
-                    $this->reason       = __('Error! Some of the products are out of stock.');
-                    
-                    $this->readerWriter->createLog($productId, 'A product is not availavle, product id ');
-                    
-                    return $this;
+                if (count($childItems)) {
+                    foreach ($childItems as $childItem) {
+                        $stockItemToCheck[] = $childItem->getProduct()->getId();
+                    }
+                } else {
+                    $stockItemToCheck[] = $item->getProduct()->getId();
+                }
+
+                foreach ($stockItemToCheck as $productId) {
+                    $available = $this->stockState->checkQty($productId, $item->getQty());
+
+                    if (!$available) {
+                        $this->error        = 1;
+                        $this->outOfStock   = 1;
+                        $this->reason       = __('Error! Some of the products are out of stock.');
+
+                        $this->readerWriter->createLog($productId, 'A product is not availavle, product id ');
+
+                        return $this;
+                    }
                 }
             }
         }
@@ -131,25 +137,29 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         // iterate over Items and search for Subscriptions
         $this->items_data   = $this->paymentsPlans->getProductPlanData();
         $this->subs_data    = isset($this->items_data['subs_data']) ?: [];
+        $order_data         = $this->quote->getPayment()->getAdditionalInformation(Payment::CREATE_ORDER_DATA);
         
         $this->readerWriter->createLog([
-            '$this->subs_data'  => $this->subs_data,
+            '$this->quoteId'    => $this->quoteId,
             '$order_data'       => $order_data,
+            '$this->subs_data'  => $this->subs_data,
         ]);
         
         // will we call updateOrder?
         $callUpdateOrder    = false;
-        $order_total        = (float) $this->config->getQuoteBaseTotal();
+        $order_total        = (float) $this->config->getQuoteBaseTotal($this->quoteId);
         
         if (!empty($order_data)) {
             $callUpdateOrder = true;
         }
         
         if (empty($order_data['userTokenId']) && !empty($this->subs_data)) {
+            $this->readerWriter->createLog('$order_data[userTokenId] is empty, call openOrder');
             $callUpdateOrder = false;
         }
         
         if (empty($order_data['transactionType'])) {
+            $this->readerWriter->createLog('$order_data[transactionType] is empty, call openOrder');
             $callUpdateOrder = false;
         }
         
@@ -159,6 +169,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
                 || 'Auth' != $order_data['transactionType']
             )
         ) {
+            $this->readerWriter->createLog('$order_total is and transactionType is Auth, call openOrder');
             $callUpdateOrder = false;
         }
         
@@ -176,6 +187,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
 
             $req_resp = $update_order_request
                 ->setOrderData($order_data)
+                ->setQuoteId($this->quoteId)
                 ->process();
         }
         // /will we call updateOrder?
@@ -200,17 +212,34 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             $add_info['userTokenId'] = $req_resp['userTokenId'];
         }
         
-        if (isset($this->requestParams['transactionType'])) {
+        // in case of OpenOrder
+        if (!empty($this->requestParams['transactionType'])) {
             $add_info['transactionType'] = $this->requestParams['transactionType'];
+        }
+        // in case of updateOrder the transactionType is not changed
+        elseif (!empty($order_data['transactionType'])) {
+            $add_info['transactionType'] = $order_data['transactionType'];
         }
         
         $this->quote->getPayment()->setAdditionalInformation(
             Payment::CREATE_ORDER_DATA,
             $add_info
         );
+        
+        $this->quote->save();
         # /save the session token in the Quote
         
-        $this->cart->getQuote()->save();
+        $this->readerWriter->createLog([
+            'quote id' => $this->quoteId,
+            'quote CREATE_ORDER_DATA' => $this->quote->getPayment()->getAdditionalInformation(Payment::CREATE_ORDER_DATA),
+        ]);
+        
+        return $this;
+    }
+    
+    public function setQuoteId($quoteId = '')
+    {
+        $this->quoteId = $quoteId;
         
         return $this;
     }
@@ -240,7 +269,11 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         
         $this->config->setNuveiUseCcOnly(!empty($this->subs_data) ? true : false);
         
-        $billing_address = $this->config->getQuoteBillingAddress();
+        $quoteId    = empty($this->quoteId) ? $this->config->getCheckoutSession()->getQuoteId() : $this->quoteId;
+        $amount     = $this->config->getQuoteBaseTotal($quoteId);
+        
+        $billing_address = $this->config->getQuoteBillingAddress($quoteId);
+        
         if (!empty($this->billingAddress)) {
             $billing_address['firstName']   = $this->billingAddress['firstname'] ?: $billing_address['firstName'];
             $billing_address['lastName']    = $this->billingAddress['lastname'] ?: $billing_address['lastName'];
@@ -255,11 +288,9 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             $billing_address['country'] = $this->billingAddress['countryId'] ?: $billing_address['country'];
         }
         
-        $amount = $this->config->getQuoteBaseTotal();
-        
         $params = [
-            'clientUniqueId'    => $this->config->getCheckoutSession()->getQuoteId() . '_' . time(),
-            'currency'          => $this->config->getQuoteBaseCurrency(),
+            'clientUniqueId'    => $quoteId . '_' . time(),
+            'currency'          => $this->config->getQuoteBaseCurrency($quoteId),
             'amount'            => $amount,
             'deviceDetails'     => $this->config->getDeviceDetails(),
             'shippingAddress'   => $this->config->getQuoteShippingAddress(),
@@ -267,11 +298,11 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             'transactionType'   => (float) $amount == 0 ? 'Auth' : $this->config->getConfigValue('payment_action'),
 
             'urlDetails'        => [
-                'successUrl'        => $this->config->getCallbackSuccessUrl(),
-                'failureUrl'        => $this->config->getCallbackErrorUrl(),
-                'pendingUrl'        => $this->config->getCallbackPendingUrl(),
+                'successUrl'        => $this->config->getCallbackSuccessUrl($this->quoteId),
+                'failureUrl'        => $this->config->getCallbackErrorUrl($this->quoteId),
+                'pendingUrl'        => $this->config->getCallbackPendingUrl($this->quoteId),
                 'backUrl'           => $this->config->getBackUrl(),
-                'notificationUrl'   => $this->config->getCallbackDmnUrl(),
+                'notificationUrl'   => $this->config->getCallbackDmnUrl(null, null, [], $this->quoteId),
             ],
 
             'merchantDetails'    => [

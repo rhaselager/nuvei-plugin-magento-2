@@ -2,6 +2,11 @@
 
 ---
 
+# 3.0.0
+```
+    * Added Magento 2 REST API support.
+```
+
 # 2.0.4
 ```
     * Changed the link to the plugin repo in the model who check for new plugin version.

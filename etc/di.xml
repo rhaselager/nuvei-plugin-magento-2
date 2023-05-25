@@ -35,4 +35,7 @@
                 type="Nuvei\Checkout\Plugin\QuoteAddressValidatorPlugin" 
                 disabled="false" />
     </type>
+    
+    <!-- for the REST API -->
+    <preference for="Nuvei\Checkout\Api\GetCheckoutDataInterface" type="Nuvei\Checkout\Model\Api\GetCheckoutData"/>
 </config>

@@ -4,8 +4,6 @@ namespace Nuvei\Checkout\Model;
 
 use Magento\Framework\Exception\PaymentException;
 use Magento\Quote\Model\Quote;
-use Nuvei\Checkout\Lib\Http\Client\Curl;
-use Nuvei\Checkout\Model\Response\Factory as ResponseFactory;
 
 /**
  * Nuvei Checkout abstract request model.
@@ -27,7 +25,9 @@ abstract class AbstractRequest
     const PAYMENT_VOID_METHOD                   = 'voidTransaction';
     const OPEN_ORDER_METHOD                     = 'openOrder';
     const UPDATE_ORDER_METHOD                   = 'updateOrder';
+    const PAYMENT_APM_METHOD                    = 'paymentAPM';
     const GET_MERCHANT_PAYMENT_METHODS_METHOD   = 'getMerchantPaymentMethods';
+    const GET_UPOS_METHOD                       = 'getUserUPOs';
     const GET_MERCHANT_PAYMENT_PLANS_METHOD     = 'getPlansList';
     const CREATE_MERCHANT_PAYMENT_PLAN          = 'createPlan';
     const CREATE_SUBSCRIPTION_METHOD            = 'createSubscription';
@@ -165,13 +165,13 @@ abstract class AbstractRequest
      *
      * @param Config            $config
      * @param Curl              $curl
-     * @param ResponseFactory   $responseFactory
+     * @param Factory           $responseFactory
      * @param ReaderWriter      $readerWriter
      */
     public function __construct(
         \Nuvei\Checkout\Model\Config $config,
-        Curl $curl,
-        ResponseFactory $responseFactory,
+        \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
+        \Nuvei\Checkout\Model\Response\Factory $responseFactory,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter
     ) {
         $this->config           = $config;
@@ -209,15 +209,6 @@ abstract class AbstractRequest
     protected function initRequest()
     {
         if ($this->requestId === null) {
-//            $requestLog = $this->logger->createRequest(
-//                [
-//                    'request' => [
-//                        'Type' => 'POST',
-//                    ],
-//                ]
-//            );
-//            $this->requestId = $requestLog->getId();
-            
             $this->requestId = date('YmdHis') . '_' . uniqid();
         }
     }
@@ -388,12 +379,11 @@ abstract class AbstractRequest
         $concat = '';
         foreach ($checksumKeys as $checksumKey) {
             if (!isset($params[$checksumKey])) {
-                throw new PaymentException(
-                    __(
-                        'Required key %1 for checksum calculation is missing.',
-                        $checksumKey
-                    )
-                );
+                $msg = __('Required key %1 for checksum calculation is missing.', $checksumKey);
+                
+                $this->readerWriter->createLog($msg);
+                
+                throw new PaymentException($msg);
             }
 
             if (is_array($params[$checksumKey])) {

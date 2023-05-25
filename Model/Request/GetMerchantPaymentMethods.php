@@ -28,6 +28,9 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
     protected $store;
     
     private $billing_address;
+    private $sessionToken;
+    private $currency;
+    private $quoteId;
     
     /**
      * @param Config            $moduleConfig
@@ -105,6 +108,11 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
             return [];
         }
         
+        // for the REST API return response directly
+        if (!empty($this->sessionToken)) {
+            return $this->sendRequest(true, true);
+        }
+        
         $this->sendRequest();
 
         return $this
@@ -112,10 +120,49 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
             ->process();
     }
     
+    /**
+     * @param string|null $billing_address
+     * @return $this
+     */
     public function setBillingAddress($billing_address)
     {
         $this->billing_address = json_decode(is_null($billing_address) ? '' : $billing_address, true);
-        
+        return $this;
+    }
+    
+    /**
+     * Use this method for REST API calls.
+     * 
+     * @param string $sessionToken
+     * @return $this
+     */
+    public function setSessionToken($sessionToken)
+    {
+        $this->sessionToken = $sessionToken;
+        return $this;
+    }
+    
+    /**
+     * Use this method for REST API calls.
+     * 
+     * @param string $currency
+     * @return $this
+     */
+    public function setCurrency($currency)
+    {
+        $this->currency = $currency;
+        return $this;
+    }
+    
+    /**
+     * Use this method for REST API calls.
+     * 
+     * @param string $quoteId
+     * @return $this
+     */
+    public function setQuoteId($quoteId)
+    {
+        $this->quoteId = $quoteId;
         return $this;
     }
 
@@ -126,28 +173,40 @@ class GetMerchantPaymentMethods extends AbstractRequest implements RequestInterf
      */
     protected function getParams()
     {
-        $tokenRequest   = $this->requestFactory->create(AbstractRequest::GET_SESSION_TOKEN);
-        $tokenResponse  = $tokenRequest->process();
+        $params         = [];
+        $sessionToken   = $this->sessionToken;
+        
+        if (empty($sessionToken)) {
+            $tokenRequest   = $this->requestFactory->create(AbstractRequest::GET_SESSION_TOKEN);
+            $tokenResponse  = $tokenRequest->process();
+            $sessionToken   = !empty($tokenResponse['sessionToken']) ? $tokenResponse['sessionToken'] : '';
+        }
+        // call from the REST API
+        else {
+            $country_code = isset($this->billing_address['countryId']) ? $this->billing_address['countryId'] : '';
+            if (empty($country_code)) {
+                $country_code = $this->config->getQuoteCountryCode($this->quoteId);
+            }
+            
+            $params['countryCode'] = $country_code;
+            
+            if (!empty($this->currency)) {
+                $params['currencyCode'] = $this->currency;
+            }
+        }
         
         $languageCode = 'en';
         if ($this->store && $this->store->getLocaleCode()) {
             $languageCode = $this->store->getLocaleCode();
         }
         
-        $country_code = isset($this->billing_address['countryId']) ? $this->billing_address['countryId'] : '';
-        if (empty($country_code)) {
-            $country_code = $this->config->getQuoteCountryCode();
-        }
+        $params['sessionToken'] = $sessionToken;
+        $params['languageCode'] = $languageCode;
         
-        $params = array_merge_recursive(
+        return array_merge_recursive(
             parent::getParams(),
-            [
-                'sessionToken'  => !empty($tokenResponse['sessionToken']) ? $tokenResponse['sessionToken'] : '',
-                "languageCode"  => $languageCode,
-            ]
+            $params
         );
-        
-        return $params;
     }
 
     /**

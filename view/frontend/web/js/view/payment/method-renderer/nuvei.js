@@ -287,9 +287,9 @@ define(
                 return nuveiGetCode();
             },
 
-            getPaymentApmUrl: function() {
-                return window.checkoutConfig.payment[self.getCode()].paymentApmUrl;
-            },
+//            getPaymentApmUrl: function() {
+//                return window.checkoutConfig.payment[self.getCode()].paymentApmUrl;
+//            },
 			
 			getSessionToken: function() {
                 console.log('getSessionToken', quote.paymentMethod);

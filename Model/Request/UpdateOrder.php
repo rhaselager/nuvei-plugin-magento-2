@@ -2,14 +2,10 @@
 
 namespace Nuvei\Checkout\Model\Request;
 
-use Nuvei\Checkout\Lib\Http\Client\Curl;
 use Nuvei\Checkout\Model\AbstractRequest;
 use Nuvei\Checkout\Model\AbstractResponse;
-use Nuvei\Checkout\Model\Config;
 use Nuvei\Checkout\Model\RequestInterface;
-use Nuvei\Checkout\Model\Response\Factory as ResponseFactory;
 use Magento\Framework\Exception\PaymentException;
-use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
 
 /**
  * Nuvei Checkout open order request model.
@@ -17,32 +13,26 @@ use Nuvei\Checkout\Model\Request\Factory as RequestFactory;
 class UpdateOrder extends AbstractRequest implements RequestInterface
 {
     /**
-     * @var RequestFactory
-     */
-    protected $requestFactory;
-    
-    /**
      * @var array
      */
     protected $orderData;
-    
-    protected $readerWriter;
 
+    private $quoteId        = '';
     private $cart;
     private $paymentsPlans;
     
     /**
      * @param Config            $config
      * @param Curl              $curl
-     * @param ResponseFactory   $responseFactory
+     * @param Factory           $responseFactory
      * @param Cart              $cart
      * @param ReaderWriter      $readerWriter
      * @param PaymentsPlans     $paymentsPlans
      */
     public function __construct(
-        Config $config,
-        Curl $curl,
-        ResponseFactory $responseFactory,
+        \Nuvei\Checkout\Model\Config $config,
+        \Nuvei\Checkout\Lib\Http\Client\Curl $curl,
+        \Nuvei\Checkout\Model\Response\Factory $responseFactory,
         \Magento\Checkout\Model\Cart $cart,
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
         \Nuvei\Checkout\Model\PaymentsPlans $paymentsPlans
@@ -56,7 +46,6 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
 
         $this->cart             = $cart;
         $this->paymentsPlans    = $paymentsPlans;
-        $this->readerWriter     = $readerWriter;
     }
 
     /**
@@ -77,6 +66,13 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
     public function setOrderData(array $orderData)
     {
         $this->orderData = $orderData;
+        return $this;
+    }
+    
+    public function setQuoteId($quoteId = '')
+    {
+        $this->quoteId = $quoteId;
+        
         return $this;
     }
     
@@ -122,18 +118,22 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
         
         $this->config->setNuveiUseCcOnly(!empty($subs_data) ? true : false);
         
-        $billing_address    = $this->config->getQuoteBillingAddress();
-        $amount             = $this->config->getQuoteBaseTotal();
+        $billing_address    = $this->config->getQuoteBillingAddress($this->quoteId);
+        $amount             = $this->config->getQuoteBaseTotal($this->quoteId);
         
-        $this->readerWriter->createLog($subs_data, 'update order - subs_data');
+        $this->readerWriter->createLog([
+            '$subs_data' => $subs_data,
+            'quoteId' => $this->quoteId,
+            'getQuoteBaseCurrency' => $this->config->getQuoteBaseCurrency($this->quoteId),
+        ]);
         
         $params = array_merge_recursive(
             parent::getParams(),
             [
-                'currency'          => $this->config->getQuoteBaseCurrency(),
+                'currency'          => $this->config->getQuoteBaseCurrency($this->quoteId),
                 'amount'            => $amount,
                 'billingAddress'    => $billing_address,
-                'shippingAddress'   => $this->config->getQuoteShippingAddress(),
+                'shippingAddress'   => $this->config->getQuoteShippingAddress($this->quoteId),
                 
                 'items'             => [[
                     'name'      => 'magento_order',
@@ -163,8 +163,13 @@ class UpdateOrder extends AbstractRequest implements RequestInterface
         
         $params['checksum'] = hash(
             $this->config->getConfigValue('hash'),
-            $this->config->getMerchantId() . $this->config->getMerchantSiteId() . $params['clientRequestId']
-                . $params['amount'] . $params['currency'] . $params['timeStamp'] . $this->config->getMerchantSecretKey()
+            $this->config->getMerchantId() 
+                . $this->config->getMerchantSiteId() 
+                . $params['clientRequestId']
+                . $params['amount'] 
+                . $params['currency'] 
+                . $params['timeStamp'] 
+                . $this->config->getMerchantSecretKey()
         );
         
         return $params;

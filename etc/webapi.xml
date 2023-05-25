@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Nuvei Checkout acl.
+ *
+ * @category Nuvei
+ * @package  Nuvei_Checkout
+ */
+-->
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+    
+    <route url="/V1/nuvei/get-checkout-data/:quoteId/:neededData" method="POST">
+        <service class="Nuvei\Checkout\Api\GetCheckoutDataInterface" method="getData" />
+        <resources>
+            <resource ref="Nuvei_Checkout::get_checkout_data" />
+        </resources>
+    </route>
+</routes>
