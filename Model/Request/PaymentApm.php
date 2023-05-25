@@ -67,23 +67,17 @@ class PaymentApm extends AbstractRequest implements RequestInterface
         
         if (!empty($resp['redirectURL'])) {
             $return['redirectUrl'] = (string) $resp['redirectURL'];
-        } elseif (!empty($resp['paymentOption']['redirectUrl'])) {
+        }
+        elseif (!empty($resp['paymentOption']['redirectUrl'])) {
             $return['redirectUrl'] = (string) $resp['paymentOption']['redirectUrl'];
-        } else {
-            switch ($transactionStatus) {
-                case 'APPROVED':
-                    $return['redirectUrl'] = $this->config->getCallbackSuccessUrl();
-                    break;
-                
-                case 'PENDING':
-                    $return['redirectUrl'] = $this->config->getCallbackPendingUrl();
-                    break;
-                
-                case 'DECLINED':
-                case 'ERROR':
-                default:
-                    $return['redirectUrl'] = $this->config->getCallbackErrorUrl();
-                    break;
+        }
+        // some error
+        else {
+            if (!empty($resp['reason'])) {
+                $return['message'] = $resp['reason'];
+            }
+            else {
+                $return['message'] = 'Unexpected error.';
             }
         }
         
