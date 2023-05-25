@@ -56,8 +56,8 @@ class Config
     const NUVEI_REST_API_PLUGIN_METHODS         = [
         'get-web-sdk-data',
         'get-simply-connect-data',
-        'cashier',
-        'apm-redirect-url',
+//        'cashier',
+        'get-apm-redirect-url',
         'update-order'
     ];
     
