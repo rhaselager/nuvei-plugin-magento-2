@@ -200,7 +200,7 @@ class Config
      */
     public function getSourceApplication()
     {
-        return 'MAGENTO_2_PLUGIN';
+        return 'Magento 2 Plugin';
     }
 
     /**

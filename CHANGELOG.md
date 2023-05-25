@@ -5,6 +5,7 @@
 # 3.0.0
 ```
     * Added Magento 2 REST API support.
+    * Changed sourceApplication parameter value.
 ```
 
 # 2.0.4
