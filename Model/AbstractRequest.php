@@ -25,7 +25,7 @@ abstract class AbstractRequest
     const PAYMENT_VOID_METHOD                   = 'voidTransaction';
     const OPEN_ORDER_METHOD                     = 'openOrder';
     const UPDATE_ORDER_METHOD                   = 'updateOrder';
-    const PAYMENT_APM_METHOD                    = 'paymentAPM';
+    const PAYMENT_APM_METHOD                    = 'payment';
     const GET_MERCHANT_PAYMENT_METHODS_METHOD   = 'getMerchantPaymentMethods';
     const GET_UPOS_METHOD                       = 'getUserUPOs';
     const GET_MERCHANT_PAYMENT_PLANS_METHOD     = 'getPlansList';
@@ -268,9 +268,9 @@ abstract class AbstractRequest
             'timeStamp'         => date('YmdHis'),
             'webMasterId'       => $this->config->getSourcePlatformField(),
             'sourceApplication' => $this->config->getSourceApplication(),
-            'merchantDetails'   => [
-                'customField3'      => 'Magento v.' . $this->config->getMagentoVersion(), // Magento version
-            ],
+//            'merchantDetails'   => [
+//                'customField3'      => 'Magento v.' . $this->config->getMagentoVersion(), // Magento version
+//            ],
             
         ];
 

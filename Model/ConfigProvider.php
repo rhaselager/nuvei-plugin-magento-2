@@ -121,12 +121,13 @@ class ConfigProvider extends CcGenericConfigProvider
         }
         # blocked_cards END
         
-        $blocked_pms = $this->moduleConfig->getConfigValue('block_pms', 'advanced');
+        $blocked_pms    = $this->moduleConfig->getConfigValue('block_pms', 'advanced');
+        $canUseUpos     = ($this->moduleConfig->canUseUpos() && $this->moduleConfig->isUserLogged()) ? true : false;
         
         $billing_address    = $this->moduleConfig->getQuoteBillingAddress();
         $payment_plan_data  = $this->paymentsPlans->getProductPlanData();
         $save_pm            = $show_upo
-                            = $this->moduleConfig->canUseUpos();
+                            = $canUseUpos;
         
         if (!empty($payment_plan_data)) {
             $save_pm = 'always';

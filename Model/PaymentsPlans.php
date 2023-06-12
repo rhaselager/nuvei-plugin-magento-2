@@ -18,6 +18,10 @@ class PaymentsPlans
     private $eavAttribute;
     private $productObj;
     private $quote;
+    private $quoteId;
+    private $quoteFactory;
+    private $cartRepo;
+    private $checkoutSession;
     
     public function __construct(
         \Nuvei\Checkout\Model\ReaderWriter $readerWriter,
@@ -25,6 +29,8 @@ class PaymentsPlans
         \Magento\ConfigurableProduct\Model\Product\Type\Configurable $configurable,
         \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute,
         \Magento\Catalog\Model\Product $productObj,
+        \Magento\Quote\Model\QuoteFactory $quoteFactory,
+        \Magento\Quote\Api\CartRepositoryInterface $cartRepo,
         \Magento\Checkout\Model\Session $checkoutSession
     ) {
         $this->readerWriter         = $readerWriter;
@@ -32,14 +38,17 @@ class PaymentsPlans
         $this->configurable         = $configurable;
         $this->eavAttribute         = $eavAttribute;
         $this->productObj           = $productObj;
-        $this->quote                = $checkoutSession->getQuote();
+        $this->quoteFactory         = $quoteFactory;
+        $this->cartRepo             = $cartRepo;
+        $this->checkoutSession      = $checkoutSession;
+//        $this->quote                = $checkoutSession->getQuote();
     }
     
     /**
      * Search for the product with Payment Plan.
      *
      * @param int $product_id
-     * @param array $params pairs option key id with option value
+     * @param array $params Pairs option key id with option value.
      *
      * @return array $return_arr
      */
@@ -48,12 +57,25 @@ class PaymentsPlans
         $items_data = [];
         $plan_data  = [];
         $return_arr = [];
+        $quote      = empty($this->quoteId) ? $this->checkoutSession->getQuote() 
+//            : $this->quoteFactory->create()->load($this->quoteId);
+            : $this->cartRepo->get($this->quoteId);
+        
+        $itemsQty = $quote->getItemsSummaryQty();
+        
+        if (0 == $itemsQty) {
+            $this->readerWriter->createLog('Items quantity is 0');
+            
+            return $return_arr;
+        }
         
         try {
             # 1. when we search in the Cart
             if (0 == $product_id && empty($params)) {
-                $items = $this->quote->getItems();
-            
+                $items = $quote->getItems();
+                
+                $this->readerWriter->createLog((array) $quote->getItems());
+                
                 if (empty($items) || !is_array($items)) {
                     $this->readerWriter->createLog(
                         $items,
@@ -69,13 +91,26 @@ class PaymentsPlans
                     if (!is_object($item)) {
                         $this->readerWriter->createLog('getProductPlanData() Error - '
                             . 'the Item in the Cart is not an Object.');
-                            continue;
+                        
+                        continue;
                     }
 
-                    $options = $item->getProduct()->getTypeInstance(true)
-                        ->getOrderOptions($item->getProduct());
+                    $product    = $item->getProduct();
+                    $product_id = $product->getId();
+                    $options    = $product->getTypeInstance(true)->getOrderOptions($product);
                     
-                    $this->readerWriter->createLog($options, 'getProductPlanData $options');
+                    // in case of simple child product
+                    if (!empty($options['simple_sku'])) {
+                        $product    = $this->productRepository->get($options['simple_sku']);
+                        $product_id = $product->getId();
+                    }
+                    
+//                    $this->readerWriter->createLog([
+//                        '$product sku' => (array) $product->getSku(), 
+//                        'getCustomAttribute nuvei_sub_enabled'  => $product->getCustomAttribute('nuvei_sub_enabled'),
+//                        'getData nuvei_sub_enabled'  => $product->getData('nuvei_sub_enabled'),
+//                        '$options' => (array) $options,
+//                    ]);
 
                     // stop the proccess
                     if (empty($options['info_buyRequest'])
@@ -109,6 +144,8 @@ class PaymentsPlans
                             $options['info_buyRequest']['super_attribute'],
                             $parent
                         );
+                        
+                        $this->readerWriter->createLog('getProductPlanData super_attribute');
                         
                         if (null === $product) {
                             continue;
@@ -157,7 +194,12 @@ class PaymentsPlans
                         return $return_arr;
                     }
 
-                    // 1.2 in case of simple product
+                    # 1.2 in case of simple product
+                    // missing needed data
+                    if (empty($options['info_buyRequest']['product'])) {
+                        return $return_arr;
+                    }
+                    
                     $product            = $this->productObj->load($options['info_buyRequest']['product']);
                     $nuvei_sub_enabled  = $product->getCustomAttribute('nuvei_sub_enabled');
 
@@ -251,6 +293,19 @@ class PaymentsPlans
             $this->readerWriter->createLog($e->getMessage(), 'getProductPlanData() Exception:');
             return [];
         }
+    }
+    
+    /**
+     * Pass the Quote ID in case of REST API logic.
+     * 
+     * @param int $quoteId
+     * @return $this
+     */
+    public function setQuoteId($quoteId = '')
+    {
+        $this->quoteId = $quoteId;
+        
+        return $this;
     }
     
     /**

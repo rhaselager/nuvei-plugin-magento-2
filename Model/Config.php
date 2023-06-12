@@ -399,20 +399,31 @@ class Config
     }
     
     /**
-     * @param bool $isRestApiCall
      * @return boolean
      */
-    public function canUseUpos($isRestApiCall = false)
+//    public function canUseUpos($isRestApiCall = false)
+    public function canUseUpos()
     {
         if (1 == $this->getConfigValue('use_upos')) {
-            if ($this->customerSession->isLoggedIn() || $isRestApiCall) {
-                return true;
-            }
-            
-            return false;
+            return true;
         }
         
         return false;
+        
+//        if (1 == $this->getConfigValue('use_upos')) {
+//            if ($this->customerSession->isLoggedIn() || $isRestApiCall) {
+//                return true;
+//            }
+//            
+//            return false;
+//        }
+//        
+//        return false;
+    }
+    
+    public function isUserLogged()
+    {
+        return $this->customerSession->isLoggedIn() ? true : false;
     }
     
     public function allowGuestsSubscr()
@@ -458,17 +469,22 @@ class Config
 
     public function getSourcePlatformField()
     {
+        $text = '';
+        
         try {
             $module_data = $this->moduleList->getOne(self::MODULE_NAME);
             
             if (!is_array($module_data) || empty($module_data['setup_version'])) {
-                return 'Magento Plugin';
+                $text = 'Magento Plugin';
             }
-            
-            return 'Magento Plugin ' . $module_data['setup_version'];
+            else {
+                $text = 'Magento Plugin ' . $module_data['setup_version'];
+            }
         } catch (\Exception $ex) {
-            return 'Magento Checkout Plugin';
+            $text = 'Magento Checkout Plugin';
         }
+        
+        return $text . '; Magento v' . $this->getMagentoVersion();
     }
     
     public function getMagentoVersion()

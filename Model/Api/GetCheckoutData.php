@@ -2,8 +2,6 @@
 
 namespace Nuvei\Checkout\Model\Api;
 
-//use Magento\Framework\DataObject;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Nuvei\Checkout\Api\GetCheckoutDataInterface;
 use Nuvei\Checkout\Model\AbstractRequest;
 use Nuvei\Checkout\Model\Config;
@@ -45,7 +43,6 @@ class GetCheckoutData implements GetCheckoutDataInterface
      * @param string $neededData Available options - NUVEI_REST_API_PLUGIN_METHODS
      * 
      * @return string
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getData($quoteId, $neededData)
     {
@@ -123,7 +120,9 @@ class GetCheckoutData implements GetCheckoutDataInterface
     private function getWebSdkData($quoteId)
     {
         # 1. Open new order
-        $oo_data = $this->openOrder($quoteId); // get an array
+        $webApiparams   = $this->apiRequest->getBodyParams();
+        $isUserLogged   = isset($webApiparams['isUserLogged']) ? (bool) $webApiparams['isUserLogged'] : false;
+        $oo_data        = $this->openOrder($quoteId, $isUserLogged); // get an array
         
         // in case of error
         if (!empty($oo_data['message'])) {
@@ -132,9 +131,10 @@ class GetCheckoutData implements GetCheckoutDataInterface
         # /1. Open new order
         
         # 2. Get merchant APMs
+        $apmMethods     = [];
         $request        = $this->requestFactory->create(AbstractRequest::GET_MERCHANT_PAYMENT_METHODS_METHOD);
         $billingAddress = $this->moduleConfig->getQuoteBillingAddress($quoteId);
-        $currency       = $this->moduleConfig->getQuoteBaseCurrency($quoteId);
+//        $currency       = $this->moduleConfig->getQuoteBaseCurrency($quoteId);
         
         $apmsResp = $request
             ->setBillingAddress(json_encode($billingAddress))
@@ -148,19 +148,39 @@ class GetCheckoutData implements GetCheckoutDataInterface
             ];
         }
         
+        $useCcOnly  = false;
         $apmMethods = $apmsResp['paymentMethods'];
+        
+        // when there is subsData only CC allowed
+        if (!empty($oo_data['subsData'])) {
+            $useCcOnly = true;
+            
+            foreach ($apmsResp['paymentMethods'] as $key => $apmData) {
+                if ('cc_card' == $apmData['paymentMethod']) {
+                    $apmMethods     = [];
+                    $apmMethods[]   = $apmsResp['paymentMethods'][$key];
+                    break;
+                }
+            }
+        }
         # /2. Get merchant APMs
         
         # 3. Optionally get merchant UPOs
         $upos = [];
         
-        if ($this->moduleConfig->canUseUpos(true)) {
+        if ($this->moduleConfig->canUseUpos() && $isUserLogged) {
             $request    = $this->requestFactory->create(AbstractRequest::GET_UPOS_METHOD);
             $upos   = $request
                 ->setEmail($billingAddress['email'])
                 ->process();
             
-            $this->readerWriter->createLog($upos);
+            if ($useCcOnly) {
+                foreach ($upos as $key => $upoData) {
+                    if ('cc_card' != $upoData['paymentMethodName']) {
+                        unset($upos[$key]);
+                    }
+                }
+            }
         }
         # /3. Optionally get merchant UPOs
         
@@ -185,7 +205,7 @@ class GetCheckoutData implements GetCheckoutDataInterface
             'locale'                    => substr($locale, 0, 2),
             'webMasterId'               => $this->moduleConfig->getSourcePlatformField(),
             'sourceApplication'         => $this->moduleConfig->getSourceApplication(),
-            'userTokenId'               => $billingAddress['email'],
+            'userTokenId'               => $isUserLogged ? $billingAddress['email'] : '',
 //            'applePayLabel'             => $this->moduleConfig->getMerchantApplePayLabel(),
             'currencyCode'              => $this->moduleConfig->getQuoteBaseCurrency($quoteId),
         ];
@@ -203,7 +223,9 @@ class GetCheckoutData implements GetCheckoutDataInterface
     private function getSimplyConnectData($quoteId)
     {
         # 1. Open new order
-        $oo_data = $this->openOrder($quoteId); // get an array
+        $webApiparams   = $this->apiRequest->getBodyParams();
+        $isUserLogged   = isset($webApiparams['isUserLogged']) ? (bool) $webApiparams['isUserLogged'] : false;
+        $oo_data        = $this->openOrder($quoteId, $isUserLogged); // get an array
         
         // in case of error
         if (!empty($oo_data['message'])) {
@@ -247,8 +269,9 @@ class GetCheckoutData implements GetCheckoutDataInterface
         $billingAddress     = $this->moduleConfig->getQuoteBillingAddress($quoteId);
         $payment_plan_data  = $this->paymentsPlans->getProductPlanData();
         $isPaymentPlan      = false;
+        $canUseUpos         = ($this->moduleConfig->canUseUpos() && $isUserLogged) ? true : false;
         $save_pm            = $show_upo
-                            = $this->moduleConfig->canUseUpos();
+                            = $canUseUpos;
         
         if (!empty($payment_plan_data)) {
             $save_pm        = 'always';
@@ -286,6 +309,15 @@ class GetCheckoutData implements GetCheckoutDataInterface
             ],
         ];
         
+        if ($isPaymentPlan) {
+            $sdk_data['nuveiCheckoutParams']['pmBlacklist'] = null;
+            $sdk_data['nuveiCheckoutParams']['pmWhitelist'] = ['cc_card'];
+        }
+        
+        if (in_array($save_pm, [true, 'always'])) {
+            $sdk_data['nuveiCheckoutParams']['userTokenId'] = $sdk_data['nuveiCheckoutParams']['email'];
+        }
+        
         return $sdk_data;
     }
     
@@ -318,6 +350,12 @@ class GetCheckoutData implements GetCheckoutDataInterface
             ->process();
         
         if (empty($response['redirectUrl'])) {
+            if (!empty($response['message'])) {
+                return [
+                    'message' => $response['message'],
+                ];
+            }
+            
             return [
                 'message' => $response['status'],
             ];
@@ -363,12 +401,15 @@ class GetCheckoutData implements GetCheckoutDataInterface
      * Just a repeating part of code for WebSDK and checkoutSDK.
      * 
      * @param int $quoteId
+     * @param bool $isUserLogged
+     * 
      * @return array
      */
-    private function openOrder($quoteId)
+    private function openOrder($quoteId, $isUserLogged)
     {
         $request    = $this->requestFactory->create(AbstractRequest::OPEN_ORDER_METHOD);
         $ooResp     = $request
+            ->setIsUserLogged($isUserLogged)
             ->setQuoteId($quoteId)
             ->process();
         
@@ -389,6 +430,7 @@ class GetCheckoutData implements GetCheckoutDataInterface
         return [
             'sessionToken'  => $ooResp->sessionToken,
             'amount'        => $ooResp->ooAmount,
+            'subsData'      => $ooResp->subsData,
         ];
     }
     

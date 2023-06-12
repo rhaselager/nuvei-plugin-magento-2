@@ -1238,7 +1238,7 @@ class Dmn extends Action implements CsrfAwareActionInterface
             return;
         }
         
-        $items_list = json_decode($params['customField5'], true);
+//        $items_list = json_decode($params['customField5'], true);
         $subsc_data = [];
 
         // we allow only one Product in the Order to be with Payment Plan

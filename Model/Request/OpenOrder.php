@@ -39,7 +39,8 @@ class OpenOrder extends AbstractRequest implements RequestInterface
     private $items_data     = [];
     private $subs_data      = [];
     private $requestParams  = [];
-    private $is_rebilling   = false;
+//    private $is_rebilling   = false;
+    private $isUserLogged   = null;
     private $quoteId        = '';
 
     /**
@@ -135,7 +136,10 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         # /check of each item is in stock
         
         // iterate over Items and search for Subscriptions
-        $this->items_data   = $this->paymentsPlans->getProductPlanData();
+        $this->items_data   = $this->paymentsPlans
+            ->setQuoteId($this->quoteId)
+            ->getProductPlanData();
+        
         $this->subs_data    = isset($this->items_data['subs_data']) ?: [];
         $order_data         = $this->quote->getPayment()->getAdditionalInformation(Payment::CREATE_ORDER_DATA);
         
@@ -200,6 +204,7 @@ class OpenOrder extends AbstractRequest implements RequestInterface
         $this->orderId      = $req_resp['orderId'];
         $this->sessionToken = $req_resp['sessionToken'];
         $this->ooAmount     = $req_resp['merchantDetails']['customField1'];
+        $this->subsData     = $this->subs_data;
 
         # save the session token in the Quote
         $add_info = [
@@ -240,6 +245,19 @@ class OpenOrder extends AbstractRequest implements RequestInterface
     public function setQuoteId($quoteId = '')
     {
         $this->quoteId = $quoteId;
+        
+        return $this;
+    }
+    
+    /**
+     * This is about the REST user.
+     * 
+     * @param bool|null $isUserLogged
+     * @return $this
+     */
+    public function setIsUserLogged($isUserLogged = null)
+    {
+        $this->isUserLogged = $isUserLogged;
         
         return $this;
     }
@@ -320,9 +338,11 @@ class OpenOrder extends AbstractRequest implements RequestInterface
             ],
         ];
         
-        // show or not UPOs
+        // send userTokenId and save UPO
         if ($this->config->canUseUpos()) {
-            $params['userTokenId'] = $params['billingAddress']['email'];
+            if (true === $this->isUserLogged || $this->config->isUserLogged()) {
+                $params['userTokenId'] = $params['billingAddress']['email'];
+            }
         }
         
         // auto_close_popup
